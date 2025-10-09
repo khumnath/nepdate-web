@@ -81,13 +81,17 @@ const App: React.FC = () => {
 
   const switchSystem = (sys: 'bs' | 'ad') => {
     if (sys === activeSystem) return;
+
+    // Use the 15th day of the current month as a reference point for conversion.
+    // This provides a more accurate month-to-month mapping between calendar systems,
+    // as it avoids issues with month overlaps at the beginning or end of the month.
     if (sys === 'bs') {
-      const adDate = new Date(Date.UTC(currentAdYear ?? today.getFullYear(), currentAdMonth));
+      const adDate = new Date(Date.UTC(currentAdYear ?? today.getFullYear(), currentAdMonth, 15));
       const bs = toBikramSambat(adDate);
       setCurrentBsYear(bs.year);
       setCurrentBsMonth(bs.monthIndex);
     } else {
-      const adDate = fromBikramSambat(currentBsYear ?? todayBs.year, currentBsMonth, 1);
+      const adDate = fromBikramSambat(currentBsYear ?? todayBs.year, currentBsMonth, 15);
       setCurrentAdYear(adDate.getUTCFullYear());
       setCurrentAdMonth(adDate.getUTCMonth());
     }
@@ -123,7 +127,7 @@ const App: React.FC = () => {
         setCurrentAdYear((p) => (p ?? today.getFullYear()) - 1);
       } else if (nm > 11) {
         setCurrentAdMonth(0);
-        setCurrentAdYear((p) => (p ?? today.getFullYear()) + 1);
+        setCurrentAdYear((p) => (p ?? today.getFullYear()) - 1);
       } else setCurrentAdMonth(nm);
     }
   };
@@ -321,4 +325,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
