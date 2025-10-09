@@ -4,6 +4,8 @@ type IconProps = {
   className?: string;
 };
 
+const version = __APP_VERSION__;
+
 const XIcon: React.FC<IconProps> = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -61,6 +63,8 @@ const AboutPopup: React.FC<AboutPopupProps> = ({ setIsAboutOpen }) => {
         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
           A modern Nepali Bikram Sambat and Gregorian calendar app built using React and PWA technology.
         </p>
+         <span>App Version: </span>
+          <span className="font-mono">{version}</span>
 
         <div className="space-y-3 my-6">
           <a href="https://github.com/khumnath/nepdate/tree/page" target="_blank" rel="noopener noreferrer"
