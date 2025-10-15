@@ -28,59 +28,63 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     const BIKRAM_SAMBAT_MONTHS = ["वैशाख","जेठ","असार","साउन","भदौ","असोज","कार्तिक","मंसिर","पुष","माघ","फाल्गुन","चैत"];
     const GREGORIAN_MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-    // Compute display strings independently so they don't mirror each other's raw values
-    let bsDisplay = '—';
-    let adDisplay = '—';
+    // Ddisplay strings for both calendar systems.
+    const getDisplayDates = () => {
+        let bsString = '—';
+        let adString = '—';
 
-    if (bsYear !== null) {
-        bsDisplay = `${bsYear} ${BIKRAM_SAMBAT_MONTHS[bsMonth % 12]}`;
-        // if ad not provided, compute AD month/year for the BS first-day
-        if (adYear === null) {
+        if (activeSystem === 'bs' && bsYear !== null) {
+            bsString = `${bsYear} ${BIKRAM_SAMBAT_MONTHS[bsMonth]}`;
             try {
-                const adDate = fromBikramSambat(bsYear, bsMonth, 1);
-                adDisplay = `${adDate.getUTCFullYear()} ${GREGORIAN_MONTHS[adDate.getUTCMonth() % 12]}`;
-            } catch (e) { adDisplay = '—'; }
+                // Using the 15th day provides a stable reference for accurate month-to-month conversion.
+                const equivalentAdDate = fromBikramSambat(bsYear, bsMonth, 15);
+                adString = `${equivalentAdDate.getUTCFullYear()} ${GREGORIAN_MONTHS[equivalentAdDate.getUTCMonth()]}`;
+            } catch (e) {
+                adString = '—';
+            }
+        } else if (activeSystem === 'ad' && adYear !== null) {
+            adString = `${adYear} ${GREGORIAN_MONTHS[adMonth]}`;
+            try {
+                // Date.UTC ensures the conversion is based on a consistent point in time, not the client's local time.
+                const equivalentBsDate = toBikramSambat(new Date(Date.UTC(adYear, adMonth, 15)));
+                bsString = `${equivalentBsDate.year} ${BIKRAM_SAMBAT_MONTHS[equivalentBsDate.monthIndex]}`;
+            } catch (e) {
+                bsString = '—';
+            }
         }
-    }
+        return { bsDisplay: bsString, adDisplay: adString };
+    };
 
-    if (adYear !== null) {
-        adDisplay = `${adYear} ${GREGORIAN_MONTHS[adMonth % 12]}`;
-        // if bs not provided, compute BS month/year for the AD first-day
-        if (bsYear === null) {
-            try {
-                const bs = toBikramSambat(new Date(Date.UTC(adYear, adMonth, 1)));
-                bsDisplay = `${bs.year} ${BIKRAM_SAMBAT_MONTHS[bs.monthIndex % 12]}`;
-            } catch (e) { bsDisplay = '—'; }
-        }
-    }
+    const { bsDisplay, adDisplay } = getDisplayDates();
+
     return (
         <header className="w-full bg-blue-600 dark:bg-gray-800 backdrop-blur-sm border-b border-blue-700 dark:border-gray-700">
             <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="flex bg-white dark:bg-gray-700 rounded-lg p-1">
-                    <button
-                        className={`px-4 py-2 rounded-md transition-all duration-200 ${
-                            activeSystem === 'bs'
-                                ? 'bg-blue-600 text-white shadow-sm'
-                                : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
-                        } text-sm sm:text-base font-medium`}
-                        onClick={() => onSystemChange('bs')}
-                    >
-                        <span className="hidden md:inline">Bikram Sambat</span>
-                        <span className="md:hidden">BS</span>
-                    </button>
-                    <button
-                        className={`px-4 py-2 rounded-md transition-all duration-200 ${
-                            activeSystem === 'ad'
-                                ? 'bg-orange-500 text-white shadow-sm'
-                                : 'text-gray-600 dark:text-gray-400 hover:text-orange-500'
-                        } text-sm sm:text-base font-medium`}
-                        onClick={() => onSystemChange('ad')}
-                    >
-                        <span className="hidden md:inline">Gregorian</span>
-                        <span className="md:hidden">AD</span>
-                    </button>
-                </div>
+                        <button
+                            className={`px-4 py-2 rounded-md transition-all duration-200 ${
+                                activeSystem === 'bs'
+                                    ? 'bg-blue-600 text-white shadow-sm'
+                                    : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
+                            } text-sm sm:text-base font-medium`}
+                            onClick={() => onSystemChange('bs')}
+                        >
+                            <span className="hidden md:inline">Bikram Sambat</span>
+                            <span className="md:hidden">BS</span>
+                        </button>
+                        <button
+                            className={`px-4 py-2 rounded-md transition-all duration-200 ${
+                                activeSystem === 'ad'
+                                    ? 'bg-orange-500 text-white shadow-sm'
+                                    : 'text-gray-600 dark:text-gray-400 hover:text-orange-500'
+                            } text-sm sm:text-base font-medium`}
+                            onClick={() => onSystemChange('ad')}
+                        >
+                            <span className="hidden md:inline">Gregorian</span>
+                            <span className="md:hidden">AD</span>
+                        </button>
+                    </div>
                     
                     <button
                         onClick={onTodayClick}

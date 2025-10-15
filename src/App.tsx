@@ -10,6 +10,34 @@ import { isBsYearPrecomputed, isAdMonthPrecomputed } from './lib/bikram';
 import { Menu, X, Download, Info } from 'lucide-react';
 import { registerSW } from 'virtual:pwa-register';
 
+/**
+ * Gets the current date and time in Nepal (UTC+05:45) as a Date object.
+ * The returned Date object will have its UTC values (e.g., getUTCFullYear)
+ * set to the local time parts in Nepal, ensuring timezone consistency.
+ */
+function getNepalDate(): Date {
+    const now = new Date();
+    // Use Intl.DateTimeFormat to get the current time parts in Nepal's timezone.
+    // The 'en-CA' locale provides a YYYY-MM-DD format which is close to ISO 8601.
+    const nepalISOString = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kathmandu',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    }).format(now).replace(', ', 'T'); // "YYYY-MM-DD, HH:mm:ss" -> "YYYY-MM-DDTHH:mm:ss"
+
+    // Create a new Date object from the Nepal time string.
+    // Appending 'Z' tells the Date constructor to parse it as a UTC time.
+    // This correctly creates a Date object whose internal timestamp corresponds
+    // to the wall-clock time in Nepal for use with the calendar logic.
+    return new Date(nepalISOString + 'Z');
+}
+
+
 const App: React.FC = () => {
   // --- PWA Service Worker Registration ---
   useEffect(() => {
@@ -58,12 +86,12 @@ const App: React.FC = () => {
   };
 
   // --- Calendar core setup ---
-  const today = new Date();
+  const today = getNepalDate();
   const todayBs = toBikramSambat(today);
   const [currentBsYear, setCurrentBsYear] = useState<number | null>(todayBs.year);
   const [currentBsMonth, setCurrentBsMonth] = useState<number>(todayBs.monthIndex);
-  const [currentAdYear, setCurrentAdYear] = useState<number | null>(today.getFullYear());
-  const [currentAdMonth, setCurrentAdMonth] = useState<number>(today.getMonth());
+  const [currentAdYear, setCurrentAdYear] = useState<number | null>(today.getUTCFullYear());
+  const [currentAdMonth, setCurrentAdMonth] = useState<number>(today.getUTCMonth());
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
@@ -86,7 +114,7 @@ const App: React.FC = () => {
     // This provides a more accurate month-to-month mapping between calendar systems,
     // as it avoids issues with month overlaps at the beginning or end of the month.
     if (sys === 'bs') {
-      const adDate = new Date(Date.UTC(currentAdYear ?? today.getFullYear(), currentAdMonth, 15));
+      const adDate = new Date(Date.UTC(currentAdYear ?? today.getUTCFullYear(), currentAdMonth, 15));
       const bs = toBikramSambat(adDate);
       setCurrentBsYear(bs.year);
       setCurrentBsMonth(bs.monthIndex);
@@ -101,8 +129,8 @@ const App: React.FC = () => {
   const goToToday = () => {
     setCurrentBsYear(todayBs.year);
     setCurrentBsMonth(todayBs.monthIndex);
-    setCurrentAdYear(today.getFullYear());
-    setCurrentAdMonth(today.getMonth());
+    setCurrentAdYear(today.getUTCFullYear());
+    setCurrentAdMonth(today.getUTCMonth());
   };
 
   const handleDayClick = (date: Date) => {
@@ -124,17 +152,17 @@ const App: React.FC = () => {
       const nm = dir === 'prev' ? currentAdMonth - 1 : currentAdMonth + 1;
       if (nm < 0) {
         setCurrentAdMonth(11);
-        setCurrentAdYear((p) => (p ?? today.getFullYear()) - 1);
+        setCurrentAdYear((p) => (p ?? today.getUTCFullYear()) - 1);
       } else if (nm > 11) {
         setCurrentAdMonth(0);
-        setCurrentAdYear((p) => (p ?? today.getFullYear()) - 1);
+        setCurrentAdYear((p) => (p ?? today.getUTCFullYear()) + 1);
       } else setCurrentAdMonth(nm);
     }
   };
 
   const changeYear = (dir: 'prev' | 'next') => {
     if (activeSystem === 'bs') setCurrentBsYear((p) => (p ?? todayBs.year) + (dir === 'next' ? 1 : -1));
-    else setCurrentAdYear((p) => (p ?? today.getFullYear()) + (dir === 'next' ? 1 : -1));
+    else setCurrentAdYear((p) => (p ?? today.getUTCFullYear()) + (dir === 'next' ? 1 : -1));
   };
 
   const currentYear = activeSystem === 'bs' ? currentBsYear : currentAdYear;
@@ -255,7 +283,7 @@ const App: React.FC = () => {
 
 
           <div className="mt-auto text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4">
-            © {new Date().getFullYear()} Nepdate Calendar Project
+            © {getNepalDate().getUTCFullYear()} Nepdate Calendar Project
           </div>
         </div>
       </aside>
@@ -296,7 +324,7 @@ const App: React.FC = () => {
         </section>
 
         <footer className="mt-auto text-center py-3 sm:py-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-          © {new Date().getFullYear()}{" "}
+          © {getNepalDate().getUTCFullYear()}{" "}
           <a
             href="https://github.com/khumnath/nepdate"
             target="_blank"
