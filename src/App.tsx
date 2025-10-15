@@ -16,21 +16,19 @@ const App: React.FC = () => {
     registerSW({ immediate: true });
   }, []);
 
-  // --- existing state ---
+  // --- Theme and UI State ---
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [activeSystem, setActiveSystem] = useState<'bs' | 'ad'>('bs');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
 
-  // --- PWA Install ---
+  // --- PWA Install State ---
   const [canInstall, setCanInstall] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-
-  // --- NEW: About modal ---
-  const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   useEffect(() => {
     const isStandalone =
@@ -50,20 +48,21 @@ const App: React.FC = () => {
   const handleInstallClick = async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') console.log('PWA installed');
+      await deferredPrompt.userChoice;
       setDeferredPrompt(null);
       setCanInstall(false);
     }
   };
 
-  // --- Calendar core setup ---
-  const today = new Date();
-  const todayBs = toBikramSambat(today);
-  const [currentBsYear, setCurrentBsYear] = useState<number | null>(todayBs.year);
-  const [currentBsMonth, setCurrentBsMonth] = useState<number>(todayBs.monthIndex);
-  const [currentAdYear, setCurrentAdYear] = useState<number | null>(today.getFullYear());
-  const [currentAdMonth, setCurrentAdMonth] = useState<number>(today.getMonth());
+  // --- Calendar Core State ---
+  // Calculate initial dates only ONCE using the useState initializer function.
+  const [initialToday] = useState(new Date());
+  const [initialTodayBs] = useState(() => toBikramSambat(initialToday));
+
+  const [currentBsYear, setCurrentBsYear] = useState<number | null>(initialTodayBs.year);
+  const [currentBsMonth, setCurrentBsMonth] = useState<number>(initialTodayBs.monthIndex);
+  const [currentAdYear, setCurrentAdYear] = useState<number | null>(initialToday.getFullYear());
+  const [currentAdMonth, setCurrentAdMonth] = useState<number>(initialToday.getMonth());
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
@@ -81,17 +80,13 @@ const App: React.FC = () => {
 
   const switchSystem = (sys: 'bs' | 'ad') => {
     if (sys === activeSystem) return;
-
-    // Use the 15th day of the current month as a reference point for conversion.
-    // This provides a more accurate month-to-month mapping between calendar systems,
-    // as it avoids issues with month overlaps at the beginning or end of the month.
     if (sys === 'bs') {
-      const adDate = new Date(Date.UTC(currentAdYear ?? today.getFullYear(), currentAdMonth, 15));
+      const adDate = new Date(Date.UTC(currentAdYear ?? initialToday.getFullYear(), currentAdMonth, 15));
       const bs = toBikramSambat(adDate);
       setCurrentBsYear(bs.year);
       setCurrentBsMonth(bs.monthIndex);
     } else {
-      const adDate = fromBikramSambat(currentBsYear ?? todayBs.year, currentBsMonth, 15);
+      const adDate = fromBikramSambat(currentBsYear ?? initialTodayBs.year, currentBsMonth, 15);
       setCurrentAdYear(adDate.getUTCFullYear());
       setCurrentAdMonth(adDate.getUTCMonth());
     }
@@ -99,10 +94,10 @@ const App: React.FC = () => {
   };
 
   const goToToday = () => {
-    setCurrentBsYear(todayBs.year);
-    setCurrentBsMonth(todayBs.monthIndex);
-    setCurrentAdYear(today.getFullYear());
-    setCurrentAdMonth(today.getMonth());
+    setCurrentBsYear(initialTodayBs.year);
+    setCurrentBsMonth(initialTodayBs.monthIndex);
+    setCurrentAdYear(initialToday.getFullYear());
+    setCurrentAdMonth(initialToday.getMonth());
   };
 
   const handleDayClick = (date: Date) => {
@@ -115,26 +110,27 @@ const App: React.FC = () => {
       const nm = dir === 'prev' ? currentBsMonth - 1 : currentBsMonth + 1;
       if (nm < 0) {
         setCurrentBsMonth(11);
-        setCurrentBsYear((p) => (p ?? todayBs.year) - 1);
+        setCurrentBsYear((p) => (p ?? initialTodayBs.year) - 1);
       } else if (nm > 11) {
         setCurrentBsMonth(0);
-        setCurrentBsYear((p) => (p ?? todayBs.year) + 1);
+        setCurrentBsYear((p) => (p ?? initialTodayBs.year) + 1);
       } else setCurrentBsMonth(nm);
     } else {
       const nm = dir === 'prev' ? currentAdMonth - 1 : currentAdMonth + 1;
       if (nm < 0) {
         setCurrentAdMonth(11);
-        setCurrentAdYear((p) => (p ?? today.getFullYear()) - 1);
+        setCurrentAdYear((p) => (p ?? initialToday.getFullYear()) - 1);
       } else if (nm > 11) {
         setCurrentAdMonth(0);
-        setCurrentAdYear((p) => (p ?? today.getFullYear()) - 1);
+        // When going from December to January, the year should increment.
+        setCurrentAdYear((p) => (p ?? initialToday.getFullYear()) + 1);
       } else setCurrentAdMonth(nm);
     }
   };
 
   const changeYear = (dir: 'prev' | 'next') => {
-    if (activeSystem === 'bs') setCurrentBsYear((p) => (p ?? todayBs.year) + (dir === 'next' ? 1 : -1));
-    else setCurrentAdYear((p) => (p ?? today.getFullYear()) + (dir === 'next' ? 1 : -1));
+    if (activeSystem === 'bs') setCurrentBsYear((p) => (p ?? initialTodayBs.year) + (dir === 'next' ? 1 : -1));
+    else setCurrentAdYear((p) => (p ?? initialToday.getFullYear()) + (dir === 'next' ? 1 : -1));
   };
 
   const currentYear = activeSystem === 'bs' ? currentBsYear : currentAdYear;
@@ -263,7 +259,7 @@ const App: React.FC = () => {
       {/* ABOUT MODAL */}
       {isAboutOpen && <AboutPopup setIsAboutOpen={setIsAboutOpen} />}
 
-      {/* MAIN CONTENT (unchanged) */}
+      {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col overflow-hidden px-2 sm:px-4 md:px-6 lg:px-40 max-w-7xl mx-auto w-full">
         <section className="py-2 sm:py-3">
           <CalendarControls

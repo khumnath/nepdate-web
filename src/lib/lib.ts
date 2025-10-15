@@ -1,3 +1,3 @@
-// Central aggregator: re-export public APIs from bikram and panchangaCore
-export * from './bikram';
-export * from './panchangaCore';
+// lib/lib.ts
+export { toBikramSambat, fromBikramSambat, solarMonths, getBikramMonthInfo,fromDevanagari, toDevanagari } from './bikram';
+export { calculate, getEventsForDate, getPanchangaBasics } from './panchangaCore';

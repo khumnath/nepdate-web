@@ -1,5 +1,5 @@
 import React from 'react';
-import { toBikramSambat, fromBikramSambat, getBikramMonthInfo, _getPanchangaBasics, getEventsForDate, toDevanagari } from '../lib/lib';
+import { fromBikramSambat, getBikramMonthInfo, toDevanagari, calculate } from '../lib/lib';
 
 interface CalendarGridProps {
     activeSystem: 'bs' | 'ad';
@@ -22,6 +22,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
 
     const weekdays = activeSystem === 'bs' ? WEEKDAYS_NEPALI : WEEKDAYS_ENGLISH;
 
+    // Use consistent calculation for both display and events
     const renderBikramSambatCalendar = () => {
         if (currentYear === null) {
             return (
@@ -49,27 +50,50 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         // Days of the month
         for (let day = 1; day <= monthInfo.totalDays; day++) {
             const date = fromBikramSambat(currentYear, currentMonth, day);
-            const panchanga = _getPanchangaBasics(date);
-            const bsFullDate = toBikramSambat(date);
-            const events = getEventsForDate(date, bsFullDate.year, bsFullDate.monthIndex, bsFullDate.day);
+            
+            // Use the main calculate function for consistency
+            const panchanga = calculate(date);
+            
+            if (!panchanga || panchanga.error) {
+                // Fallback if calculation fails
+                cells.push(
+                    <div
+                        key={day}
+                        className="calendar-day relative group"
+                        onClick={() => onDayClick(date)}
+                    >
+                        <span className="main-number transform transition-transform duration-150 ease-out inline-block group-hover:scale-110" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+                            {toDevanagari(day)}
+                        </span>
+                        <span className="sub-number">
+                            {date.getDate()}
+                        </span>
+                        <span className="tithi-display text-gray-400" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+                            गणना त्रुटि
+                        </span>
+                    </div>
+                );
+                continue;
+            }
 
             let classes = 'calendar-day';
             if (date.getDay() === 6) classes += ' saturday';
             if (date.toDateString() === today.toDateString()) classes += ' today';
 
-            const isHoliday = events.some(event => event.holiday);
+            // Handle possibly undefined events
+            const isHoliday = panchanga.events?.some(event => event.holiday) ?? false;
             if (isHoliday) classes += ' holiday';
 
             let tithiClass = 'tithi-display';
 
-            if (panchanga.tithiName === "पूर्णिमा") {
+            if (panchanga.tithi === "पूर्णिमा") {
                 tithiClass += ' special purnima';
-            } else if (panchanga.tithiName === "अमावस्या") {
+            } else if (panchanga.tithi === "अमावस्या") {
                 tithiClass += ' special amavasya';
             }
 
-            const isPurnima = panchanga.tithiName === "पूर्णिमा";
-            const isAmavasya = panchanga.tithiName === "अमावस्या";
+            const isPurnima = panchanga.tithi === "पूर्णिमा";
+            const isAmavasya = panchanga.tithi === "अमावस्या";
 
             cells.push(
                 <div
@@ -95,9 +119,10 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                     )}
 
                     <span className={tithiClass} style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-                        {panchanga.tithiName}
+                        {panchanga.tithi}
                     </span>
-                    {events.length > 0 && <div className="event-dot" />}
+                    {/* Handle possibly undefined events */}
+                    {panchanga.events && panchanga.events.length > 0 && <div className="event-dot" />}
                 </div>
             );
         }
@@ -125,27 +150,50 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         // Days of the month
         for (let day = 1; day <= lastDay.getUTCDate(); day++) {
             const date = new Date(Date.UTC(currentYear, currentMonth, day));
-            const bsDate = toBikramSambat(date);
-            const panchanga = _getPanchangaBasics(date);
-            const events = getEventsForDate(date, bsDate.year, bsDate.monthIndex, bsDate.day);
+            
+            // Use the main calculate function for consistency
+            const panchanga = calculate(date);
+            
+            if (!panchanga || panchanga.error) {
+                // Fallback if calculation fails
+                cells.push(
+                    <div
+                        key={day}
+                        className="calendar-day relative group"
+                        onClick={() => onDayClick(date)}
+                    >
+                        <span className="main-number transform transition-transform duration-150 ease-out inline-block group-hover:scale-110">
+                            {day}
+                        </span>
+                        <span className="sub-number" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+                            {toDevanagari(day)}
+                        </span>
+                        <span className="tithi-display text-gray-400" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+                            Calculation Error
+                        </span>
+                    </div>
+                );
+                continue;
+            }
 
             let classes = 'calendar-day';
             if (date.getUTCDay() === 6) classes += ' saturday';
             if (date.toDateString() === today.toDateString()) classes += ' today';
 
-            const isHoliday = events.some(event => event.holiday);
+            // Handle possibly undefined events
+            const isHoliday = panchanga.events?.some(event => event.holiday) ?? false;
             if (isHoliday) classes += ' holiday';
 
             let tithiClass = 'tithi-display';
 
-            if (panchanga.tithiName === "पूर्णिमा") {
+            if (panchanga.tithi === "पूर्णिमा") {
                 tithiClass += ' special purnima';
-            } else if (panchanga.tithiName === "अमावस्या") {
+            } else if (panchanga.tithi === "अमावस्या") {
                 tithiClass += ' special amavasya';
             }
 
-            const isPurnima = panchanga.tithiName === "पूर्णिमा";
-            const isAmavasya = panchanga.tithiName === "अमावस्या";
+            const isPurnima = panchanga.tithi === "पूर्णिमा";
+            const isAmavasya = panchanga.tithi === "अमावस्या";
 
             cells.push(
                 <div
@@ -156,8 +204,9 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                     <span className="main-number transform transition-transform duration-150 ease-out inline-block group-hover:scale-110">
                         {day}
                     </span>
+                    {/* Handle possibly undefined bsDay */}
                     <span className="sub-number" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-                        {toDevanagari(bsDate.day)}
+                        {toDevanagari(panchanga.bsDay?.toString() ?? day.toString())}
                     </span>
                     {isPurnima && (
                         <svg className="icon absolute top-2 left-2 w-5 h-5" viewBox="0 0 24 24" fill="none">
@@ -170,9 +219,10 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                         </svg>
                     )}
                     <span className={tithiClass} style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-                        {panchanga.tithiName}
+                        {panchanga.tithi}
                     </span>
-                    {events.length > 0 && <div className="event-dot" />}
+                    {/* Handle possibly undefined events */}
+                    {panchanga.events && panchanga.events.length > 0 && <div className="event-dot" />}
                 </div>
             );
         }

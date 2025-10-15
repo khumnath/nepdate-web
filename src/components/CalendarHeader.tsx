@@ -1,6 +1,6 @@
 import React from 'react';
 import { Sun, Moon } from 'lucide-react';
-import { toBikramSambat, fromBikramSambat } from '../lib/lib';
+import { solarMonths, toDevanagari } from '../lib/lib';
 
 interface CalendarHeaderProps {
     activeSystem: 'bs' | 'ad';
@@ -25,34 +25,16 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     theme,
     onThemeToggle
 }) => {
-    const BIKRAM_SAMBAT_MONTHS = ["वैशाख","जेठ","असार","साउन","भदौ","असोज","कार्तिक","मंसिर","पुष","माघ","फाल्गुन","चैत"];
     const GREGORIAN_MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-    // Compute display strings independently so they don't mirror each other's raw values
-    let bsDisplay = '—';
-    let adDisplay = '—';
+    const bsDisplay = bsYear !== null
+        ? `${toDevanagari(bsYear)} ${solarMonths[bsMonth]}`
+        : '—';
 
-    if (bsYear !== null) {
-        bsDisplay = `${bsYear} ${BIKRAM_SAMBAT_MONTHS[bsMonth % 12]}`;
-        // if ad not provided, compute AD month/year for the BS first-day
-        if (adYear === null) {
-            try {
-                const adDate = fromBikramSambat(bsYear, bsMonth, 1);
-                adDisplay = `${adDate.getUTCFullYear()} ${GREGORIAN_MONTHS[adDate.getUTCMonth() % 12]}`;
-            } catch (e) { adDisplay = '—'; }
-        }
-    }
-
-    if (adYear !== null) {
-        adDisplay = `${adYear} ${GREGORIAN_MONTHS[adMonth % 12]}`;
-        // if bs not provided, compute BS month/year for the AD first-day
-        if (bsYear === null) {
-            try {
-                const bs = toBikramSambat(new Date(Date.UTC(adYear, adMonth, 1)));
-                bsDisplay = `${bs.year} ${BIKRAM_SAMBAT_MONTHS[bs.monthIndex % 12]}`;
-            } catch (e) { bsDisplay = '—'; }
-        }
-    }
+    const adDisplay = adYear !== null
+        ? `${adYear} ${GREGORIAN_MONTHS[adMonth]}`
+        : '—';
+    
     return (
         <header className="w-full bg-blue-600 dark:bg-gray-800 backdrop-blur-sm border-b border-blue-700 dark:border-gray-700">
             <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -94,7 +76,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                 <div className="flex items-center gap-4">
                     <div className="text-sm text-white/90 dark:text-gray-300 text-center">
                         <div className="font-medium">AD: {adDisplay}</div>
-                        <div className="text-xs">BS: {bsDisplay}</div>
+                        <div className="font-semibold" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>BS: {bsDisplay}</div>
                     </div>
                     <button
                         onClick={onThemeToggle}
@@ -109,3 +91,4 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 };
 
 export default CalendarHeader;
+
