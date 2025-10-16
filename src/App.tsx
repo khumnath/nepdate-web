@@ -26,24 +26,64 @@ const App: React.FC = () => {
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
 
-  // --- PWA Install State ---
+  // --- PWA Install / App State ---
   const [canInstall, setCanInstall] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(() => localStorage.getItem('pwa_installed') === 'true');
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
-    if (!isStandalone) setCanInstall(true);
+    const standalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone;
+    setIsStandalone(!!standalone);
 
-    const handler = (e: any) => {
+    // If the app is running in standalone mode, we don't need any install/open logic.
+    if (standalone) {
+        setIsInstalled(true); // If it's standalone, it must be installed.
+        return; // Exit early
+    }
+
+    
+    // Event listener for when the PWA is successfully installed
+    const handleAppInstalled = () => {
+      console.log('PWA installed successfully.');
+      localStorage.setItem('pwa_installed', 'true');
+      setIsInstalled(true);
+      setCanInstall(false); // App is installed, hide the install button
+    };
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    // API-based check for subsequent visits
+    if ('getInstalledRelatedApps' in navigator) {
+      (navigator as any).getInstalledRelatedApps().then((apps: any[]) => {
+        if (apps.length > 0) {
+          if (localStorage.getItem('pwa_installed') !== 'true') {
+            localStorage.setItem('pwa_installed', 'true');
+          }
+          setIsInstalled(true);
+        }
+      });
+    }
+
+    // Event listener for the browser's install prompt
+    const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
+      // This prompt only appears if the app is not installed.
+      localStorage.removeItem('pwa_installed');
+      setIsInstalled(false);
       setDeferredPrompt(e);
       setCanInstall(true);
     };
-
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    
+    // Cleanup function to remove listeners
+    return () => {
+      window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
+
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -156,18 +196,18 @@ const App: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors overflow-hidden relative"
+      className="min-h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors overflow-hidden relative"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {/* HEADER */}
-      <header className="px-4 py-2 border-b dark:border-gray-700 bg-white dark:bg-gray-900 z-50">
+      <header className="px-4 py-2 border-b dark:border-gray-700 bg-white dark:bg-gray-900 z-30">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsMenuOpen(true)}
-              className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800"
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -205,7 +245,7 @@ const App: React.FC = () => {
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Menu</h2>
             <button
               onClick={() => setIsMenuOpen(false)}
-              className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800"
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800"
             >
               <X className="w-5 h-5" />
             </button>
@@ -213,15 +253,15 @@ const App: React.FC = () => {
 
           <nav className="flex flex-col space-y-3 text-gray-800 dark:text-gray-200">
             {/* SOURCE CODE */}
-            <button
-              onClick={() => {
-                window.open('https://github.com/khumnath/nepdate/tree/page', '_blank', 'noopener,noreferrer');
-                setIsMenuOpen(false);
-              }}
+            <a
+              href="https://github.com/khumnath/nepdate/tree/page"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setIsMenuOpen(false)}
               className="px-3 py-2 text-left rounded hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center gap-2"
             >
               <Menu className="w-4 h-4" /> Source Code
-            </button>
+            </a>
 
             {/* ABOUT */}
             <button
@@ -234,8 +274,8 @@ const App: React.FC = () => {
               <Info className="w-4 h-4" /> About
             </button>
 
-            {/* INSTALL APP */}
-            {canInstall && (
+            {/* INSTALL / OPEN APP */}
+            {!isStandalone && canInstall && (
               <button
                 onClick={() => {
                   handleInstallClick();
@@ -246,8 +286,17 @@ const App: React.FC = () => {
                 <Download className="w-4 h-4" /> Install App
               </button>
             )}
-          </nav>
 
+            {!isStandalone && isInstalled && !canInstall && (
+              <a
+                href="web+nepdate://open"
+                onClick={() => setIsMenuOpen(false)}
+                className="px-3 py-2 text-left rounded bg-green-600 text-white hover:bg-green-700 flex items-center gap-2"
+              >
+                <Info className="w-4 h-4" /> Open App
+              </a>
+            )}
+          </nav>
 
           <div className="mt-auto text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4">
             © {new Date().getFullYear()} Nepdate Calendar Project
@@ -283,7 +332,12 @@ const App: React.FC = () => {
         )}
 
         <section className="flex-1 overflow-auto p-2 sm:p-3 md:p-4">
-          <CalendarGrid activeSystem={activeSystem} currentYear={currentYear} currentMonth={currentMonth} onDayClick={handleDayClick} />
+          <CalendarGrid
+            activeSystem={activeSystem}
+            currentYear={currentYear}
+            currentMonth={currentMonth}
+            onDayClick={handleDayClick}
+          />
         </section>
 
         <section className="mt-3 sm:mt-4">
@@ -291,7 +345,7 @@ const App: React.FC = () => {
         </section>
 
         <footer className="mt-auto text-center py-3 sm:py-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-          © {new Date().getFullYear()}{" "}
+          © {new Date().getFullYear()}{' '}
           <a
             href="https://github.com/khumnath/nepdate"
             target="_blank"
@@ -300,7 +354,7 @@ const App: React.FC = () => {
           >
             Nepdate Calendar Project
           </a>
-          . All rights reserved. Licensed under{" "}
+          . All rights reserved. Licensed under{' '}
           <a
             href="https://www.gnu.org/licenses/gpl-3.0.en.html"
             target="_blank"
