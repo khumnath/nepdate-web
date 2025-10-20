@@ -14,16 +14,27 @@ const WEEKDAYS_ENGLISH = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 // Timezone Helper to get current date in Nepal
 function getNepalDate(): Date {
-    const now = new Date();
-    // This creates an ISO-like string for the current time in Nepal, e.g., "2025-10-15T14:21:00"
-    const nepalISOString = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Asia/Kathmandu',
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-    }).format(now).replace(', ', 'T');
-    // We append 'Z' to treat this local Nepal time as a UTC time, which simplifies date comparisons.
-    return new Date(nepalISOString + 'Z');
+  const utcNow = new Date();
+
+  const nepalISOString = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kathmandu',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).format(utcNow).replace(', ', 'T');
+
+  // Treat Nepal-local time as local, not UTC
+  const [datePart, timePart] = nepalISOString.split('T');
+  const [year, month, day] = datePart.split('-').map(Number);
+  const [hour, minute, second] = timePart.split(':').map(Number);
+
+  return new Date(year, month - 1, day, hour, minute, second);
 }
+
 
 const CalendarGrid: React.FC<CalendarGridProps> = ({
     activeSystem,
@@ -129,12 +140,12 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                     </span>
                     {isPurnima && (
                         <svg className="icon absolute top-1 left-1 w-5 h-5 sm:w-4 sm:h-4 xs:w-2 xs:h-2" viewBox="0 0 24 24" fill="none">
-                            <circle cx="12" cy="12" r="10" className="fill-yellow-400 dark:fill-yellow-300 stroke-yellow-600 dark:stroke-yellow-500" strokeWidth="1" />
+                            <circle cx="12" cy="12" r="10" className="icon fill-yellow-400 dark:fill-yellow-300 stroke-yellow-600 dark:stroke-yellow-500" strokeWidth="1" />
                         </svg>
                     )}
                     {isAmavasya && (
                         <svg className="icon absolute top-2 left-2 w-5 h-5 sm:w-4 sm:h-4 xs:w-3 xs:h-3" viewBox="0 0 24 24" fill="none">
-                            <circle cx="12" cy="12" r="10" className="fill-gray-800 dark:fill-gray-600 stroke-gray-900 dark:stroke-gray-500" strokeWidth="1" />
+                            <circle cx="12" cy="12" r="10" className="icon fill-gray-800 dark:fill-gray-600 stroke-gray-900 dark:stroke-gray-500" strokeWidth="1" />
                         </svg>
                     )}
 
@@ -235,12 +246,12 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                     </span>
                     {isPurnima && (
                         <svg className="icon absolute top-2 left-2 w-5 h-5" viewBox="0 0 24 24" fill="none">
-                            <circle cx="12" cy="12" r="10" className="fill-yellow-400 dark:fill-yellow-300 stroke-yellow-600 dark:stroke-yellow-500" strokeWidth="1" />
+                            <circle cx="12" cy="12" r="10" className="icon  fill-yellow-400 dark:fill-yellow-300 stroke-yellow-600 dark:stroke-yellow-500" strokeWidth="1" />
                         </svg>
                     )}
                     {isAmavasya && (
                         <svg className="icon absolute top-2 left-2 w-5 h-5" viewBox="0 0 24 24" fill="none">
-                            <circle cx="12" cy="12" r="10" className="fill-gray-800 dark:fill-gray-600 stroke-gray-900 dark:stroke-gray-500" strokeWidth="1" />
+                            <circle cx="12" cy="12" r="10" className="icon fill-gray-800 dark:fill-gray-600 stroke-gray-900 dark:stroke-gray-500" strokeWidth="1" />
                         </svg>
                     )}
                     <span className={tithiClass} style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>

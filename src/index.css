@@ -91,6 +91,15 @@
   .tithi-display {
     font-size: 6px;
   }
+  .special.purnima,
+  .special.amavasya {
+    font-size: 8px;
+  }
+
+  .icon {
+    width: 11px;
+    height: 11px;
+  }
 
   .calendar-grid {
     grid-auto-rows: auto;
@@ -115,6 +124,15 @@
   .tithi-display {
     font-size: 5px;
   }
+
+  .special.purnima,
+  .special.amavasya {
+    font-size: 7px;
+  }
+
+  .icon {
+    display: none;
+  }
 }
 
 @media (max-height: 650px) {
@@ -138,6 +156,14 @@
   .tithi-display {
     font-size: 5px;
   }
+
+  .special.purnima,
+  .special.amavasya {
+    font-size: 7px;
+  }
+  .icon {
+    display: none;
+  }
 }
 
 @media (max-width: 415px) and (max-height: 650px) {
@@ -153,5 +179,8 @@
   }
   .footer {
     font-size: 8px;
+  }
+  .icon {
+    display: none;
   }
 }

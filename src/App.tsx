@@ -6,21 +6,22 @@ import DayDetailsModal from './components/DayDetailsModal';
 import MonthlyEvents from './components/MonthlyEvents';
 import Footer from './components/Footer';
 import AboutPopup from './AboutPopup';
-import { toBikramSambat, fromBikramSambat } from './lib/lib';
+import { toBikramSambat, fromBikramSambat, fromJulianDay, toJulianDay } from './lib/lib';
 import Converter from './components/Converter';
 import { Menu, X, Download, Info, Home, SwitchCamera } from 'lucide-react';
 import { registerSW } from 'virtual:pwa-register';
 
+
 const App: React.FC = () => {
-  // --- PWA Service Worker Registration ---
+  // PWA Service Worker Registration
   useEffect(() => {
     registerSW({ immediate: true });
   }, []);
 
-  // --- View State ---
+  // View State
   const [activeView, setActiveView] = useState<'calendar' | 'converter'>('calendar');
 
-  // --- Theme and UI State ---
+  // Theme and UI State
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [activeSystem, setActiveSystem] = useState<'bs' | 'ad'>('bs');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -30,7 +31,7 @@ const App: React.FC = () => {
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
 
-  // --- PWA Install / App State ---
+  // PWA Install / App State
   const [canInstall, setCanInstall] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [isInstalled, setIsInstalled] = useState(() => localStorage.getItem('pwa_installed') === 'true');
@@ -90,7 +91,7 @@ const App: React.FC = () => {
     }
   };
 
-  // --- Calendar Core State ---
+  // Calendar Core State
   const [initialToday] = useState(new Date());
   const [initialTodayBs] = useState(() => toBikramSambat(initialToday));
 
@@ -122,19 +123,22 @@ const App: React.FC = () => {
     if ((sys === 'bs' && isCurrentAdMonth) || (sys === 'ad' && isCurrentBsMonth)) {
         goToToday();
     } else if (sys === 'bs') {
-        const adDate = new Date(Date.UTC(currentAdYear ?? initialToday.getFullYear(), currentAdMonth, 15));
-        const bs = toBikramSambat(adDate);
-        if (bs.year === 0) { // Check for placeholder/out-of-range
-            goToToday();
-        } else {
-            setCurrentBsYear(bs.year);
-            setCurrentBsMonth(bs.monthIndex);
-        }
+    const year = currentAdYear ?? initialToday.getFullYear();
+    const month = currentAdMonth; 
+    const jd = toJulianDay(year, month, 12);
+    const adDate = fromJulianDay(jd);
+    const bs = toBikramSambat(adDate);
+    if (bs.year === 0 || !bs.year) {
+        goToToday();
+    } else {
+        setCurrentBsYear(bs.year);
+        setCurrentBsMonth(bs.monthIndex);
+    }
     } else { // Switching to AD
         if (currentBsYear === null ) { // Handles crash from invalid/out-of-range state
             goToToday();
         } else {
-            const adDate = fromBikramSambat(currentBsYear, currentBsMonth, 15);
+            const adDate = fromBikramSambat(currentBsYear, currentBsMonth, 18);
             setCurrentAdYear(adDate.getUTCFullYear());
             setCurrentAdMonth(adDate.getUTCMonth());
         }
@@ -183,9 +187,8 @@ const App: React.FC = () => {
 
   const currentYear = activeSystem === 'bs' ? currentBsYear : currentAdYear;
   const currentMonth = activeSystem === 'bs' ? currentBsMonth : currentAdMonth;
-  const isOutOfRange = activeSystem === 'ad' && toBikramSambat(new Date(Date.UTC(currentYear!, currentMonth, 1))).year === 0;
 
-  // --- Swipe Handlers ---
+  // Swipe Handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.touches[0].clientX);
     setTouchEndX(null);
@@ -337,12 +340,6 @@ const App: React.FC = () => {
                 onNextYear={() => changeYear('next')}
             />
             </section>
-
-            {isOutOfRange && (
-            <div className="text-center text-xs sm:text-sm text-yellow-700 dark:text-yellow-300 mt-2 px-3 py-1 rounded-md bg-yellow-50 dark:bg-yellow-900/10">
-                Bikram Sambat date is not available for this Gregorian date.
-            </div>
-            )}
 
             <section className="flex-1 overflow-auto p-2 sm:p-3 md:p-4">
             <CalendarGrid

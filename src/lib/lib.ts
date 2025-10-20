@@ -1,3 +1,28 @@
 // lib/lib.ts
-export { toBikramSambat, fromBikramSambat, solarMonths, OUT_OF_RANGE_BS_DATE, Bsdata, getBikramMonthInfo,fromDevanagari, toDevanagari } from './bikram';
+export { 
+    fromBikramSambat,
+    getMonthWarning,
+    Bsdata,
+    getBikramMonthInfo,
+    fromDevanagari,
+    solarMonths,
+    weekdays,
+    getSunriseSunset,
+    toDevanagari,
+    toJulianDay,
+    fromJulianDay,
+    findPurnima,
+    trueLongitudeSun,
+    trueLongitudeMoon,
+    getTithi,
+    zero360,
+    calculateAdhikaMasa,
+    KaliEpoch,
+    NAKSHATRA_NAMES,
+    TITHI_NAMES,
+    YOGA_NAMES,
+    RASHI_NAMES,
+    KARANA_NAMES,
+    resolveTithiName,
+    toBikramSambat } from './bikram';
 export { calculate, getEventsForDate, getPanchangaBasics } from './panchangaCore';
