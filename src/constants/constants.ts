@@ -82,6 +82,9 @@ export const NEPALI_LABELS = {
   enterManually: "स्थान खोज्नुहोस्(नेपाल बाहिर पनि)",
   selectFromList: "सूचीबाट छान्नुहोस्(नेपाल मात्र)",
   timezone: "समय क्षेत्र छान्नुहोस्",
+  baktoSearchLocation: "नेपाली स्थान खोज्नुहोस्",
+  selectLocationConform: "स्थान पुष्टि गर्नुहोस्",
+  selectedLocation: "चयनित स्थान",
   year: "वर्ष",
   month: "महिना",
   day: "गते",
@@ -99,6 +102,7 @@ export const NEPALI_LABELS = {
   latitudeShort: "अक्षांश",
   longitudeShort: "देशान्तर",
   searchLocation: "स्थान खोज्नुहोस्(जिल्ला वा शहर)...",
+  close: "बन्द गर्नुहोस्"
 };
 
 export const NEPALI_PLANETS: { [key: string]: string } = {

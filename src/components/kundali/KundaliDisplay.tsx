@@ -18,7 +18,7 @@ export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnTo
   const saptamsaChartData = data.divisionalCharts.find((c) => c.name === 'Saptamsa (D7)');
 
   return (
-    <div className="dashboard-container  bg-slate-50 rounded-xl shadow-lg w-full  lg:max-w-4xl xl:max-w-6xl p-4 space-y-4 text-sm md:text-base dark:bg-gray-800 dark:text-gray-200 dark:border dark:border-gray-700">
+    <div className="dashboard-container  bg-slate-50 rounded-xl shadow-lg w-full  lg:max-w-4xl xl:max-w-6xl lg:p-4 md:p-1 space-y-4 text-sm md:text-base dark:bg-gray-800 dark:text-gray-200 dark:border dark:border-gray-700">
       {/* Header */}
       <header className="kundali-card rounded-lg text-center dark:bg-gray-800 dark:text-blue-400 transition-colors duration-300">
         <h2 className="text-3xl self-center font-bold text-blue-400 dark:text-blue-400">
@@ -34,7 +34,7 @@ export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnTo
               <BirthDetailsCard data={data} layout="two-column" />
             </div>
           </div>
-          <div className="flex-1 kundali-card p-4 rounded-lg bg-slate-200 dark:bg-gray-800 dark:text-stone-100 shadow transition-colors duration-300">
+          <div className="flex-1 kundali-card lg:p-4 md:p-1 rounded-lg bg-slate-200 dark:bg-gray-800 dark:text-stone-100 shadow transition-colors duration-300">
             <PlanetaryTable planets={data.planets} />
           </div>
         </div>
@@ -169,6 +169,7 @@ export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnTo
 
       {/* Dasha table */}
       <DashaTable dashaSequence={data.dashaSequence} />
+      <div className='h-32 '></div>
 
       {/* Return to form button */}
       <div className="fixed bottom-12 left-1/2 transform -translate-x-1/2 z-[999]">
