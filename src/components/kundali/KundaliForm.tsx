@@ -481,7 +481,7 @@ export const KundaliForm: React.FC<KundaliFormProps> = ({ onCalculate, isLoading
 
       {isLocationModalOpen && (
         <div className="fixed inset-0 flex items-start justify-center bg-black/60 z-50 p-4 pt-8 sm:pt-8 transition-opacity" onClick={() => setIsLocationModalOpen(false)}>
-          <div className="bg-slate-200 dark:bg-gray-800 w-full h-full sm:h-auto sm:max-h-[90vh] sm:rounded-lg shadow-xl max-w-lg p-4 flex flex-col transition-transform" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-slate-200 dark:bg-gray-800 w-full h-96 sm:h-auto sm:max-h-[90vh] sm:rounded-lg shadow-xl max-w-lg p-4 flex flex-col transition-transform" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center pb-3 border-b dark:border-gray-700">
               <h3 className="text-lg font-semibold">{modalView === 'search' ? NEPALI_LABELS.searchOrSelectLocation : NEPALI_LABELS.enterManually}</h3>
               <button onClick={() => setIsLocationModalOpen(false)} className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100"><XIcon className="w-5 h-5" /></button>
