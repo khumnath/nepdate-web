@@ -53,17 +53,23 @@ export const KundaliPage: React.FC<KundaliPageProps> = ({ onBack }) => {
     setComparisonData(null);
     setIsLoading(false);
     setError(null);
-    onBack(); // actually call it
-  }, [onBack]);
+  }, []);
 
   // Handle browser back button
   useEffect(() => {
     const onPopState = () => {
-      handleReturnToForm();
+      // Check if we are showing results
+      if (kundaliData || comparisonData || error) {
+        // If so, popstate should return to form
+        handleReturnToForm();
+      } else {
+        // If we are on the form, popstate should go back to calendar
+        onBack();
+      }
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
-  }, [handleReturnToForm]);
+  }, [handleReturnToForm, onBack, kundaliData, comparisonData, error]);
 
   // Push history state when showing results
   useEffect(() => {

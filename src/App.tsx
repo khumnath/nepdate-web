@@ -254,7 +254,12 @@ const App: React.FC = () => {
         window.history.pushState(null, '', window.location.href);
         return;
       }
-      if (activeView !== 'calendar') {
+      if (activeView === 'kundali') {
+        // Let KundaliPage's own popstate listener handle the event.
+        return;
+      }
+
+      if (activeView === 'converter') {
         setActiveView('calendar');
         window.history.pushState(null, '', window.location.href);
         return;
