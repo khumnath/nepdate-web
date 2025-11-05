@@ -1,3 +1,4 @@
+import { toDevanagari } from "../lib/lib";
 
 export const NEPALI_LABELS = {
   home: "मुख्य पृष्ठ",
@@ -157,6 +158,14 @@ export const NEPALI_LABELS = {
   yesterdayFrom: "हिजो देखि",
   previousDayFrom: "अघिल्लो दिन देखि",
   subDashaPrintNote: "अन्तरदशाको विस्तृत विवरण हेर्नको लागि, कृपया वेब वा मोबाइल एप प्रयोग गर्नुहोस्।",
+  resetToToday: "आज",
+  invalidDateTitle: "अमान्य मिति",
+  invalidDateMessage: (dateSystem: 'BS' | 'AD') => {
+    const [min, max] = dateSystem === 'BS' ? [1960, 2210] : [1900, 2150];
+    return `तपाईंले प्रविष्ट गर्नुभएको वर्ष अमान्य छ। वर्ष सीमा ${toDevanagari(min)} देखि ${toDevanagari(max)} सम्म मात्र हो। मिति आजको मितिमा रिसेट गरिएको छ। के तपाईं अगाडि बढ्न चाहनुहुन्छ?`;
+  },
+  proceed: "अगाडि बढ्नुहोस्",
+  edit: "सम्पादन गर्नुहोस्",
 };
 
 export const NEPALI_PLANETS: { [key: string]: string } = {

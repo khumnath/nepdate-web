@@ -105,11 +105,14 @@ export interface KundaliResponse {
   calculationMeta: {
     backend: string;
     ayanamsa: string;
+    ayanamsaValue: number;
     zodiac: string;
     houseSystem: string;
     calculationUtc: string;
     version: string;
   };
+  sunRise: string;
+  sunSet: string;
   planets: PlanetInfo[];
   ascendant: {
     longitude: number;
@@ -125,6 +128,8 @@ export interface KundaliResponse {
     nameNepali: string;
     start: string;
     end: string;
+    padaStart: string;
+    padaEnd: string;
   };
   tithi: {
     tithiNumber: number;
@@ -141,11 +146,6 @@ export interface KundaliResponse {
   yoga: TimedPanchangaElement;
   karana: TimedPanchangaElement;
   ashtaKoota: AshtaKootaValues;
-  // Fix: Add missing properties to align with the object created in kundaliService.ts, resolving type error.
-  sunRise: string;
-  sunSet: string;
-  moonRise: string;
-  moonSet: string;
 }
 
 export interface GunaMilanScore {

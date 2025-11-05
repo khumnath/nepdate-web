@@ -16,41 +16,54 @@ interface BirthDetailsCardProps {
 }
 
 export const BirthDetailsCard: React.FC<BirthDetailsCardProps> = ({ data, title, titleClassName }) => {
-  const formatShortTime = (isoString: string | undefined): string => {
-    if (!isoString) return '?';
-    try {
-      const date = new Date(isoString);
-      const localDate = new Date(date.getTime() + (data.birthDetails.offset * 60 * 60 * 1000));
-      return localDate.toLocaleTimeString('ne-NP', { hour: 'numeric', minute: '2-digit', hour12: true }).replace('AM', 'बिहान').replace('PM', 'बेलुका');
-    } catch {
-      return '?';
-    }
+  const formatTimePart = (isoString: string | undefined): string => {
+      if (!isoString) return '?';
+      try {
+          const date = new Date(isoString);
+          // The ISO string from the service already represents local time in its UTC fields.
+          const hh = date.getUTCHours();
+          const mm = date.getUTCMinutes();
+
+          const period = hh < 12 ? NEPALI_LABELS.am : NEPALI_LABELS.pm;
+          const hour12 = hh % 12 === 0 ? 12 : hh % 12;
+          
+          return `${toDevanagari(hour12)}:${toDevanagari(mm.toString().padStart(2, '0'))} ${period}`;
+      } catch {
+          return '?';
+      }
   };
+  
+  const formatPanchangaTiming = (startISO: string, endISO: string, birthDateISO: string): string => {
+      if (!startISO || !endISO || !birthDateISO) return '?';
+      try {
+        // Manually parse the ISO string to avoid timezone shifts.
+        const parseAsLocalDate = (iso: string) => {
+            const d = new Date(iso);
+            return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds());
+        };
 
-  const getLocalDate = (isoString: string) => {
-    const d = new Date(isoString);
-    // Apply offset to get local time from UTC
-    return new Date(d.getTime() + data.birthDetails.offset * 3600 * 1000);
+        const birthDate = parseAsLocalDate(birthDateISO);
+        const startDate = parseAsLocalDate(startISO);
+        const endDate = parseAsLocalDate(endISO);
+        
+        const birthBS = toBikramSambat(birthDate);
+        const startBS = toBikramSambat(startDate);
+        const endBS = toBikramSambat(endDate);
+
+        const startTime = formatTimePart(startISO);
+        const endTime = formatTimePart(endISO);
+
+        const isStartSameDay = startBS.year === birthBS.year && startBS.monthIndex === birthBS.monthIndex && startBS.day === birthBS.day;
+        const isEndSameDay = endBS.year === birthBS.year && endBS.monthIndex === birthBS.monthIndex && endBS.day === birthBS.day;
+
+        const startStr = isStartSameDay ? startTime : `${toDevanagari(startBS.day)} गते ${startTime}`;
+        const endStr = isEndSameDay ? endTime : `${toDevanagari(endBS.day)} गते ${endTime}`;
+
+        return `${startStr} देखि ${endStr} सम्म`;
+      } catch {
+        return 'N/A';
+      }
   };
-
-  const birthDateLocal = getLocalDate(data.birthDetails.datetime);
-  const birthDateMidnight = new Date(birthDateLocal.getFullYear(), birthDateLocal.getMonth(), birthDateLocal.getDate());
-
-  const isPreviousDay = (elementIsoString: string | undefined): boolean => {
-    if (!elementIsoString) return false;
-
-    const elementDateLocal = getLocalDate(elementIsoString);
-    const elementDateMidnight = new Date(elementDateLocal.getFullYear(), elementDateLocal.getMonth(), elementDateLocal.getDate());
-
-    return elementDateMidnight.getTime() < birthDateMidnight.getTime();
-  };
-
-  const today = new Date();
-  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const isBirthDateToday = birthDateMidnight.getTime() === todayMidnight.getTime();
-
-  const previousDayLabel = isBirthDateToday ? NEPALI_LABELS.yesterdayFrom : NEPALI_LABELS.previousDayFrom;
-
 
   const moon = data.planets.find(p => p.planet === 'MOON');
   const sun = data.planets.find(p => p.planet === 'SUN');
@@ -104,122 +117,111 @@ export const BirthDetailsCard: React.FC<BirthDetailsCardProps> = ({ data, title,
         </div>
       </div>
 
-      {/* Daily Timings */}
+      {/* Daily Timings Section */}
       <div className="mt-6 pt-4 border-t-2 border-amber-200 dark:border-amber-700">
-        <h3 className="text-lg font-bold text-blue-400 dark:text-blue-400 mb-2">{NEPALI_LABELS.dailyTimings}</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-          <div className="flex gap-1 items-start">
-            <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.sunrise}:</span>
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{toDevanagari(data.sunRise)}</span>
+          <h3 className="text-lg font-bold text-blue-400 dark:text-blue-400 mb-3">{NEPALI_LABELS.dailyTimings}</h3>
+          <div className="grid grid-cols-[auto_1fr] sm:grid-cols-[auto_1fr_auto_1fr] items-center gap-x-4 gap-y-2 text-sm">
+            <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.sunrise}:</span>
+            <span className="font-semibold text-stone-800 dark:text-stone-100 text-left">{toDevanagari(data.sunRise)}</span>
+            <span className="text-stone-500 dark:text-stone-400 text-right sm:text-right">{NEPALI_LABELS.sunset}:</span>
+            <span className="font-semibold text-stone-800 dark:text-stone-100 text-left">{toDevanagari(data.sunSet)}</span>
           </div>
-          <div className="flex gap-1 items-start">
-            <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.sunset}:</span>
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{toDevanagari(data.sunSet)}</span>
-          </div>
-          <div className="flex gap-1 items-start">
-            <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.moonrise}:</span>
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{toDevanagari(data.moonRise)}</span>
-          </div>
-          <div className="flex gap-1 items-start">
-            <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.moonset}:</span>
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{toDevanagari(data.moonSet)}</span>
-          </div>
-        </div>
       </div>
 
+      
       {/* Astrological Details Section */}
       <div className="mt-6 pt-4 border-t-2 border-amber-200 dark:border-amber-700">
-        <h3 className="text-lg font-bold text-blue-400 dark:text-blue-400 mb-3">{NEPALI_LABELS.astrologicalDetails}</h3>
-        <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-3 text-sm">
+          <h3 className="text-lg font-bold text-blue-400 dark:text-blue-400 mb-3">{NEPALI_LABELS.astrologicalDetails}</h3>
+          <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-3 text-sm">
+            
+            <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.lagna}:</span>
+            <span className="font-semibold text-stone-800 dark:text-stone-100 text-left">{ascendantRashi} ({ascendantDegrees})</span>
 
-          <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.lagna}:</span>
-          <span className="font-semibold text-stone-800 dark:text-stone-100 text-left">{ascendantRashi} ({ascendantDegrees})</span>
+            {data.ashtaKoota.lagnesh && (
+              <>
+                <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.lagnesh}:</span>
+                <span className="font-semibold text-stone-800 dark:text-stone-100 text-left">{data.ashtaKoota.lagnesh}</span>
+              </>
+            )}
+            {moon && (
+              <>
+                <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.moonSign}:</span>
+                <span className="font-semibold text-stone-800 dark:text-stone-100 text-left">{NEPALI_RASHI[moon.rashi - 1]}</span>
+              </>
+            )}
+            {data.ashtaKoota.rashiLord && (
+              <>
+                <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.rashiLord}:</span>
+                <span className="font-semibold text-stone-800 dark:text-stone-100 text-left">{data.ashtaKoota.rashiLord}</span>
+              </>
+            )}
+            {sun && (
+              <>
+                <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.sunSign}:</span>
+                <span className="font-semibold text-stone-800 dark:text-stone-100 text-left">{NEPALI_RASHI[sun.rashi - 1]}</span>
+              </>
+            )}
 
-          {data.ashtaKoota.lagnesh && (
-            <>
-              <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.lagnesh}:</span>
-              <span className="font-semibold text-stone-800 dark:text-stone-100 text-left">{data.ashtaKoota.lagnesh}</span>
-            </>
-          )}
-          {moon && (
-            <>
-              <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.moonSign}:</span>
-              <span className="font-semibold text-stone-800 dark:text-stone-100 text-left">{NEPALI_RASHI[moon.rashi - 1]}</span>
-            </>
-          )}
-          {data.ashtaKoota.rashiLord && (
-            <>
-              <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.rashiLord}:</span>
-              <span className="font-semibold text-stone-800 dark:text-stone-100 text-left">{data.ashtaKoota.rashiLord}</span>
-            </>
-          )}
-          {sun && (
-            <>
-              <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.sunSign}:</span>
-              <span className="font-semibold text-stone-800 dark:text-stone-100 text-left">{NEPALI_RASHI[sun.rashi - 1]}</span>
-            </>
-          )}
-
-          <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.birthNakshatra}:</span>
-          <div className="text-left">
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{data.nakshatra.nameNepali} ({toDevanagari(data.nakshatra.pada)})</span>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              {isPreviousDay(data.nakshatra.start) && <span className="text-red-500 font-sans">{previousDayLabel} </span>}
-              {formatShortTime(data.nakshatra.start)} देखि {formatShortTime(data.nakshatra.end)} सम्म
+            <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.birthNakshatra}:</span>
+            <div className="text-left">
+                <span className="font-semibold text-stone-800 dark:text-stone-100">{data.nakshatra.nameNepali}</span>
+                 <div className="text-xs text-gray-500 dark:text-gray-400">
+                   {formatPanchangaTiming(data.nakshatra.start, data.nakshatra.end, data.birthDetails.datetime)}
+                </div>
+                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <span className="font-semibold">पद {toDevanagari(data.nakshatra.pada)}: </span>
+                    {formatPanchangaTiming(data.nakshatra.padaStart, data.nakshatra.padaEnd, data.birthDetails.datetime)}
+                </div>
             </div>
-          </div>
 
-          <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.tithi}:</span>
-          <div className="text-left">
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{data.tithi.paksha} - {toDevanagari(data.tithi.tithiNumber)}</span>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              {isPreviousDay(data.tithi.start) && <span className="text-red-500 font-sans">{previousDayLabel} </span>}
-              {formatShortTime(data.tithi.start)} देखि {formatShortTime(data.tithi.end)} सम्म
+            <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.tithi}:</span>
+             <div className="text-left">
+                <span className="font-semibold text-stone-800 dark:text-stone-100">{data.tithi.paksha} - {toDevanagari(data.tithi.tithiNumber)}</span>
+               <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {formatPanchangaTiming(data.tithi.start, data.tithi.end, data.birthDetails.datetime)}
+                </div>
             </div>
-          </div>
 
-          <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.yoga}:</span>
-          <div className="text-left">
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{data.yoga.name}</span>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              {isPreviousDay(data.yoga.start) && <span className="text-red-500 font-sans">{previousDayLabel} </span>}
-              {formatShortTime(data.yoga.start)} देखि {formatShortTime(data.yoga.end)} सम्म
+            <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.yoga}:</span>
+             <div className="text-left">
+                <span className="font-semibold text-stone-800 dark:text-stone-100">{data.yoga.name}</span>
+               <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {formatPanchangaTiming(data.yoga.start, data.yoga.end, data.birthDetails.datetime)}
+                </div>
             </div>
-          </div>
 
-          <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.karana}:</span>
-          <div className="text-left">
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{data.karana.name}</span>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              {isPreviousDay(data.karana.start) && <span className="text-red-500 font-sans">{previousDayLabel} </span>}
-              {formatShortTime(data.karana.start)} देखि {formatShortTime(data.karana.end)} सम्म
+            <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.karana}:</span>
+            <div className="text-left">
+              <span className="font-semibold text-stone-800 dark:text-stone-100">{data.karana.name}</span>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                 {formatPanchangaTiming(data.karana.start, data.karana.end, data.birthDetails.datetime)}
+              </div>
             </div>
-          </div>
 
-          <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.suggestedSyllable}:</span>
-          <span className="font-bold text-amber-600 dark:text-amber-600 text-lg text-left">{suggestedSyllable}</span>
-        </div>
+            <span className="text-stone-500 dark:text-stone-400 text-right">{NEPALI_LABELS.suggestedSyllable}:</span>
+            <span className="font-bold text-amber-600 dark:text-amber-600 text-lg text-left">{suggestedSyllable}</span>
+          </div>
       </div>
-
+      
       {/* Guna Milan Details Section */}
       {data.ashtaKoota && (
         <div className="mt-6 pt-4 border-t-2 border-amber-200 dark:border-amber-700">
           <h3 className="text-lg font-bold text-blue-400 dark:text-blue-400 mb-3">{NEPALI_LABELS.gunaMilanDetails}</h3>
           <div className="grid grid-cols-[auto_1fr_auto_1fr] sm:grid-cols-[auto_1fr_auto_1fr_auto_1fr] gap-x-4 gap-y-2 text-sm items-baseline">
-            <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.varna}:</span>
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.varna}</span>
-            <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.vasya}:</span>
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.vasya}</span>
-            <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.gana}:</span>
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.gana}</span>
-            <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.yoni}:</span>
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.yoni}</span>
-            <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.nadi}:</span>
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.nadi}</span>
-            <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.tatva}:</span>
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.tatva}</span>
-            <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.paya}:</span>
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.paya}</span>
+              <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.varna}:</span>
+              <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.varna}</span>
+              <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.vasya}:</span>
+              <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.vasya}</span>
+              <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.gana}:</span>
+              <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.gana}</span>
+              <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.yoni}:</span>
+              <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.yoni}</span>
+              <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.nadi}:</span>
+              <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.nadi}</span>
+              <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.tatva}:</span>
+              <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.tatva}</span>
+              <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.paya}:</span>
+              <span className="font-semibold text-stone-800 dark:text-stone-100">{data.ashtaKoota.paya}</span>
           </div>
         </div>
       )}
@@ -233,9 +235,9 @@ export const BirthDetailsCard: React.FC<BirthDetailsCardProps> = ({ data, title,
             <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.backend}:</span>
             <span className="font-semibold text-stone-800 dark:text-stone-100">{data.calculationMeta.backend}: {data.calculationMeta.version}</span>
           </div>
-          <div className="flex gap-1 items-start">
+           <div className="flex gap-1 items-start">
             <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.ayanamsa}:</span>
-            <span className="font-semibold text-stone-800 dark:text-stone-100">{data.calculationMeta.ayanamsa}</span>
+            <span className="font-semibold text-stone-800 dark:text-stone-100">{data.calculationMeta.ayanamsa} ({formatDegrees(data.calculationMeta.ayanamsaValue)})</span>
           </div>
           <div className="flex gap-1 items-start">
             <span className="text-stone-500 dark:text-stone-400">{NEPALI_LABELS.houseSystem}:</span>

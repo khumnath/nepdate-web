@@ -6,6 +6,8 @@ import { ComparisonDisplay } from '../components/kundali/ComparisonDisplay';
 import { kundaliService } from '../../services/kundaliService';
 import type { KundaliResponse, ComparisonResult } from '../../types/types';
 import { NEPALI_LABELS } from '../constants/constants';
+import type { KundaliRequest } from '../../types/types';
+
 
 type AppMode = 'individual' | 'comparison';
 
@@ -53,7 +55,7 @@ export const KundaliPage: React.FC<KundaliPageProps> = ({ onBack }) => {
     setComparisonData(null);
     setIsLoading(false);
     setError(null);
-  }, []);
+  }, []); // Removed onBack from dependency array
 
   // Handle browser back button
   useEffect(() => {
@@ -160,23 +162,26 @@ export const KundaliPage: React.FC<KundaliPageProps> = ({ onBack }) => {
             isLoading={isLoading}
           />
         ) : (
-          <KundaliForm
-            onCalculate={async data => {
-              setIsLoading(true);
-              setError(null);
-              const delayPromise = new Promise(resolve => setTimeout(resolve, 2000));
-              const calculationPromise = kundaliService.getKundali(data);
-              const [, response] = await Promise.all([delayPromise, calculationPromise]);
+          // In KundaliPage
+<KundaliForm
+  onCalculate={async (data: KundaliRequest | null) => {
+    if (!data) return; // guard against null
+    setIsLoading(true);
+    setError(null);
+    const delayPromise = new Promise(resolve => setTimeout(resolve, 2000));
+    const calculationPromise = kundaliService.getKundali(data);
+    const [, response] = await Promise.all([delayPromise, calculationPromise]);
 
-              if ('error' in response) {
-                setError(response.error);
-              } else {
-                setKundaliData(response);
-              }
-              setIsLoading(false);
-            }}
-            isLoading={isLoading}
-          />
+    if ('error' in response) {
+      setError(response.error);
+    } else {
+      setKundaliData(response);
+    }
+    setIsLoading(false);
+  }}
+  isLoading={isLoading}
+/>
+
         )}
       </>
     );
