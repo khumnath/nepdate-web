@@ -1,4 +1,6 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, lazy, Suspense } from 'react';
+import { BottomTabBar } from './components/calendar/BottomTabBar';
+import { DesktopTopNav } from './components/calendar/DesktopTopNav';
 import CalendarHeader from './components/calendar/CalendarHeader';
 import CalendarControls from './components/calendar/CalendarControls';
 import CalendarGrid from './components/calendar/CalendarGrid';
@@ -7,15 +9,16 @@ import MonthlyEvents from './components/calendar/MonthlyEvents';
 import Footer from './components/calendar/Footer';
 import AboutPopup from './pages/AboutPopup';
 import { toBikramSambat, fromBikramSambat, fromJulianDay, toJulianDay } from './lib/lib';
-import { Menu, X, Download, Info, Home, SwitchCamera, Moon, Sun } from 'lucide-react';
+import { Menu, X, Download, Info, Home, SwitchCamera, Moon, Sun, Settings } from 'lucide-react';
 import { registerSW } from 'virtual:pwa-register';
-import { lazy, Suspense } from 'react';
 import { NEPALI_LABELS } from './constants/constants';
 
+// Lazy load SettingsPage
 const KundaliPage = lazy(() => import('./pages/KundaliPage'));
 const ConverterPage = lazy(() => import('./pages/ConverterPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 
-// Reusable Toast Component with fade animation
+// Reusable Toast Component
 const ExitToast: React.FC<{ message: string; visible: boolean }> = ({ message, visible }) => (
   <div
     className={`fixed bottom-16 left-1/2 -translate-x-1/2 px-4 py-2 rounded shadow z-50 text-sm text-white bg-black transition-opacity duration-500 ${
@@ -26,12 +29,16 @@ const ExitToast: React.FC<{ message: string; visible: boolean }> = ({ message, v
   </div>
 );
 
+// Define the menu style type
+type MenuStyle = 'slide' | 'tabs';
+type DesktopLayoutStyle = 'topbar' | 'sidebar';
+
 const App: React.FC = () => {
   useEffect(() => {
     registerSW({ immediate: true });
   }, []);
 
-  const [activeView, setActiveView] = useState<'calendar' | 'converter' | 'kundali'>('calendar');
+  const [activeView, setActiveView] = useState<'calendar' | 'converter' | 'kundali' | 'settings'>('calendar');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [activeSystem, setActiveSystem] = useState<'bs' | 'ad'>('bs');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -49,6 +56,10 @@ const App: React.FC = () => {
   const [backPressedOnce, setBackPressedOnce] = useState(false);
   const [showExitToast, setShowExitToast] = useState(false);
   const timeoutRef = useRef<number | null>(null);
+
+  // State for menu style
+  const [menuStyle, setMenuStyle] = useState<MenuStyle>('tabs');
+  const [desktopLayoutStyle, setDesktopLayoutStyle] = useState<DesktopLayoutStyle>('topbar');
 
   // Detect standalone, install events
   useEffect(() => {
@@ -119,6 +130,13 @@ const App: React.FC = () => {
     const initialTheme = savedTheme || 'light';
     setTheme(initialTheme);
     document.documentElement.classList.toggle('dark', initialTheme === 'dark');
+    
+    // Load Mobile Menu Style
+const savedMenuStyle = localStorage.getItem('menuStyle') as MenuStyle | null;
+setMenuStyle(savedMenuStyle || 'tabs');
+// Load desktop Menu Style
+    const savedDesktopLayout = localStorage.getItem('desktopLayoutStyle') as DesktopLayoutStyle | null;
+    setDesktopLayoutStyle(savedDesktopLayout || 'topbar');
   }, []);
 
   const toggleTheme = () => {
@@ -127,6 +145,34 @@ const App: React.FC = () => {
     localStorage.setItem('theme', next);
     document.documentElement.classList.toggle('dark', next === 'dark');
   };
+
+  // Handler to save menu style
+  const handleSetMenuStyle = (style: MenuStyle) => {
+    setMenuStyle(style);
+    localStorage.setItem('menuStyle', style);
+  };
+
+  const handleSetDesktopLayoutStyle = (style: DesktopLayoutStyle) => {
+    setDesktopLayoutStyle(style);
+    localStorage.setItem('desktopLayoutStyle', style);
+  };
+
+
+  const handleResetSettings = () => {
+    localStorage.removeItem('theme');
+    localStorage.removeItem('menuStyle');
+    localStorage.removeItem('desktopLayoutStyle');
+
+    const defaultTheme = 'light';
+    setTheme(defaultTheme);
+    document.documentElement.classList.toggle('dark', false);
+
+    const defaultMenuStyle = 'tabs'; 
+    setMenuStyle(defaultMenuStyle);
+
+    const defaultDesktopLayout = 'topbar'; 
+    setDesktopLayoutStyle(defaultDesktopLayout);
+  };  
 
   const switchSystem = (sys: 'bs' | 'ad') => {
     if (sys === activeSystem) return;
@@ -234,7 +280,7 @@ const App: React.FC = () => {
     };
   }, [isMenuOpen]);
 
-  // Back button handling (standalone): close overlays in order, then double-back to exit
+  // Back button and settings handling
   useEffect(() => {
     if (!isStandalone) return;
 
@@ -259,11 +305,13 @@ const App: React.FC = () => {
         return;
       }
 
-      if (activeView === 'converter') {
+      // Handle 'converter' and 'settings' views)
+      if (activeView === 'converter' || activeView === 'settings') {
         setActiveView('calendar');
         window.history.pushState(null, '', window.location.href);
         return;
       }
+
       if (backPressedOnce) {
         window.history.go(-2);
       } else {
@@ -293,22 +341,34 @@ const App: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen flex flex-col bg-slate-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors relative"
+      className={`min-h-screen flex flex-col bg-slate-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors relative ${
+        desktopLayoutStyle === 'sidebar' ? 'lg:flex-row' : ''
+      }`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* HEADER */}
-      <header className="px-4 print:hidden py-2 border-b dark:border-gray-700 bg-slate-200 dark:bg-gray-800 z-30">
+      {desktopLayoutStyle === 'topbar' && (
+        <DesktopTopNav
+          activeView={activeView}
+          onNavigate={(view) => setActiveView(view as 'calendar' | 'converter' | 'kundali' | 'settings')}
+        />
+      )}
+
+      <header className="px-4 print:hidden py-2 border-b dark:border-gray-700 bg-slate-200 dark:bg-gray-800 z-30 lg:hidden">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsMenuOpen(true)}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800"
-              aria-label="Open menu"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
+            
+            {menuStyle === 'slide' && (
+              <button
+                onClick={() => setIsMenuOpen(true)}
+                className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800"
+                aria-label="Open menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            )}
+
             <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">
               {NEPALI_LABELS.Nepdate_calendar}
             </h1>
@@ -332,21 +392,29 @@ const App: React.FC = () => {
         )}
       </header>
 
-      {/* BACKDROP */}
-      {isMenuOpen && <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setIsMenuOpen(false)}></div>}
+      {isMenuOpen && <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setIsMenuOpen(false)}></div>}
 
-      {/* SIDE MENU */}
+      {/* The Sidebar */}
       <aside
         className={`fixed top-0 left-0 z-50 w-64 h-full bg-slate-200 dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out
-        ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${menuStyle === 'tabs' ? 'hidden lg:block' : 'block'} 
+        ${desktopLayoutStyle === 'sidebar' 
+          ? 'lg:sticky lg:h-screen lg:translate-x-0 lg:shadow-md' 
+          : 'lg:hidden'
+        }
+        `}
         inert-hidden={!isMenuOpen}
       >
         <div className="flex flex-col h-full p-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Menu</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+              <span className="hidden lg:inline">{NEPALI_LABELS.Nepdate_calendar}</span>
+              <span className="lg:hidden">Menu</span>
+            </h2>
             <button
               onClick={() => setIsMenuOpen(false)}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800"
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 lg:hidden"
               aria-label="Close menu"
             >
               <X className="w-5 h-5" />
@@ -375,6 +443,14 @@ const App: React.FC = () => {
                 <path d="M12 2v20M2 12h20"/>
               </svg> {NEPALI_LABELS.kundali}
             </button>
+            
+            <button
+              onClick={() => { setActiveView('settings'); setIsMenuOpen(false); }}
+              className="px-3 py-2 text-left rounded hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center gap-2"
+            >
+              <Settings className="w-4 h-4" /> {NEPALI_LABELS.settings || 'Settings'}
+            </button>
+
             <a
               href="https://github.com/khumnath/nepdate/tree/page"
               target="_blank"
@@ -415,6 +491,7 @@ const App: React.FC = () => {
                 <Info className="w-4 h-4" /> {NEPALI_LABELS.openApp}
               </a>
             )}
+            
             <button
               onClick={() => { toggleTheme(); setIsMenuOpen(false); }}
               className="px-3 py-2 text-left rounded hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center gap-2"
@@ -434,14 +511,10 @@ const App: React.FC = () => {
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 overflow-hidden">
-        {/* content wrapper with scrollable region; pb-20 ensures space for fixed footer (approx 5rem) */}
-        <div className="h-full overflow-auto px-2 sm:px-4 md:px-6 lg:px-40 max-w-7xl mx-auto w-full pb-20">
+        <div className={`h-full overflow-auto px-2 sm:px-4 md:px-6 max-w-7xl mx-auto w-full ${menuStyle === 'tabs' ? 'pb-24 lg:pb-6' : 'pb-20 lg:pb-6'}`}>
+          
           {activeView === 'kundali' ? (
-            <Suspense fallback={
-              <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-              </div>
-            }>
+            <Suspense fallback={ <div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div> }>
               <KundaliPage onBack={() => setActiveView('calendar')} />
             </Suspense>
           ) : activeView === 'calendar' ? (
@@ -474,21 +547,44 @@ const App: React.FC = () => {
               </section>
             </main>
           ) : activeView === 'converter' ? (
-            <Suspense fallback={
-              <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-              </div>
-            }>
+            <Suspense fallback={ <div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div> }>
               <ConverterPage onBack={() => setActiveView('calendar')} />
+            </Suspense>
+          ) : activeView === 'settings' ? (
+            <Suspense fallback={ <div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div> }>
+              <SettingsPage
+                onBack={() => setActiveView('calendar')}
+                currentTheme={theme}
+                onThemeChange={toggleTheme}
+                currentMenuStyle={menuStyle}
+                onMenuStyleChange={handleSetMenuStyle}
+                currentDesktopLayoutStyle={desktopLayoutStyle}
+                onDesktopLayoutStyleChange={handleSetDesktopLayoutStyle}
+                onResetSettings={handleResetSettings}
+              />
             </Suspense>
           ) : null}
         </div>
       </div>
 
-      {/* FIXED FOOTER */}
-      <div className="fixed bottom-0 left-0 right-0 w-full bg-slate-200 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 print:hidden">
-        <Footer />
-      </div>
+      {menuStyle === 'slide' && (
+        <div className="fixed bottom-0 left-0 right-0 w-full bg-slate-200 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 print:hidden lg:hidden">
+          <Footer />
+        </div>
+      )}
+
+      {menuStyle === 'tabs' && (
+        <BottomTabBar
+          activeView={activeView}
+          onNavigate={(view) => {
+            if (view === 'about') {
+              setIsAboutOpen(true);
+            } else {
+              setActiveView(view as 'calendar' | 'converter' | 'kundali' | 'settings');
+            }
+          }}
+        />
+      )}
 
       <DayDetailsModal date={selectedDate} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
