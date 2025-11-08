@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "np.com.khumnath.twa",
+      "sha256_cert_fingerprints": [
+        "C659B0464F3E86F193DB577E80E660D7D901EE81E4FDE4B096250BD96F095047"
+      ]
+    }
+  }
+]

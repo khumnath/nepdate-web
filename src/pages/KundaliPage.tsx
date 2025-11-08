@@ -89,9 +89,11 @@ const ModeSwitcher: React.FC<{ mode: AppMode; onModeChange: (mode: AppMode) => v
 
 type KundaliPageProps = {
   onBack: () => void;
+  setIsKundaliResultsVisible: (isVisible: boolean) => void;
+  setKundaliBackAction: (action: () => void) => void;
 };
 
-export const KundaliPage: React.FC<KundaliPageProps> = ({ onBack }) => {
+export const KundaliPage: React.FC<KundaliPageProps> = ({ onBack, setIsKundaliResultsVisible, setKundaliBackAction }) => { 
   const [mode, setMode] = useState<AppMode>('individual');
   const [kundaliData, setKundaliData] = useState<KundaliResponse | null>(null);
   const [comparisonData, setComparisonData] = useState<ComparisonResult | null>(null);
@@ -102,14 +104,13 @@ export const KundaliPage: React.FC<KundaliPageProps> = ({ onBack }) => {
   const [defaultFormData, setDefaultFormData] = useState<any>(null);
   const [formKey, setFormKey] = useState(Date.now());
 
+  // Sync KundaliPage's internal state with parent navigation hook
   useEffect(() => {
-    if (mode === 'saved') {
-      setShowSavedModal(true);
-    } else {
-      setShowSavedModal(false);
-    }
-  }, [mode]);
+    const areResultsOrSubViewVisible = kundaliData !== null || comparisonData !== null || error !== null || showSavedModal;
+    setIsKundaliResultsVisible(areResultsOrSubViewVisible);
+  }, [kundaliData, comparisonData, error, showSavedModal, setIsKundaliResultsVisible]);
 
+  // Callback to return to form, memoized
   const handleReturnToForm = useCallback(() => {
     setKundaliData(null);
     setComparisonData(null);
@@ -119,32 +120,23 @@ export const KundaliPage: React.FC<KundaliPageProps> = ({ onBack }) => {
   }, []);
 
   useEffect(() => {
-    const onPopState = () => {
-      if (showSavedModal) {
-          setShowSavedModal(false);
-          setMode('individual');
-      } else if (kundaliData || comparisonData || error) {
-          handleReturnToForm();
-      } else {
-          onBack();
-      }
-    };
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, [handleReturnToForm, onBack, kundaliData, comparisonData, error, showSavedModal]);
+    setKundaliBackAction(handleReturnToForm);
+    return () => setKundaliBackAction(() => {});
+  }, [setKundaliBackAction, handleReturnToForm]);
 
   useEffect(() => {
-    const hasSubPage = kundaliData || comparisonData || error || showSavedModal;
-    if (hasSubPage && window.history.state?.kundaliState !== 'subpage') {
-      window.history.pushState({ kundaliState: 'subpage' }, '');
+    if (mode === 'saved') {
+      setShowSavedModal(true);
+    } else {
+      setShowSavedModal(false);
     }
-  }, [kundaliData, comparisonData, error, showSavedModal]);
+  }, [mode]);
 
   const handleBackClick = () => {
-    if (!kundaliData && !comparisonData && !error && !showSavedModal) {
-      onBack();
+    if (kundaliData || comparisonData || error || showSavedModal) {
+      handleReturnToForm();
     } else {
-      window.history.back();
+      onBack();
     }
   };
 

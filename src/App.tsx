@@ -52,7 +52,10 @@ const App: React.FC = () => {
     isAboutOpen,
     setIsAboutOpen,
     handleDayClick,
-  } = useAppNavigation(isStandalone);
+    setIsKundaliResultsVisible,
+    setKundaliBackAction,
+    showExitToast,
+  } = useAppNavigation();
 
   const {
     activeSystem,
@@ -75,7 +78,7 @@ const App: React.FC = () => {
     todayDetails,
   } = useCalendarLogic();
 
-  const { isAndroidApp,showExitToast, handleTouchStart, handleTouchMove, handleTouchEnd } = usePlatform(
+  const { isAndroidApp, handleTouchStart, handleTouchMove, handleTouchEnd } = usePlatform(
     isMenuOpen,
     setIsMenuOpen
   );
@@ -86,34 +89,44 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-  if (showExitToast) {
-    toast.info(
-      activeSystem === 'bs'
-        ? 'बन्द गर्नको लागि फेरि थिच्नुहोस्'
-        : 'Press back again to exit',
-      2500
-    );
-  }
-}, [showExitToast, activeSystem]);
+    if (showExitToast) {
+      toast.info(
+        activeSystem === 'bs'
+          ? 'बन्द गर्नको लागि फेरि थिच्नुहोस्'
+          : 'Press back again to exit',
+        1300
+      );
+    }
+  }, [showExitToast, activeSystem]);
 
 
   return (
     <div
-      className={`min-h-screen flex flex-col bg-slate-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors relative ${
-        desktopLayoutStyle === 'sidebar' ? 'md:flex-row' : ''
-      }`}
+      className={`min-h-screen flex flex-col bg-slate-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors relative ${desktopLayoutStyle === 'sidebar' ? 'md:flex-row' : ''
+        } ${theme === 'dark' ? 'dark' : ''}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {desktopLayoutStyle === 'topbar' && (
-        <>
+        <div className="w-full flex items-center justify-between px-4 py-2 bg-slate-200 dark:bg-gray-800 border-b dark:border-gray-700 print:hidden z-30">
           <DesktopTopNav
             activeView={activeView}
-            onNavigate={(view) => setActiveView(view as 'calendar' | 'converter' | 'kundali' | 'settings')} 
+            onNavigate={(view) => setActiveView(view as 'calendar' | 'converter' | 'kundali' | 'settings')}
           />
-          
-        </>
+
+          {/* BUTTON FOR DESKTOP TOPBAR */}
+          {desktopLayoutStyle === 'topbar' && !isStandalone && canInstall && (
+            <button
+              onClick={handleInstallClick}
+              className="hidden md:flex ml-4 p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 items-center gap-2 text-sm"
+            >
+              <Download className="w-4 h-4" />
+              <span>{NEPALI_LABELS.installApp || 'Install App'}</span>
+            </button>
+          )}
+
+        </div>
       )}
 
       <header className="px-4 print:hidden py-2 border-b dark:border-gray-700 bg-slate-200 dark:bg-gray-800 z-30 md:hidden">
@@ -122,7 +135,7 @@ const App: React.FC = () => {
             {menuStyle === 'slide' && (
               <button
                 onClick={() => setIsMenuOpen(true)}
-                className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800"
+                className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" // Adjusted hover
                 aria-label="Open menu"
               >
                 <Menu className="w-5 h-5" />
@@ -132,6 +145,17 @@ const App: React.FC = () => {
               {NEPALI_LABELS.Nepdate_calendar}
             </h1>
           </div>
+
+          {/* BUTTON FOR MOBILE TAB MENU STYLE */}
+          {menuStyle === 'tabs' && !isStandalone && canInstall && (
+            <button
+              onClick={handleInstallClick}
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+              aria-label="Install app"
+            >
+              <Download className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
       </header>
@@ -145,7 +169,7 @@ const App: React.FC = () => {
         ${desktopLayoutStyle === 'sidebar' ? 'md:sticky md:h-screen md:translate-x-0 md:shadow-md' : 'md:hidden'}
         ${desktopLayoutStyle === 'sidebar' ? 'md:w-56' : 'w-64'}
         `}
-        inert-hidden={!isMenuOpen}
+        inert={!isMenuOpen}
       >
         <div className="flex flex-col h-full p-4">
           <div className="flex justify-between items-center mb-4">
@@ -155,7 +179,7 @@ const App: React.FC = () => {
             </h2>
             <button
               onClick={() => setIsMenuOpen(false)}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 md:hidden"
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 md:hidden" // Adjusted hover
               aria-label="Close menu"
             >
               <X className="w-5 h-5" />
@@ -168,7 +192,7 @@ const App: React.FC = () => {
                 setActiveView('calendar');
                 setIsMenuOpen(false);
               }}
-              className="px-3 py-2 text-left rounded hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center gap-2"
+              className="px-3 py-2 text-left rounded hover:bg-gray-300 dark:hover:bg-gray-700 flex items-center gap-2" // Adjusted hover
             >
               <Home className="w-4 h-4" /> {NEPALI_LABELS.home}
             </button>
@@ -177,7 +201,7 @@ const App: React.FC = () => {
                 setActiveView('converter');
                 setIsMenuOpen(false);
               }}
-              className="px-3 py-2 text-left rounded hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center gap-2"
+              className="px-3 py-2 text-left rounded hover:bg-gray-300 dark:hover:bg-gray-700 flex items-center gap-2" // Adjusted hover
             >
               <SwitchCamera className="w-4 h-4" /> {NEPALI_LABELS.converter}
             </button>
@@ -186,7 +210,7 @@ const App: React.FC = () => {
                 setActiveView('kundali');
                 setIsMenuOpen(false);
               }}
-              className="px-3 py-2 text-left rounded hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center gap-2"
+              className="px-3 py-2 text-left rounded hover:bg-gray-300 dark:hover:bg-gray-700 flex items-center gap-2" // Adjusted hover
             >
               <svg
                 className="w-4 h-4"
@@ -208,7 +232,7 @@ const App: React.FC = () => {
                 setActiveView('settings');
                 setIsMenuOpen(false);
               }}
-              className="px-3 py-2 text-left rounded hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center gap-2"
+              className="px-3 py-2 text-left rounded hover:bg-gray-300 dark:hover:bg-gray-700 flex items-center gap-2" // Adjusted hover
             >
               <Settings className="w-4 h-4" /> {NEPALI_LABELS.settings || 'Settings'}
             </button>
@@ -218,7 +242,7 @@ const App: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setIsMenuOpen(false)}
-              className="px-3 py-2 text-left rounded hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center gap-2"
+              className="px-3 py-2 text-left rounded hover:bg-gray-300 dark:hover:bg-gray-700 flex items-center gap-2" // Adjusted hover
             >
               <Menu className="w-4 h-4" /> {NEPALI_LABELS.sourceCode}
             </a>
@@ -227,7 +251,7 @@ const App: React.FC = () => {
                 setIsAboutOpen(true);
                 setIsMenuOpen(false);
               }}
-              className="px-3 py-2 text-left rounded hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center gap-2"
+              className="px-3 py-2 text-left rounded hover:bg-gray-300 dark:hover:bg-gray-700 flex items-center gap-2" // Adjusted hover
             >
               <Info className="w-4 h-4" /> {NEPALI_LABELS.about}
             </button>
@@ -259,7 +283,7 @@ const App: React.FC = () => {
                 toggleTheme();
                 setIsMenuOpen(false);
               }}
-              className="px-3 py-2 text-left rounded hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center gap-2"
+              className="px-3 py-2 text-left rounded hover:bg-gray-300 dark:hover:bg-gray-700 flex items-center gap-2" // Adjusted hover
             >
               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
               <span>{theme === 'light' ? NEPALI_LABELS.darkMode : NEPALI_LABELS.lightMode}</span>
@@ -301,7 +325,9 @@ const App: React.FC = () => {
                 </div>
               }
             >
-              <KundaliPage onBack={() => setActiveView('calendar')} />
+              <KundaliPage onBack={() => setActiveView('calendar')}
+              setIsKundaliResultsVisible={setIsKundaliResultsVisible}
+              setKundaliBackAction={setKundaliBackAction}  />
             </Suspense>
           ) : activeView === 'calendar' ? (
             <>
@@ -319,26 +345,9 @@ const App: React.FC = () => {
                   onThemeToggle={toggleTheme}
                 />
               </div>
-              
               <main className="min-h-[60vh] md:grid md:grid-cols-12 md:gap-x-6">
-                <div className="hidden md:block md:col-span-4"></div>
                 
-                {/* CALENDAR CONTROLS */}
-                <section className="md:col-span-8 py-2 sm:py-3">
-                  <CalendarControls
-                    activeSystem={activeSystem}
-                    currentYear={currentYear}
-                    currentMonth={currentMonth}
-                    onYearChange={(y) => (activeSystem === 'bs' ? setCurrentBsYear(y) : setCurrentAdYear(y))}
-                    onMonthChange={(m) => (activeSystem === 'bs' ? setCurrentBsMonth(m) : setCurrentAdMonth(m))}
-                    onPrevMonth={() => changeMonth('prev')}
-                    onNextMonth={() => changeMonth('next')}
-                    onPrevYear={() => changeYear('prev')}
-                    onNextYear={() => changeYear('next')}
-                  />
-                </section>
-
-                {/* TODAY WIDGET */}
+                {/* TODAY WIDGET (Sidebar) */}
                 <aside className="hidden md:block md:col-span-4">
                   <TodayWidget 
                     todayAd={initialToday} 
@@ -347,25 +356,44 @@ const App: React.FC = () => {
                   />
                 </aside>
 
-                {/* CALENDAR GRID & EVENTS */}
-                <section className="md:col-span-8 flex flex-col flex-1">
-                  <div className="p-2 sm:p-3 md:p-4">
-                    <CalendarGrid
+                {/* MAIN CONTENT (Controls + Grid) */}
+                <div className="md:col-span-8 flex flex-col">
+                  {/* CALENDAR CONTROLS */}
+                  <section className="py-2 sm:py-3">
+                    <CalendarControls
                       activeSystem={activeSystem}
                       currentYear={currentYear}
                       currentMonth={currentMonth}
-                      onDayClick={handleDayClick}
+                      onYearChange={(y) => (activeSystem === 'bs' ? setCurrentBsYear(y) : setCurrentAdYear(y))}
+                      onMonthChange={(m) => (activeSystem === 'bs' ? setCurrentBsMonth(m) : setCurrentAdMonth(m))}
+                      onPrevMonth={() => changeMonth('prev')}
+                      onNextMonth={() => changeMonth('next')}
+                      onPrevYear={() => changeYear('prev')}
+                      onNextYear={() => changeYear('next')}
                     />
+                  </section>
 
-                    <section className="events mt-3 sm:mt-4">
-                      <MonthlyEvents
+                  {/* CALENDAR GRID & EVENTS */}
+                  <section className="flex flex-col flex-1">
+                    <div className="p-2 sm:p-3 md:p-4">
+                      <CalendarGrid
                         activeSystem={activeSystem}
                         currentYear={currentYear}
                         currentMonth={currentMonth}
+                        onDayClick={handleDayClick}
                       />
-                    </section>
-                  </div>
-                </section>
+
+                      <section className="events mt-3 sm:mt-4">
+                        <MonthlyEvents
+                          activeSystem={activeSystem}
+                          currentYear={currentYear}
+                          currentMonth={currentMonth}
+                        />
+                      </section>
+                    </div>
+                  </section>
+                </div>
+
               </main>
             </>
           ) : activeView === 'converter' ? (

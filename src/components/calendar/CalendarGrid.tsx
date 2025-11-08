@@ -80,13 +80,13 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                         className="calendar-day relative group"
                         onClick={() => onDayClick(date)}
                     >
-                        <span className="main-number transform transition-transform duration-150 ease-out inline-block group-hover:scale-110" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+                        <span className="main-number text-gray-600 transform transition-transform duration-150 ease-out inline-block group-hover:scale-125" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
                             {toDevanagari(day)}
                         </span>
                         <span className="sub-number">
                             {date.getDate()}
                         </span>
-                        <span className="tithi-display text-gray-400" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+                        <span className="tithi-display" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
                             गणना त्रुटि
                         </span>
                     </div>
@@ -131,12 +131,12 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                         {date.getUTCDate()}
                     </span>
                     {isPurnima && (
-                        <svg className="icon absolute h-5 sm:w-4 sm:h-4 xs:w-2 xs:h-2" viewBox="0 0 24 24" fill="none">
+                        <svg className="icon absolute top-1 left-1 w-2 h-2 sm:w-4 sm:h-4 xs:w-2 xs:h-2" viewBox="0 0 24 24" fill="none">
                             <circle cx="12" cy="12" r="10" className="icon fill-yellow-400 dark:fill-yellow-300 stroke-yellow-600 dark:stroke-yellow-500" strokeWidth="1" />
                         </svg>
                     )}
                     {isAmavasya && (
-                        <svg className="icon absolute  h-5 sm:w-4 sm:h-4 xs:w-3 xs:h-3" viewBox="0 0 24 24" fill="none">
+                        <svg className="icon absolute top-1 left-1 w-2 h-2 sm:w-4 sm:h-4 xs:w-3 xs:h-3" viewBox="0 0 24 24" fill="none">
                             <circle cx="12" cy="12" r="10" className="icon fill-gray-800 dark:fill-gray-600 stroke-gray-900 dark:stroke-gray-500" strokeWidth="1" />
                         </svg>
                     )}
@@ -145,7 +145,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                         {panchanga.tithi}
                     </span>
                     {/* Handle possibly undefined events */}
-                    {panchanga.events && panchanga.events.length > 0 && <div className="event-dot" />}
+                    {panchanga.events && panchanga.events.length > 0 && <div className="absolute bottom-1 right-1 w-1.5 h-1.5 bg-green-500 rounded-full" />}
                 </div>
             );
         }

@@ -27,7 +27,7 @@ export const NEPALI_LABELS = {
   Software_name: "नेपडेट ज्योतिष",
   Software_version: `${__APP_VERSION__}`,
   subTitle: "वैदिक ज्योतिष सफ्टवेयर",
-  tithiWarning: "⚠️पञ्चाङ्ग सुर्योदय कालिन समयको देखाईएको छ। बिस्तृत रुपमा हेर्न कुण्डली हेर्नुहोस।",
+  tithiWarning: "⚠️पञ्चाङ्ग सुर्योदयकालीन समयको देखाईएको छ। बिस्तृत रुपमा हेर्न कुण्डली हेर्नुहोस।",
   tithiWarningEn: " ⚠️tithis are calculated at sunrise. If a tithi spans multiple days, it is always shown on the day it falls at sunrise.",
   birthDetails: "जन्म विवरण",
   astrologicalDetails: "ज्योतिषीय विवरण",

@@ -52,8 +52,8 @@ const adDisplay = adYear !== null
   const gregorianMobileLabel = activeSystem === 'bs' ? NEPALI_LABELS.ad : 'AD';
 
   return (
-    <header className="w-full bg-blue-600 dark:bg-gray-800 backdrop-blur-sm border-b border-blue-700 dark:border-gray-700 rounded-lg">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <header className="w-full bg-gradient-to-r from-blue-100 via-blue-300 to-blue-500 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 backdrop-blur-sm border-b border-blue-300 dark:border-gray-700 rounded-lg">
+  <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Left Controls */}
         <div className="flex items-center gap-3">
           <div className="flex bg-slate-200 dark:bg-gray-700 rounded-lg p-1">

@@ -16,7 +16,7 @@
 
 @layer base {
   body {
-    @apply bg-slate-200 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+    @apply bg-slate-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
     font-family: 'Noto Sans Devanagari', sans-serif;
   }
 }
@@ -276,7 +276,7 @@
 
   /* Tithi display */
   .tithi-display {
-    @apply text-[8px] text-blue-600 dark:text-stone-400 mt-auto text-left font-medium leading-tight;
+    @apply text-[9px] text-gray-600 dark:text-stone-400 mt-auto text-left font-medium leading-tight;
     display: flex;
     align-items: center;
     /* Vertically centers icon with text */
@@ -335,7 +335,7 @@
 
 
     .tithi-display {
-      font-size: 6px;
+      font-size: 8px;
     }
 
 
@@ -378,9 +378,6 @@
       font-size: 6px;
     }
 
-    .tithi-display {
-      font-size: 5px;
-    }
 
     .special.purnima,
     .special.amavasya {
