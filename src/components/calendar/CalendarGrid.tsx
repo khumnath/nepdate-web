@@ -142,11 +142,22 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                     )}
 
                     <span className={tithiClass} style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-                        {panchanga.tithi}
+                        {panchanga.tithi === "अमावस्या" ? "औंसी" : panchanga.tithi}
                     </span>
                     {/* Handle possibly undefined events */}
-                    {panchanga.events && panchanga.events.length > 0 && <div className="absolute bottom-1 right-1 w-1.5 h-1.5 bg-green-500 rounded-full" />}
-                </div>
+                    {panchanga.events && panchanga.events.length > 0 && (
+  <div
+    className="
+      event-dot absolute 
+      bottom-1 right-0.5 
+      w-1.5 h-1.5   /* smaller dot on mobile (~6px) */
+      md:w-2 md:h-2 /* normal size on md and above (~8px) */
+      bg-green-500 
+      rounded-full
+    "
+  />
+)}
+</div>
             );
         }
 

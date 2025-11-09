@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ActiveView } from '../types/types'; // Assuming this path is correct
+import { ActiveView } from '../types/types'; // Adjust path if needed
 
-// Extend the Window interface to include our injected Android object
-// and the global handleBackPress function for TypeScript
+// Extend the Window interface for TypeScript
 declare global {
   interface Window {
     Android?: {
@@ -20,50 +19,43 @@ export const useAppNavigation = () => {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isKundaliResultsVisible, setIsKundaliResultsVisible] = useState(false);
 
-  // Callback for KundaliPage to handle its internal back navigation
   const kundaliBackActionRef = useRef<(() => void) | null>(null);
 
-  // Keep track of the 'show exit toast' state for rendering
   const [showExitToast, setShowExitToast] = useState(false);
 
-  // Use refs for the actual back press logic to avoid stale closures
   const backPressedTimerRef = useRef<number | null>(null);
-  const backPressedCounterRef = useRef(0); // 0: no press, 1: pressed once, 2: pressed twice
+  const backPressedCounterRef = useRef(0);
 
   const [isAndroidWebView, setIsAndroidWebView] = useState(false);
 
+  // Detect Android WebView
   useEffect(() => {
     let intervalId: number | null = null;
     let attempts = 0;
-    const MAX_ATTEMPTS = 25; // Try for 25 * 200ms = 5 seconds
+    const MAX_ATTEMPTS = 25;
 
     const checkIfAndroidApp = () => {
       attempts++;
       if (typeof window.Android !== 'undefined' && typeof window.Android.isAndroidApp === 'function') {
         setIsAndroidWebView(true);
-        if (intervalId) clearInterval(intervalId); // Stop checking once found
-        // console.log("Detected Android WebView successfully!");
+        if (intervalId) clearInterval(intervalId);
       } else if (attempts >= MAX_ATTEMPTS) {
-        if (intervalId) clearInterval(intervalId); // Stop after max attempts
-        // console.warn("Could not detect Android WebView after multiple attempts.");
+        if (intervalId) clearInterval(intervalId);
       }
     };
 
-    // Check immediately
     checkIfAndroidApp();
 
-    // If not found immediately, start polling
-    if (!isAndroidWebView) { // Only start interval if not found immediately
-      intervalId = window.setInterval(checkIfAndroidApp, 200); // Check every 200ms
+    if (!isAndroidWebView) {
+      intervalId = window.setInterval(checkIfAndroidApp, 200);
     }
 
     return () => {
-      if (intervalId) clearInterval(intervalId); // Cleanup interval on unmount
+      if (intervalId) clearInterval(intervalId);
     };
   }, []);
 
-
-  // Backspace closes menu when open (existing logic)
+  // Backspace closes menu
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isMenuOpen) return;
@@ -80,8 +72,7 @@ export const useAppNavigation = () => {
     };
   }, [isMenuOpen]);
 
-  // This function encapsulates the PWA's internal navigation logic
-  // It returns true if an internal state was handled, false otherwise.
+  // Internal navigation logic
   const handleInternalBackNavigation = useCallback((): boolean => {
     if (isModalOpen) {
       setIsModalOpen(false);
@@ -96,17 +87,14 @@ export const useAppNavigation = () => {
       return true;
     }
     if (activeView === 'kundali') {
-      if (isKundaliResultsVisible) {
-        if (kundaliBackActionRef.current) {
-          kundaliBackActionRef.current(); // Tell KundaliPage to go back to its form
-          return true;
-        }
+      if (isKundaliResultsVisible && kundaliBackActionRef.current) {
+        kundaliBackActionRef.current();
+        return true;
       } else {
-        setActiveView('calendar'); // Go back to main app (calendar)
+        setActiveView('calendar');
         return true;
       }
     }
-
     if (activeView === 'converter' || activeView === 'settings') {
       setActiveView('calendar');
       return true;
@@ -114,39 +102,31 @@ export const useAppNavigation = () => {
     return false;
   }, [isModalOpen, isAboutOpen, isMenuOpen, activeView, isKundaliResultsVisible]);
 
-  // Back button and navigation handling (for both Android WebView and browser)
+  // Back press handling
   useEffect(() => {
-    // Helper to reset the back press state
     const resetBackPress = () => {
       backPressedCounterRef.current = 0;
-      setShowExitToast(false); // Hide the toast
+      setShowExitToast(false);
       if (backPressedTimerRef.current) {
         clearTimeout(backPressedTimerRef.current);
         backPressedTimerRef.current = null;
       }
     };
 
-    // Define the global handleBackPress function for Android WebView
+    // Android WebView handler
     window.handleBackPress = (): boolean => {
       const handledInternal = handleInternalBackNavigation();
       if (handledInternal) {
-        resetBackPress(); // Reset if internal navigation occurred
-        return true; // Tell Android that JS handled an internal navigation
+        resetBackPress();
+        return true;
       }
 
-      // No internal navigation handled, proceed with app exit logic
       backPressedCounterRef.current += 1;
-
       if (backPressedCounterRef.current === 1) {
-        // First back press: show toast, start timer
         setShowExitToast(true);
-        if (navigator.vibrate) {
-          navigator.vibrate(50);
-        }
-        if (backPressedTimerRef.current) clearTimeout(backPressedTimerRef.current); // Clear any old timer
-        backPressedTimerRef.current = window.setTimeout(() => {
-          resetBackPress();
-        }, 2000);
+        if (navigator.vibrate) navigator.vibrate(50);
+        if (backPressedTimerRef.current) clearTimeout(backPressedTimerRef.current);
+        backPressedTimerRef.current = window.setTimeout(() => resetBackPress(), 2000);
         return true;
       } else {
         resetBackPress();
@@ -154,50 +134,60 @@ export const useAppNavigation = () => {
       }
     };
 
-    const handlePopState = () => {
-      const handledInternal = handleInternalBackNavigation();
-      if (!handledInternal) {
+    // PWA back button handling
+    if (!isAndroidWebView) {
+      const pushDummyState = () => {
+        const url = new URL(window.location.href);
+        url.hash = `#${Date.now()}`;
+        window.history.pushState({ dummy: true }, '', url.toString());
+      };
+
+      pushDummyState();
+
+      const handlePopState = () => {
+        const handledInternal = handleInternalBackNavigation();
+
+        if (handledInternal) {
+          pushDummyState();
+          return;
+        }
+
         backPressedCounterRef.current += 1;
 
         if (backPressedCounterRef.current === 1) {
           setShowExitToast(true);
-          if (navigator.vibrate) {
-            navigator.vibrate(50);
-          }
+          if (navigator.vibrate) navigator.vibrate(50);
           if (backPressedTimerRef.current) clearTimeout(backPressedTimerRef.current);
-          backPressedTimerRef.current = window.setTimeout(() => {
-            resetBackPress();
-          }, 2000);
-          window.history.pushState(null, '', window.location.href);
+          backPressedTimerRef.current = window.setTimeout(() => resetBackPress(), 2000);
+          pushDummyState();
         } else {
           resetBackPress();
           window.history.go(-2);
         }
-      } else {
-        window.history.pushState(null, '', window.location.href);
-      }
-    };
+      };
 
-    if (!isAndroidWebView) {
-      window.history.pushState(null, '', window.location.href);
       window.addEventListener('popstate', handlePopState);
+
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+        resetBackPress();
+        window.handleBackPress = undefined;
+      };
     }
 
+    // Android WebView cleanup
     return () => {
-      if (!isAndroidWebView) {
-        window.removeEventListener('popstate', handlePopState);
-      }
-      resetBackPress();
-      window.handleBackPress = undefined;
+      if (isAndroidWebView) resetBackPress();
     };
   }, [isAndroidWebView, handleInternalBackNavigation]);
 
+  // Day click
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
     setIsModalOpen(true);
   };
 
-  // Setter for KundaliPage's back action, memoized
+  // Set Kundali back action
   const setKundaliBackAction = useCallback((action: () => void) => {
     kundaliBackActionRef.current = action;
   }, []);
@@ -220,4 +210,3 @@ export const useAppNavigation = () => {
     setKundaliBackAction,
   };
 };
-

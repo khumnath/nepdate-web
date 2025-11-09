@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sun, Moon } from 'lucide-react';
 import { toDevanagari } from '../../lib/utils/lib';
-import { NEPALI_LABELS, NEPALI_BS_MONTHS, GREGORIAN_MONTHS, GREGORIAN_MONTHS_SHORT, NEPALI_BS_MONTHSShort } from '../../constants/constants';
+import { NEPALI_LABELS, NEPALI_BS_MONTHS, GREGORIAN_MONTHS, GREGORIAN_MONTHS_SHORT } from '../../constants/constants';
 
 interface CalendarHeaderProps {
   activeSystem: 'bs' | 'ad';
@@ -31,7 +31,7 @@ const bsDisplay = bsYear !== null
   ? (
       <>
         <span className="max-[400px]:hidden">{toDevanagari(bsYear)} {NEPALI_BS_MONTHS[bsMonth]}</span>
-        <span className="hidden max-[400px]:inline">{toDevanagari(bsYear)} {NEPALI_BS_MONTHSShort[bsMonth]}</span>
+        <span className="hidden max-[400px]:inline">{toDevanagari(bsYear)} {NEPALI_BS_MONTHS[bsMonth]}</span> {/* display full month name */} 
       </>
     )
   : '—';
@@ -52,8 +52,9 @@ const adDisplay = adYear !== null
   const gregorianMobileLabel = activeSystem === 'bs' ? NEPALI_LABELS.ad : 'AD';
 
   return (
-    <header className="w-full bg-gradient-to-r from-blue-100 via-blue-300 to-blue-500 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 backdrop-blur-sm border-b border-blue-300 dark:border-gray-700 rounded-lg">
-  <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <header className="w-full bg-gradient-to-r from-[#0968e7] via-[#5068c8] to-[#0589c6] 
+  backdrop-blur-sm border-b border-[#a5b4fc] rounded-lg">
+ <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Left Controls */}
         <div className="flex items-center gap-3">
           <div className="flex bg-slate-200 dark:bg-gray-700 rounded-lg p-1">

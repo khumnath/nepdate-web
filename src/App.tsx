@@ -102,14 +102,14 @@ const App: React.FC = () => {
 
   return (
     <div
-      className={`min-h-screen flex flex-col bg-slate-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors relative ${desktopLayoutStyle === 'sidebar' ? 'md:flex-row' : ''
+      className={`min-h-screen flex flex-col bg-slate-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors relative ${desktopLayoutStyle === 'sidebar' ? 'md:flex-row' : ''
         } ${theme === 'dark' ? 'dark' : ''}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {desktopLayoutStyle === 'topbar' && (
-        <div className="w-full flex items-center justify-between px-4 py-2 bg-slate-200 dark:bg-gray-800 border-b dark:border-gray-700 print:hidden z-30">
+        <div className="w-full flex items-center justify-between px-4 py-2 bg-slate-200 dark:bg-gray-800 dark:border-gray-700 print:hidden z-30">
           <DesktopTopNav
             activeView={activeView}
             onNavigate={(view) => setActiveView(view as 'calendar' | 'converter' | 'kundali' | 'settings')}
@@ -129,7 +129,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <header className="px-4 print:hidden py-2 border-b dark:border-gray-700 bg-slate-200 dark:bg-gray-800 z-30 md:hidden">
+      <header className="px-4 print:hidden py-2 dark:border-gray-700 bg-slate-200 dark:bg-gray-800 z-30 md:hidden">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             {menuStyle === 'slide' && (

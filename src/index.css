@@ -247,7 +247,7 @@
 
   /* Today highlight */
   .calendar-day.today {
-    @apply ring-1 ring-blue-500 dark:ring-blue-400
+    @apply ring-[1.5px] ring-blue-600 dark:ring-blue-400;
   }
 
   /* Saturday styling */
@@ -295,10 +295,6 @@
     @apply text-purple-700 dark:text-purple-400;
   }
 
-  /* Event dot */
-  .event-dot {
-    @apply absolute bottom-1 right-1 w-2 h-2 bg-orange-500 dark:bg-blue-400 rounded-full;
-  }
 
   /* Weekday header */
   .weekday {
