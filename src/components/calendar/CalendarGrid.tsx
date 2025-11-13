@@ -1,5 +1,5 @@
 import React from 'react';
-import {NEPALI_WEEKDAYS_SHORT, GREGORIAN_WEEKDAYS_SHORT, NEPALI_LABELS} from '../../constants/constants'
+import { NEPALI_WEEKDAYS_SHORT, GREGORIAN_WEEKDAYS_SHORT, NEPALI_LABELS } from '../../constants/constants'
 import { fromBikramSambat, toBikramSambat, getBikramMonthInfo, toDevanagari, calculate } from '../../lib/utils/lib';
 
 interface CalendarGridProps {
@@ -11,25 +11,25 @@ interface CalendarGridProps {
 
 // Timezone Helper to get current date in Nepal
 function getNepalDate(): Date {
-  const utcNow = new Date();
+    const utcNow = new Date();
 
-  const nepalISOString = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Kathmandu',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  }).format(utcNow).replace(', ', 'T');
+    const nepalISOString = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kathmandu',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    }).format(utcNow).replace(', ', 'T');
 
-  // Treat Nepal-local time as local, not UTC
-  const [datePart, timePart] = nepalISOString.split('T');
-  const [year, month, day] = datePart.split('-').map(Number);
-  const [hour, minute, second] = timePart.split(':').map(Number);
+    // Treat Nepal-local time as local, not UTC
+    const [datePart, timePart] = nepalISOString.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hour, minute, second] = timePart.split(':').map(Number);
 
-  return new Date(year, month - 1, day, hour, minute, second);
+    return new Date(year, month - 1, day, hour, minute, second);
 }
 
 
@@ -43,6 +43,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
     const today = getNepalDate();
     const todayBs = toBikramSambat(today);
     const weekdays = activeSystem === 'bs' ? NEPALI_WEEKDAYS_SHORT : GREGORIAN_WEEKDAYS_SHORT;
+
     const renderBikramSambatCalendar = () => {
         if (currentYear === null) {
             return (
@@ -71,7 +72,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         for (let day = 1; day <= monthInfo.totalDays; day++) {
             const date = fromBikramSambat(currentYear, currentMonth, day);
             const panchanga = calculate(date);
-            
+
             if (!panchanga || panchanga.error) {
                 // Fallback if calculation fails
                 cells.push(
@@ -94,29 +95,27 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                 continue;
             }
 
-            // Determine if the current cell is 'today' using Nepal's date
+            // Get the sunrise Tithi (the first one in the array)
+            const tithi = panchanga.tithis?.[0];
+
             const isToday = currentYear === todayBs.year &&
-                            currentMonth === todayBs.monthIndex &&
-                            day === todayBs.day;
+                currentMonth === todayBs.monthIndex &&
+                day === todayBs.day;
 
             let classes = 'calendar-day';
-            if (date.getUTCDay() === 6) classes += ' saturday'; // Use UTC day for consistency
+            if (date.getUTCDay() === 6) classes += ' saturday';
             if (isToday) classes += ' today';
-
-            // Handle possibly undefined events
             const isHoliday = panchanga.events?.some(event => event.holiday) ?? false;
             if (isHoliday) classes += ' holiday';
-
             let tithiClass = 'tithi-display';
-
-            if (panchanga.tithi === "पूर्णिमा") {
+            if (tithi?.name === "पूर्णिमा") {
                 tithiClass += ' special purnima';
-            } else if (panchanga.tithi === "अमावस्या") {
+            } else if (tithi?.name === "अमावस्या") {
                 tithiClass += ' special amavasya';
             }
 
-            const isPurnima = panchanga.tithi === "पूर्णिमा";
-            const isAmavasya = panchanga.tithi === "अमावस्या";
+            const isPurnima = tithi?.name === "पूर्णिमा";
+            const isAmavasya = tithi?.name === "अमावस्या";
 
             cells.push(
                 <div
@@ -142,22 +141,22 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                     )}
 
                     <span className={tithiClass} style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-                        {panchanga.tithi === "अमावस्या" ? "औंसी" : panchanga.tithi}
+                        {tithi?.name === "अमावस्या" ? "औंसी" : tithi?.name}
                     </span>
-                    {/* Handle possibly undefined events */}
+
                     {panchanga.events && panchanga.events.length > 0 && (
-  <div
-    className="
-      event-dot absolute 
-      bottom-1 right-0.5 
-      w-1.5 h-1.5   /* smaller dot on mobile (~6px) */
-      md:w-2 md:h-2 /* normal size on md and above (~8px) */
-      bg-green-500 
-      rounded-full
-    "
-  />
-)}
-</div>
+                        <div
+                            className="
+                            event-dot absolute 
+                            bottom-1 right-0.5 
+                            w-1.5 h-1.5   /* smaller dot on mobile (~6px) */
+                            md:w-2 md:h-2 /* normal size on md and above (~8px) */
+                            bg-green-500 
+                            rounded-full
+                            "
+                        />
+                    )}
+                </div>
             );
         }
 
@@ -184,10 +183,9 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         // Days of the month
         for (let day = 1; day <= lastDay.getUTCDate(); day++) {
             const date = new Date(Date.UTC(currentYear, currentMonth, day));
-            
-            // Use the main calculate function for consistency
+
             const panchanga = calculate(date);
-            
+
             if (!panchanga || panchanga.error) {
                 // Fallback if calculation fails
                 cells.push(
@@ -210,29 +208,28 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                 continue;
             }
 
-            // Determine if the current cell is 'today' using Nepal's date
+            const tithi = panchanga.tithis?.[0];
+
             const isToday = currentYear === today.getUTCFullYear() &&
-                            currentMonth === today.getUTCMonth() &&
-                            day === today.getUTCDate();
+                currentMonth === today.getUTCMonth() &&
+                day === today.getUTCDate();
 
             let classes = 'calendar-day';
             if (date.getUTCDay() === 6) classes += ' saturday';
             if (isToday) classes += ' today';
 
-            // Handle possibly undefined events
             const isHoliday = panchanga.events?.some(event => event.holiday) ?? false;
             if (isHoliday) classes += ' holiday';
-
             let tithiClass = 'tithi-display';
 
-            if (panchanga.tithi === "पूर्णिमा") {
+            if (tithi?.name === "पूर्णिमा") {
                 tithiClass += ' special purnima';
-            } else if (panchanga.tithi === "अमावस्या") {
+            } else if (tithi?.name === "अमावस्या") {
                 tithiClass += ' special amavasya';
             }
 
-            const isPurnima = panchanga.tithi === "पूर्णिमा";
-            const isAmavasya = panchanga.tithi === "अमावस्या";
+            const isPurnima = tithi?.name === "पूर्णिमा";
+            const isAmavasya = tithi?.name === "अमावस्या";
 
             cells.push(
                 <div
@@ -243,7 +240,6 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                     <span className="main-number transform transition-transform duration-150 ease-out inline-block group-hover:scale-110">
                         {day}
                     </span>
-                    {/* Handle possibly undefined bsDay */}
                     <span className="sub-number" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
                         {toDevanagari(panchanga.bsDay?.toString() ?? day.toString())}
                     </span>
@@ -258,9 +254,9 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                         </svg>
                     )}
                     <span className={tithiClass} style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-                        {panchanga.tithi}
+                        {tithi?.name}
                     </span>
-                    {/* Handle possibly undefined events */}
+
                     {panchanga.events && panchanga.events.length > 0 && <div className="event-dot" />}
                 </div>
             );
@@ -285,26 +281,26 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                 ))}
             </div>
 
-           {/* Calendar Grid */}
-<div className="grid grid-cols-7 gap-1 calendar-grid">
-  {activeSystem === 'bs' ? renderBikramSambatCalendar() : renderGregorianCalendar()}
-</div>
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-1 calendar-grid">
+                {activeSystem === 'bs' ? renderBikramSambatCalendar() : renderGregorianCalendar()}
+            </div>
 
-<div className="flex-grow" />
+            <div className="flex-grow" />
 
-{activeSystem === 'bs' ? (
-  <div className="mt-2">
-    <span className="text-tithi-warning text-xs text-yellow-600 dark:text-yellow-700">
-      {NEPALI_LABELS.tithiWarning}
-    </span>
-  </div>
-) : (
-  <div className="mt-2">
-    <span className="text-tithi-warning sub-xs text-yellow-600 dark:text-yellow-600">
-     {NEPALI_LABELS.tithiWarningEn} </span>
-  </div>
-)}
-      </div>
+            {activeSystem === 'bs' ? (
+                <div className="mt-2">
+                    <span className="text-tithi-warning text-xs text-yellow-600 dark:text-yellow-700">
+                        {NEPALI_LABELS.tithiWarning}
+                    </span>
+                </div>
+            ) : (
+                <div className="mt-2">
+                    <span className="text-tithi-warning sub-xs text-yellow-600 dark:text-yellow-600">
+                        {NEPALI_LABELS.tithiWarningEn} </span>
+                </div>
+            )}
+        </div>
     );
 };
 

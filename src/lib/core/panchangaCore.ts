@@ -9,7 +9,6 @@ import {
     trueLongitudeSun,
     trueLongitudeMoon,
     getTithi,
-    zero360,
     calculateAdhikaMasa,
     KaliEpoch,
     toBikramSambat,
@@ -17,14 +16,29 @@ import {
     YOGA_NAMES,
     KARANA_NAMES,
     RASHI_NAMES,
-    resolveTithiName
+    resolveTithiName,
+    TITHI_NAMES,
+    YugaRotation,
+    PlanetApogee,
+    PlanetCircumm,
+    mandaEquation,
+    YugaCivilDays,
+    UJJAIN_LONGITUDE,
 } from '../utils/lib';
 
-// This function uses the purnimanta (full moon) system.
-export function getPanchangaBasics(date: Date, lon: number = 85.3240, tz: number = 5.75): { [key: string]: any } {
-    const jd = toJulianDay(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-    const ahar = jd - KaliEpoch + 0.25 + ((lon / 15 - tz) / 24);
 
+export function getAharFor(date: Date, lon: number, timeFraction: number): number {
+    const jd = toJulianDay(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+    const aharAtUjjainMidnight = jd - KaliEpoch;
+    const deshantara = (lon - UJJAIN_LONGITUDE) / 360.0;
+    // Ahar at Ujjain Midnight + local time fraction - longitude correction
+    const aharAtTime = aharAtUjjainMidnight + timeFraction - deshantara;
+
+    return aharAtTime;
+}
+
+
+export function getPanchangaDetailsAtAhar(ahar: number): { [key: string]: any } {
     const sunLong = trueLongitudeSun(ahar);
     const moonLong = trueLongitudeMoon(ahar);
     const tithiVal = getTithi(sunLong, moonLong);
@@ -43,6 +57,17 @@ export function getPanchangaBasics(date: Date, lon: number = 85.3240, tz: number
     const adhikaStatus = calculateAdhikaMasa(ahar);
     const isAdhika = adhikaStatus.startsWith("अधिक");
 
+    // Calculate Karana name at sunrise
+    const karanaIdxAtSunrise = Math.floor(tithiVal * 2) % 60;
+    let karanaName: string;
+    if (karanaIdxAtSunrise === 0) {
+        karanaName = KARANA_NAMES[0]; // Kimstughna
+    } else if (karanaIdxAtSunrise < 57) {
+        karanaName = KARANA_NAMES[(karanaIdxAtSunrise - 1) % 7 + 1]; // Chara
+    } else {
+        karanaName = KARANA_NAMES[karanaIdxAtSunrise - 57 + 8]; // Sthira
+    }
+
     return {
         ahar,
         sunLong,
@@ -53,7 +78,12 @@ export function getPanchangaBasics(date: Date, lon: number = 85.3240, tz: number
         adhikaStatus,
         paksha,
         tithiName,
-        tithiDay
+        tithiDay,
+        nakshatraName: NAKSHATRA_NAMES[Math.floor(moonLong / (360 / 27))],
+        yogaName: YOGA_NAMES[Math.floor((sunLong + moonLong) % 360 / (360 / 27))],
+        karanaName: karanaName,
+        sunRashi: RASHI_NAMES[Math.floor(sunLong / 30)],
+        moonRashi: RASHI_NAMES[Math.floor(moonLong / 30)],
     };
 }
 
@@ -70,6 +100,19 @@ export function getEventsForDate(
     const formattedGregorianDate = (gregorianMonth < 10 ? '0' : '') + gregorianMonth + '/' + (gregorianDay < 10 ? '0' : '') + gregorianDay;
     const formattedBikramRecurringDate = (bsMonthIndex + 1 < 10 ? '0' : '') + (bsMonthIndex + 1) + '/' + (bsDay < 10 ? '0' : '') + bsDay;
     const formattedBikramFixedDate = `${bsYear}/${formattedBikramRecurringDate}`;
+
+    const defaultLon = 85.3240;
+    const defaultLat = 27.7172;
+    const defaultTz = 5.75;
+
+    const sunEvents = getSunriseSunset(date, defaultLat, defaultLon, defaultTz);
+    if (sunEvents.sunrise === "N/A") {
+        return events;
+    }
+    const [hr, min, sec] = sunEvents.sunrise.split(':').map(Number);
+    const sunriseFraction = (hr * 3600 + min * 60 + sec) / 86400.0;
+    const sunriseAhar = getAharFor(date, defaultLon, sunriseFraction);
+    const lunarInfo = getPanchangaDetailsAtAhar(sunriseAhar);
 
     // Gregorian Events
     (EventsData.gregorianEvents as any[])?.forEach(event => {
@@ -96,7 +139,6 @@ export function getEventsForDate(
 
     // Lunar Events
     if (EventsData.lunarEvents) {
-        const lunarInfo = getPanchangaBasics(date);
         if (lunarInfo.isAdhika) {
             return events; // No lunar events in Adhika masa
         }
@@ -117,29 +159,200 @@ export function getEventsForDate(
     return events;
 }
 
-// Main calculate function
+
+export const absMeanLongitude = (ahar: number, rotation: number): number => {
+    return (rotation * ahar * 360 / YugaCivilDays);
+};
+
+export const absTrueLongitudeSun = (ahar: number): number => {
+    const meanLong = absMeanLongitude(ahar, YugaRotation.sun);
+    const manda = mandaEquation(meanLong, PlanetApogee.sun, PlanetCircumm.sun);
+    return meanLong - manda; // No zero360
+};
+
+export const absTrueLongitudeMoon = (ahar: number): number => {
+    const meanLong = absMeanLongitude(ahar, YugaRotation.moon);
+    const apogee = absMeanLongitude(ahar, YugaRotation.Candrocca) + 90;
+    const manda = mandaEquation(meanLong, apogee, PlanetCircumm.moon);
+    return meanLong - manda; // No zero360
+};
+
+export const absElongation = (ahar: number): number => {
+    return absTrueLongitudeMoon(ahar) - absTrueLongitudeSun(ahar);
+};
+
+
+export function findTransit(
+    searchStartAhar: number,
+    getValueFunc: (ah: number) => number,
+    targetValue: number,
+    maxDays: number = 2
+): number | null {
+
+    let low = searchStartAhar;
+    let high = searchStartAhar + maxDays;
+    let startVal = getValueFunc(low);
+    let endVal = getValueFunc(high);
+
+    if (startVal <= targetValue && targetValue <= endVal) {
+    }
+    else if (targetValue < startVal) {
+        low = searchStartAhar - maxDays;
+        high = searchStartAhar;
+        startVal = getValueFunc(low);
+        endVal = getValueFunc(high);
+
+        if (!(startVal <= targetValue && targetValue <= endVal)) {
+            return null;
+        }
+    } else {
+        return null;
+    }
+
+    // Bisection search
+    for (let i = 0; i < 20; i++) {
+        let mid = (low + high) / 2;
+        if (getValueFunc(mid) < targetValue) {
+            low = mid;
+        } else {
+            high = mid;
+        }
+    }
+    return high;
+}
+
+
+function findElementsForDay(
+    startAhar: number,
+    endAhar: number,
+    getValueFunc: (ah: number) => number,
+    divisor: number,
+    nameArray: string[],
+    getSpecialName?: (index: number) => string
+): Array<{ name: string, startTime: number | null, endTime: number | null }> {
+
+    const elements = [];
+
+    //  Find the element active *at* the start time (sunrise)
+    let valAtStart = getValueFunc(startAhar);
+    let currentIndex = Math.floor(valAtStart / divisor);
+    let targetStartValue = currentIndex * divisor;
+    let targetEndValue = (currentIndex + 1) * divisor;
+
+    // Find the start time of this first element (it was probably yesterday)
+    let startTimeAhar = findTransit(startAhar, getValueFunc, targetStartValue, 2);
+
+    // Find the end time
+    let endTimeAhar = findTransit(startTimeAhar ?? startAhar, getValueFunc, targetEndValue, 2);
+
+    let name: string;
+    if (getSpecialName) {
+        name = getSpecialName(currentIndex);
+    } else {
+        name = nameArray[currentIndex % nameArray.length];
+    }
+
+    elements.push({ name, startTime: startTimeAhar, endTime: endTimeAhar });
+
+    // Check if this element ends *before* our end boundary.
+    while (endTimeAhar && endTimeAhar < endAhar) {
+        let currentStartTimeAhar = endTimeAhar;
+        currentIndex++;
+        targetEndValue = (currentIndex + 1) * divisor;
+
+        // Find the end time of this *new* element
+        endTimeAhar = findTransit(currentStartTimeAhar, getValueFunc, targetEndValue, 2);
+
+        if (getSpecialName) {
+            name = getSpecialName(currentIndex);
+        } else {
+            name = nameArray[currentIndex % nameArray.length];
+        }
+
+        if (endTimeAhar && endTimeAhar > currentStartTimeAhar) {
+            elements.push({ name, startTime: currentStartTimeAhar, endTime: endTimeAhar });
+        } else {
+            if (elements.at(-1)?.name !== name) {
+                elements.push({ name, startTime: currentStartTimeAhar, endTime: endTimeAhar });
+            }
+            break;
+        }
+    }
+
+    return elements;
+}
+
+
+
+export function aharToDate(ahar: number, sunriseAhar: number, sunriseDate: Date): Date {
+    const dayFraction = ahar - sunriseAhar;
+    const timestamp = sunriseDate.getTime() + dayFraction * 24 * 60 * 60 * 1000;
+    return new Date(timestamp);
+}
+
+
+function getTzString(tz: number): string {
+    const sign = tz >= 0 ? '+' : '-';
+    const hours = String(Math.floor(Math.abs(tz))).padStart(2, '0');
+    const minutes = String(Math.abs(tz) * 60 % 60).padStart(2, '0');
+    return `${sign}${hours}:${minutes}`;
+}
+
+// MAIN CALCULATE FUNCTION
+
 export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
     const bsInfo = toBikramSambat(date);
     if (!bsInfo) {
         return { error: "Date out of range or invalid." };
     }
 
-    const lunarInfo = getPanchangaBasics(date, lon, tz);
+    const latitude = lat ?? 27.7172;
+    const longitude = lon ?? 85.3240;
+    const timezone = tz ?? 5.75;
 
-    const events = getEventsForDate(date, bsInfo.year, bsInfo.monthIndex, bsInfo.day);
-    const sunriseSunset = getSunriseSunset(date, lat, lon, tz);
-
-    const karanaIdx = Math.floor(2 * lunarInfo.tithiVal);
-    let karanaName;
-
-    if (karanaIdx === 0) {
-        karanaName = KARANA_NAMES[0]; // Kimstughna
-    } else if (karanaIdx < 57) {
-        karanaName = KARANA_NAMES[(karanaIdx - 1) % 7 + 1]; // Chara Karanas
-    } else {
-        karanaName = KARANA_NAMES[karanaIdx - 57 + 8]; // Sthira Karanas
+    const tzString = getTzString(timezone);
+    const todaySunriseSunset = getSunriseSunset(date, latitude, longitude, timezone);
+    if (!todaySunriseSunset || todaySunriseSunset.sunrise === "N/A") {
+        return { error: "Could not calculate sunrise/sunset. Location or date might be invalid." };
+    }
+    const localDateStr = new Date(date.getTime() + timezone * 60 * 60 * 1000).toISOString().split('T')[0];
+    const sunriseDate = new Date(`${localDateStr}T${todaySunriseSunset.sunrise}${tzString}`);
+    if (isNaN(sunriseDate.getTime())) {
+        return { error: "Failed to construct local sunrise time." };
     }
 
+    // Define Day Boundaries in Ahar
+    const [hr, min, sec] = todaySunriseSunset.sunrise.split(':').map(Number);
+    const sunriseFraction = (hr * 3600 + min * 60 + sec) / 86400.0; // Fraction of a 24-hour day
+
+    const sunriseAhar = getAharFor(date, longitude, sunriseFraction);
+    const tomorrowDate = new Date(date.getTime() + 86400000);
+    const midnightEndAhar = getAharFor(tomorrowDate, longitude, 0.0);
+
+    if (isNaN(sunriseAhar) || isNaN(midnightEndAhar)) {
+        return { error: "Failed to calculate ahar boundaries. Input date may be invalid." };
+    }
+
+    const lunarInfo = getPanchangaDetailsAtAhar(sunriseAhar);
+    const tithiElements = findElementsForDay(sunriseAhar, midnightEndAhar, absElongation, 12, TITHI_NAMES, (index) => {
+        const tithiNum = (index % 30) + 1;
+        const paksha = tithiNum <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
+        const tithiDay = tithiNum > 15 ? tithiNum - 15 : tithiNum;
+        return resolveTithiName(tithiDay, paksha);
+    });
+
+    const nakshatraElements = findElementsForDay(sunriseAhar, midnightEndAhar, absTrueLongitudeMoon, (360 / 27), NAKSHATRA_NAMES);
+
+    const yogaElements = findElementsForDay(sunriseAhar, midnightEndAhar, (ah) => absTrueLongitudeSun(ah) + absTrueLongitudeMoon(ah), (360 / 27), YOGA_NAMES);
+
+    const karanaElements = findElementsForDay(sunriseAhar, midnightEndAhar, absElongation, 6, KARANA_NAMES, (index) => {
+        const karanaIdx = index % 60;
+        if (karanaIdx === 0) return KARANA_NAMES[0];
+        if (karanaIdx < 57) return KARANA_NAMES[(karanaIdx - 1) % 7 + 1];
+        return KARANA_NAMES[karanaIdx - 57 + 8];
+    });
+
+    const events = getEventsForDate(date, bsInfo.year, bsInfo.monthIndex, bsInfo.day);
 
     const lunarMonthDisplayName = lunarInfo.isAdhika
         ? "अधिक " + lunarInfo.lunarMonthName
@@ -150,6 +363,8 @@ export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
     };
     const gregorianDateFormatted = date.toLocaleDateString('en-US', gregorianOptions);
 
+    const formatTime = (aharVal: number | null) => aharVal ? aharToDate(aharVal, sunriseAhar, sunriseDate).toISOString() : null;
+
     return {
         gregorianDate: gregorianDateFormatted,
         bikramSambat: `${toDevanagari(bsInfo.year)} ${bsInfo.monthName} ${toDevanagari(bsInfo.day)}`,
@@ -157,20 +372,45 @@ export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
         bsMonthIndex: bsInfo.monthIndex,
         bsDay: bsInfo.day,
         weekday: weekdays[date.getUTCDay()],
-        sunrise: sunriseSunset.sunrise,
-        sunset: sunriseSunset.sunset,
-        tithi: lunarInfo.tithiName,
-        tithiDay: lunarInfo.tithiDay,
-        paksha: lunarInfo.paksha,
+        sunrise: todaySunriseSunset.sunriseFormatted,
+        sunset: todaySunriseSunset.sunsetFormatted,
         lunarMonth: lunarMonthDisplayName,
-        nakshatra: NAKSHATRA_NAMES[Math.floor(lunarInfo.moonLong / (360 / 27))],
-        yoga: YOGA_NAMES[Math.floor(zero360(lunarInfo.sunLong + lunarInfo.moonLong) / (360 / 27))],
-        karana: karanaName,
-        sunRashi: RASHI_NAMES[Math.floor(lunarInfo.sunLong / 30)],
-        moonRashi: RASHI_NAMES[Math.floor(lunarInfo.moonLong / 30)],
-        events,
+        paksha: lunarInfo.paksha,
+        sunRashi: lunarInfo.sunRashi,
+        moonRashi: lunarInfo.moonRashi,
+        adhikaMasa: lunarInfo.adhikaStatus,
         isComputed: bsInfo.isComputed || false,
-        adhikaMasa: lunarInfo.adhikaStatus
+        // Sunrise-specific elements
+        tithi: lunarInfo.tithiName,
+        nakshatra: lunarInfo.nakshatraName,
+        yoga: lunarInfo.yogaName,
+        karana: lunarInfo.karanaName,
+
+        // Multi-value array properties (for the whole day)
+        tithis: tithiElements.map(t => ({
+            name: t.name,
+            startTime: formatTime(t.startTime),
+            endTime: formatTime(t.endTime)
+        })),
+
+        nakshatras: nakshatraElements.map(n => ({
+            name: n.name,
+            startTime: formatTime(n.startTime),
+            endTime: formatTime(n.endTime)
+        })),
+
+        yogas: yogaElements.map(y => ({
+            name: y.name,
+            startTime: formatTime(y.startTime),
+            endTime: formatTime(y.endTime)
+        })),
+
+        karanas: karanaElements.map(k => ({
+            name: k.name,
+            startTime: formatTime(k.startTime),
+            endTime: formatTime(k.endTime)
+        })),
+
+        events,
     };
 }
-

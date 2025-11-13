@@ -99,6 +99,10 @@ const App: React.FC = () => {
     }
   }, [showExitToast, activeSystem]);
 
+  const handleShowDetailsClick = () => {
+    handleDayClick(initialToday);
+  };
+
 
   return (
     <div
@@ -314,9 +318,8 @@ const App: React.FC = () => {
 
       <div className="flex-1 overflow-hidden">
         <div
-          className={`h-full overflow-auto px-4 md:px-6 max-w-7xl xl:max-w-6xl mx-auto w-full ${
-            menuStyle === 'tabs' ? 'pb-24 md:pb-6' : 'pb-20 md:pb-6'
-          }`}
+          className={`h-full overflow-auto px-4 md:px-6 max-w-7xl xl:max-w-6xl mx-auto w-full ${menuStyle === 'tabs' ? 'pb-24 md:pb-6' : 'pb-20 md:pb-6'
+            }`}
         >
           {activeView === 'kundali' ? (
             <Suspense
@@ -327,8 +330,8 @@ const App: React.FC = () => {
               }
             >
               <KundaliPage onBack={() => setActiveView('calendar')}
-              setIsKundaliResultsVisible={setIsKundaliResultsVisible}
-              setKundaliBackAction={setKundaliBackAction}  />
+                setIsKundaliResultsVisible={setIsKundaliResultsVisible}
+                setKundaliBackAction={setKundaliBackAction} />
             </Suspense>
           ) : activeView === 'calendar' ? (
             <>
@@ -347,13 +350,14 @@ const App: React.FC = () => {
                 />
               </div>
               <main className="min-h-[60vh] md:grid md:grid-cols-12 md:gap-x-6">
-                
+
                 {/* TODAY WIDGET (Sidebar) */}
-                <aside className="hidden md:block md:col-span-4 mt-24">
-                  <TodayWidget 
-                    todayAd={initialToday} 
+                <aside className="hidden md:block md:col-span-4">
+                  <TodayWidget
+                    todayAd={initialToday}
                     todayBs={initialTodayBs}
                     todayDetails={todayDetails}
+                    onShowDetailsClick={handleShowDetailsClick}
                   />
                 </aside>
 
@@ -457,7 +461,7 @@ const App: React.FC = () => {
 
       <ToastContainer />
     </div>
-    
+
   );
 };
 

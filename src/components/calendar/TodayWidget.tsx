@@ -6,7 +6,7 @@ import {
   weekdays,
   calculate,
 } from '../../lib/utils/lib';
-import { Sunrise, Sunset } from 'lucide-react';
+import { Sunrise, Sunset, ArrowRight } from 'lucide-react';
 
 type BikramSambatDate = ReturnType<typeof toBikramSambat>;
 type CalculateResult = ReturnType<typeof calculate>;
@@ -17,6 +17,7 @@ interface TodayWidgetProps {
   todayAd: Date;
   todayBs: BikramSambatDate;
   todayDetails: TodayDetails | null;
+  onShowDetailsClick: () => void;
 }
 
 const PanchangaRow: React.FC<{ label: string; value: string }> = ({
@@ -34,9 +35,8 @@ const PanchangaRow: React.FC<{ label: string; value: string }> = ({
 const EventRow: React.FC<{ event: CalendarEvent }> = ({ event }) => (
   <li className="flex items-start text-sm py-1.5">
     <span
-      className={`w-2 h-2 rounded-full mr-2.5 mt-1.5 flex-shrink-0 ${
-        event.holiday ? 'bg-red-500' : 'bg-blue-500'
-      }`}
+      className={`w-2 h-2 rounded-full mr-2.5 mt-1.5 flex-shrink-0 ${event.holiday ? 'bg-red-500' : 'bg-blue-500'
+        }`}
     ></span>
     <span className="text-gray-800 dark:text-gray-200">{event.name}</span>
   </li>
@@ -46,6 +46,7 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
   todayAd,
   todayBs,
   todayDetails,
+  onShowDetailsClick,
 }) => {
   const adDay = todayAd.getDate();
   const adWeekday = GREGORIAN_WEEKDAYS[todayAd.getDay()];
@@ -53,12 +54,12 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
   const adYear = todayAd.getFullYear();
 
   const bsWeekday = weekdays[todayAd.getDay()];
-  const bsDayNep = toDevanagari(todayBs.day); 
+  const bsDayNep = toDevanagari(todayBs.day);
   const bsYearNep = toDevanagari(todayBs.year);
-  const tithi = todayDetails?.tithi;
-  const nakshatra = todayDetails?.nakshatra;
-  const yoga = todayDetails?.yoga;
-  const karana = todayDetails?.karana;
+  const tithi = todayDetails?.tithis?.[0];
+  const nakshatra = todayDetails?.nakshatras?.[0];
+  const yoga = todayDetails?.yogas?.[0];
+  const karana = todayDetails?.karanas?.[0];
   const sunrise = todayDetails?.sunrise;
   const sunset = todayDetails?.sunset;
   const todayEvents = todayDetails?.events;
@@ -96,10 +97,10 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
             पञ्चाङ्ग (सुर्योदयकालीन)
           </h4>
           <ul className="divide-y divide-gray-200 dark:divide-gray-600">
-            {tithi && <PanchangaRow label="तिथि" value={tithi} />}
-            {nakshatra && <PanchangaRow label="नक्षत्र" value={nakshatra} />}
-            {yoga && <PanchangaRow label="योग" value={yoga} />}
-            {karana && <PanchangaRow label="करण" value={karana} />}
+            {tithi && <PanchangaRow label="तिथि" value={tithi.name} />}
+            {nakshatra && <PanchangaRow label="नक्षत्र" value={nakshatra.name} />}
+            {yoga && <PanchangaRow label="योग" value={yoga.name} />}
+            {karana && <PanchangaRow label="करण" value={karana.name} />}
           </ul>
           <div className="flex justify-between text-sm mt-3 gap-3">
             <div className="flex items-center text-gray-600 dark:text-gray-300">
@@ -127,6 +128,16 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
           </ul>
         </>
       )}
+
+      <hr className="my-4 border-gray-200 dark:border-gray-600" />
+      <button
+        onClick={onShowDetailsClick}
+        className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+      >
+        अन्य विवरण हेर्नुहोस्
+        <ArrowRight size={18} />
+      </button>
+
     </div>
   );
 };

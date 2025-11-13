@@ -254,8 +254,8 @@ export const NAKSHATRA_SYLLABLES: { name: string, syllables: [string, string, st
   { name: 'पुष्य', syllables: ['हु', 'हे', 'हो', 'डा'] },
   { name: 'अश्लेषा', syllables: ['डि', 'डु', 'डे', 'डो'] },
   { name: 'मघा', syllables: ['मा', 'मि', 'मु', 'मे'] },
-  { name: 'पूर्व फाल्गुनी', syllables: ['मो', 'टा', 'टि', 'टु'] },
-  { name: 'उत्तर फाल्गुनी', syllables: ['टे', 'टो', 'पा', 'पि'] },
+  { name: 'पूर्वफाल्गुनी', syllables: ['मो', 'टा', 'टि', 'टु'] },
+  { name: 'उत्तरफाल्गुनी', syllables: ['टे', 'टो', 'पा', 'पि'] },
   { name: 'हस्त', syllables: ['पु', 'ष', 'ण', 'ठ'] },
   { name: 'चित्रा', syllables: ['पे', 'पो', 'रा', 'रि'] },
   { name: 'स्वाती', syllables: ['रु', 'रे', 'रो', 'ता'] },
@@ -268,8 +268,8 @@ export const NAKSHATRA_SYLLABLES: { name: string, syllables: [string, string, st
   { name: 'श्रवण', syllables: ['खि', 'खु', 'खे', 'खो'] },
   { name: 'धनिष्ठा', syllables: ['गा', 'गि', 'गु', 'गे'] },
   { name: 'शतभिषा', syllables: ['गो', 'सा', 'सि', 'सु'] },
-  { name: 'पूर्व भाद्रपद', syllables: ['से', 'सो', 'दा', 'दि'] },
-  { name: 'उत्तर भाद्रपद', syllables: ['दु', 'थ', 'झ', 'ञ'] },
+  { name: 'पूर्वभाद्रपद', syllables: ['से', 'सो', 'दा', 'दि'] },
+  { name: 'उत्तरभाद्रपद', syllables: ['दु', 'थ', 'झ', 'ञ'] },
   { name: 'रेवती', syllables: ['दे', 'दो', 'चा', 'चि'] },
 ];
 
@@ -359,120 +359,120 @@ export const NEPALI_KARANA: string[] = [
 export const BACKEND_NAME = "Nepdate-AstroCalc";
 
 export const VARNA_MAP: Record<number, string> = {
-    1: 'Kshatriya', 4: 'Brahmin', 7: 'Shudra', 10: 'Vaishya',
-    2: 'Vaishya', 5: 'Kshatriya', 8: 'Brahmin', 11: 'Shudra',
-    3: 'Shudra', 6: 'Vaishya', 9: 'Kshatriya', 12: 'Brahmin'
+  1: 'Kshatriya', 4: 'Brahmin', 7: 'Shudra', 10: 'Vaishya',
+  2: 'Vaishya', 5: 'Kshatriya', 8: 'Brahmin', 11: 'Shudra',
+  3: 'Shudra', 6: 'Vaishya', 9: 'Kshatriya', 12: 'Brahmin'
 };
 export const NEPALI_VARNA: Record<string, string> = {
-    'Brahmin': 'ब्राह्मण',
-    'Kshatriya': 'क्षत्रिय',
-    'Vaishya': 'वैश्य',
-    'Shudra': 'शूद्र'
+  'Brahmin': 'ब्राह्मण',
+  'Kshatriya': 'क्षत्रिय',
+  'Vaishya': 'वैश्य',
+  'Shudra': 'शूद्र'
 };
 
 export const VASYA_MAP: Record<number, string> = {
-    1: 'Chatushpada', 2: 'Chatushpada', 3: 'Dwipada', 4: 'Jalachara', 5: 'Vanachara',
-    6: 'Dwipada', 7: 'Dwipada', 8: 'Keeta', 9: 'Dwipada', // Sagittarius is mixed, often considered Dwipada
-    10: 'Chatushpada', 11: 'Dwipada', 12: 'Jalachara'
+  1: 'Chatushpada', 2: 'Chatushpada', 3: 'Dwipada', 4: 'Jalachara', 5: 'Vanachara',
+  6: 'Dwipada', 7: 'Dwipada', 8: 'Keeta', 9: 'Dwipada', // Sagittarius is mixed, often considered Dwipada
+  10: 'Chatushpada', 11: 'Dwipada', 12: 'Jalachara'
 };
 
 export const NEPALI_VASYA: Record<string, string> = {
-    'Chatushpada': 'चतुष्पाद',
-    'Dwipada': 'द्विपद',
-    'Jalachara': 'जलचर',
-    'Vanachara': 'वनचर',
-    'Keeta': 'कीट'
+  'Chatushpada': 'चतुष्पाद',
+  'Dwipada': 'द्विपद',
+  'Jalachara': 'जलचर',
+  'Vanachara': 'वनचर',
+  'Keeta': 'कीट'
 };
 
 // Yoni mapping based on Nakshatra index (0-26)
 export const YONI_MAP: Record<number, string> = {
-    0: 'Ashwa', 1: 'Gaja', 2: 'Mesha', 3: 'Sarpa', 4: 'Sarpa', 5: 'Shwana',
-    6: 'Marjara', 7: 'Mesha', 8: 'Marjara', 9: 'Mushaka', 10: 'Mushaka', 11: 'Gau',
-    12: 'Mahisha', 13: 'Vyaghra', 14: 'Mahisha', 15: 'Vyaghra', 16: 'Mriga', 17: 'Mriga',
-    18: 'Shwana', 19: 'Vanara', 20: 'Nakula', 21: 'Vanara', 22: 'Simha', 23: 'Ashwa',
-    24: 'Simha', 25: 'Gau', 26: 'Gaja'
+  0: 'Ashwa', 1: 'Gaja', 2: 'Mesha', 3: 'Sarpa', 4: 'Sarpa', 5: 'Shwana',
+  6: 'Marjara', 7: 'Mesha', 8: 'Marjara', 9: 'Mushaka', 10: 'Mushaka', 11: 'Gau',
+  12: 'Mahisha', 13: 'Vyaghra', 14: 'Mahisha', 15: 'Vyaghra', 16: 'Mriga', 17: 'Mriga',
+  18: 'Shwana', 19: 'Vanara', 20: 'Nakula', 21: 'Vanara', 22: 'Simha', 23: 'Ashwa',
+  24: 'Simha', 25: 'Gau', 26: 'Gaja'
 };
 export const NEPALI_YONI: Record<string, string> = {
-    'Ashwa': 'अश्व', 'Gaja': 'गज', 'Mesha': 'मेष', 'Sarpa': 'सर्प', 'Shwana': 'श्वान',
-    'Marjara': 'मार्जार', 'Mushaka': 'मूषक', 'Gau': 'गौ', 'Mahisha': 'महिष', 'Vyaghra': 'व्याघ्र',
-    'Mriga': 'मृग', 'Vanara': 'वानर', 'Nakula': 'नकुल', 'Simha': 'सिंह'
+  'Ashwa': 'अश्व', 'Gaja': 'गज', 'Mesha': 'मेष', 'Sarpa': 'सर्प', 'Shwana': 'श्वान',
+  'Marjara': 'मार्जार', 'Mushaka': 'मूषक', 'Gau': 'गौ', 'Mahisha': 'महिष', 'Vyaghra': 'व्याघ्र',
+  'Mriga': 'मृग', 'Vanara': 'वानर', 'Nakula': 'नकुल', 'Simha': 'सिंह'
 };
 
 // Gana mapping based on Nakshatra index (0-26)
 export const GANA_MAP: Record<number, string> = {
-    0: 'Deva', 1: 'Manushya', 2: 'Rakshasa', 3: 'Manushya', 4: 'Deva', 5: 'Manushya',
-    6: 'Deva', 7: 'Deva', 8: 'Rakshasa', 9: 'Rakshasa', 10: 'Manushya', 11: 'Manushya',
-    12: 'Deva', 13: 'Rakshasa', 14: 'Deva', 15: 'Rakshasa', 16: 'Deva', 17: 'Rakshasa',
-    18: 'Rakshasa', 19: 'Manushya', 20: 'Manushya', 21: 'Deva', 22: 'Rakshasa', 23: 'Rakshasa',
-    24: 'Manushya', 25: 'Manushya', 26: 'Deva'
+  0: 'Deva', 1: 'Manushya', 2: 'Rakshasa', 3: 'Manushya', 4: 'Deva', 5: 'Manushya',
+  6: 'Deva', 7: 'Deva', 8: 'Rakshasa', 9: 'Rakshasa', 10: 'Manushya', 11: 'Manushya',
+  12: 'Deva', 13: 'Rakshasa', 14: 'Deva', 15: 'Rakshasa', 16: 'Deva', 17: 'Rakshasa',
+  18: 'Rakshasa', 19: 'Manushya', 20: 'Manushya', 21: 'Deva', 22: 'Rakshasa', 23: 'Rakshasa',
+  24: 'Manushya', 25: 'Manushya', 26: 'Deva'
 };
 export const NEPALI_GANA: Record<string, string> = {
-    'Deva': 'देव',
-    'Manushya': 'मनुष्य',
-    'Rakshasa': 'राक्षस'
+  'Deva': 'देव',
+  'Manushya': 'मनुष्य',
+  'Rakshasa': 'राक्षस'
 };
 
 // Nadi mapping based on Nakshatra index (0-26)
 export const NADI_MAP: Record<number, string> = {
-    0: 'Adi', 1: 'Madhya', 2: 'Antya', 3: 'Antya', 4: 'Madhya', 5: 'Adi',
-    6: 'Adi', 7: 'Madhya', 8: 'Antya', 9: 'Antya', 10: 'Madhya', 11: 'Adi',
-    12: 'Adi', 13: 'Madhya', 14: 'Antya', 15: 'Antya', 16: 'Madhya', 17: 'Adi',
-    18: 'Adi', 19: 'Madhya', 20: 'Antya', 21: 'Antya', 22: 'Madhya', 23: 'Adi',
-    24: 'Adi', 25: 'Madhya', 26: 'Antya'
+  0: 'Adi', 1: 'Madhya', 2: 'Antya', 3: 'Antya', 4: 'Madhya', 5: 'Adi',
+  6: 'Adi', 7: 'Madhya', 8: 'Antya', 9: 'Antya', 10: 'Madhya', 11: 'Adi',
+  12: 'Adi', 13: 'Madhya', 14: 'Antya', 15: 'Antya', 16: 'Madhya', 17: 'Adi',
+  18: 'Adi', 19: 'Madhya', 20: 'Antya', 21: 'Antya', 22: 'Madhya', 23: 'Adi',
+  24: 'Adi', 25: 'Madhya', 26: 'Antya'
 };
 export const NEPALI_NADI: Record<string, string> = {
-    'Adi': 'आद्य',
-    'Madhya': 'मध्य',
-    'Antya': 'अन्त्य'
+  'Adi': 'आद्य',
+  'Madhya': 'मध्य',
+  'Antya': 'अन्त्य'
 };
 
 // Tatva (Element) mapping based on Rashi number (1-12)
 export const TATVA_MAP: Record<number, string> = {
-    1: 'Agni', 2: 'Prithvi', 3: 'Vayu', 4: 'Jal',
-    5: 'Agni', 6: 'Prithvi', 7: 'Vayu', 8: 'Jal',
-    9: 'Agni', 10: 'Prithvi', 11: 'Vayu', 12: 'Jal'
+  1: 'Agni', 2: 'Prithvi', 3: 'Vayu', 4: 'Jal',
+  5: 'Agni', 6: 'Prithvi', 7: 'Vayu', 8: 'Jal',
+  9: 'Agni', 10: 'Prithvi', 11: 'Vayu', 12: 'Jal'
 };
 
 export const NEPALI_TATVA: Record<string, string> = {
-    'Agni': 'अग्नि',
-    'Prithvi': 'पृथ्वी',
-    'Vayu': 'वायु',
-    'Jal': 'जल'
+  'Agni': 'अग्नि',
+  'Prithvi': 'पृथ्वी',
+  'Vayu': 'वायु',
+  'Jal': 'जल'
 };
 
 // Paya (Foot) Nepali Names
 export const NEPALI_PAYA: Record<string, string> = {
-    'Suvarna': 'सुवर्ण (सुन)',
-    'Rajat': 'रजत (चाँदी)',
-    'Tamra': 'ताम्र (तामा)',
-    'Loha': 'लौह (फलाम)'
+  'Suvarna': 'सुवर्ण (सुन)',
+  'Rajat': 'रजत (चाँदी)',
+  'Tamra': 'ताम्र (तामा)',
+  'Loha': 'लौह (फलाम)'
 };
 
 // Fix: Add GRAHA_MAITRI constant
 export const GRAHA_MAITRI: Record<string, Record<string, 'Friend' | 'Neutral' | 'Enemy'>> = {
-    SUN:     { SUN: 'Friend', MOON: 'Friend', MARS: 'Friend', MERCURY: 'Neutral', JUPITER: 'Friend', VENUS: 'Enemy', SATURN: 'Enemy' },
-    MOON:    { SUN: 'Friend', MOON: 'Friend', MARS: 'Neutral', MERCURY: 'Friend', JUPITER: 'Neutral', VENUS: 'Neutral', SATURN: 'Neutral' },
-    MARS:    { SUN: 'Friend', MOON: 'Friend', MARS: 'Friend', MERCURY: 'Enemy', JUPITER: 'Friend', VENUS: 'Neutral', SATURN: 'Neutral' },
-    MERCURY: { SUN: 'Friend', MOON: 'Enemy', MARS: 'Neutral', MERCURY: 'Friend', JUPITER: 'Neutral', VENUS: 'Friend', SATURN: 'Friend' },
-    JUPITER: { SUN: 'Friend', MOON: 'Friend', MARS: 'Friend', MERCURY: 'Neutral', JUPITER: 'Friend', VENUS: 'Enemy', SATURN: 'Neutral' },
-    VENUS:   { SUN: 'Neutral', MOON: 'Enemy', MARS: 'Neutral', MERCURY: 'Friend', JUPITER: 'Neutral', VENUS: 'Friend', SATURN: 'Friend' },
-    SATURN:  { SUN: 'Enemy', MOON: 'Enemy', MARS: 'Enemy', MERCURY: 'Friend', JUPITER: 'Neutral', VENUS: 'Friend', SATURN: 'Friend' }
+  SUN: { SUN: 'Friend', MOON: 'Friend', MARS: 'Friend', MERCURY: 'Neutral', JUPITER: 'Friend', VENUS: 'Enemy', SATURN: 'Enemy' },
+  MOON: { SUN: 'Friend', MOON: 'Friend', MARS: 'Neutral', MERCURY: 'Friend', JUPITER: 'Neutral', VENUS: 'Neutral', SATURN: 'Neutral' },
+  MARS: { SUN: 'Friend', MOON: 'Friend', MARS: 'Friend', MERCURY: 'Enemy', JUPITER: 'Friend', VENUS: 'Neutral', SATURN: 'Neutral' },
+  MERCURY: { SUN: 'Friend', MOON: 'Enemy', MARS: 'Neutral', MERCURY: 'Friend', JUPITER: 'Neutral', VENUS: 'Friend', SATURN: 'Friend' },
+  JUPITER: { SUN: 'Friend', MOON: 'Friend', MARS: 'Friend', MERCURY: 'Neutral', JUPITER: 'Friend', VENUS: 'Enemy', SATURN: 'Neutral' },
+  VENUS: { SUN: 'Neutral', MOON: 'Enemy', MARS: 'Neutral', MERCURY: 'Friend', JUPITER: 'Neutral', VENUS: 'Friend', SATURN: 'Friend' },
+  SATURN: { SUN: 'Enemy', MOON: 'Enemy', MARS: 'Enemy', MERCURY: 'Friend', JUPITER: 'Neutral', VENUS: 'Friend', SATURN: 'Friend' }
 };
 
 // Fix: Add YONI_COMPATIBILITY constant
 export const YONI_COMPATIBILITY: Record<string, Record<string, number>> = {
-    'Ashwa':   {'Ashwa': 4, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 1, 'Mahisha': 0, 'Vyaghra': 1, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 1},
-    'Gaja':    {'Ashwa': 2, 'Gaja': 4, 'Mesha': 3, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 1, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 0, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 1},
-    'Mesha':   {'Ashwa': 2, 'Gaja': 3, 'Mesha': 4, 'Sarpa': 3, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 0, 'Nakula': 2, 'Simha': 2},
-    'Sarpa':   {'Ashwa': 2, 'Gaja': 2, 'Mesha': 3, 'Sarpa': 4, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 1, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 2, 'Nakula': 0, 'Simha': 2},
-    'Shwana':  {'Ashwa': 2, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 4, 'Marjara': 1, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 0, 'Vanara': 2, 'Nakula': 2, 'Simha': 2},
-    'Marjara': {'Ashwa': 2, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 1, 'Marjara': 4, 'Mushaka': 0, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 2},
-    'Mushaka': {'Ashwa': 2, 'Gaja': 1, 'Mesha': 2, 'Sarpa': 1, 'Shwana': 2, 'Marjara': 0, 'Mushaka': 4, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 2},
-    'Gau':     {'Ashwa': 1, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 4, 'Mahisha': 2, 'Vyaghra': 0, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 2},
-    'Mahisha': {'Ashwa': 0, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 4, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 2},
-    'Vyaghra': {'Ashwa': 1, 'Gaja': 0, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 0, 'Mahisha': 2, 'Vyaghra': 4, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 2},
-    'Mriga':   {'Ashwa': 2, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 0, 'Marjara': 2, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 4, 'Vanara': 2, 'Nakula': 2, 'Simha': 2},
-    'Vanara':  {'Ashwa': 2, 'Gaja': 2, 'Mesha': 0, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 4, 'Nakula': 2, 'Simha': 2},
-    'Nakula':  {'Ashwa': 2, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 0, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 2, 'Nakula': 4, 'Simha': 2},
-    'Simha':   {'Ashwa': 1, 'Gaja': 1, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 4}
+  'Ashwa': { 'Ashwa': 4, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 1, 'Mahisha': 0, 'Vyaghra': 1, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 1 },
+  'Gaja': { 'Ashwa': 2, 'Gaja': 4, 'Mesha': 3, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 1, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 0, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 1 },
+  'Mesha': { 'Ashwa': 2, 'Gaja': 3, 'Mesha': 4, 'Sarpa': 3, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 0, 'Nakula': 2, 'Simha': 2 },
+  'Sarpa': { 'Ashwa': 2, 'Gaja': 2, 'Mesha': 3, 'Sarpa': 4, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 1, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 2, 'Nakula': 0, 'Simha': 2 },
+  'Shwana': { 'Ashwa': 2, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 4, 'Marjara': 1, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 0, 'Vanara': 2, 'Nakula': 2, 'Simha': 2 },
+  'Marjara': { 'Ashwa': 2, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 1, 'Marjara': 4, 'Mushaka': 0, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 2 },
+  'Mushaka': { 'Ashwa': 2, 'Gaja': 1, 'Mesha': 2, 'Sarpa': 1, 'Shwana': 2, 'Marjara': 0, 'Mushaka': 4, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 2 },
+  'Gau': { 'Ashwa': 1, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 4, 'Mahisha': 2, 'Vyaghra': 0, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 2 },
+  'Mahisha': { 'Ashwa': 0, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 4, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 2 },
+  'Vyaghra': { 'Ashwa': 1, 'Gaja': 0, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 0, 'Mahisha': 2, 'Vyaghra': 4, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 2 },
+  'Mriga': { 'Ashwa': 2, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 0, 'Marjara': 2, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 4, 'Vanara': 2, 'Nakula': 2, 'Simha': 2 },
+  'Vanara': { 'Ashwa': 2, 'Gaja': 2, 'Mesha': 0, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 4, 'Nakula': 2, 'Simha': 2 },
+  'Nakula': { 'Ashwa': 2, 'Gaja': 2, 'Mesha': 2, 'Sarpa': 0, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 2, 'Nakula': 4, 'Simha': 2 },
+  'Simha': { 'Ashwa': 1, 'Gaja': 1, 'Mesha': 2, 'Sarpa': 2, 'Shwana': 2, 'Marjara': 2, 'Mushaka': 2, 'Gau': 2, 'Mahisha': 2, 'Vyaghra': 2, 'Mriga': 2, 'Vanara': 2, 'Nakula': 2, 'Simha': 4 }
 };

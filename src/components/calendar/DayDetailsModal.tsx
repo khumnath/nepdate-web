@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { calculate } from '../../lib/utils/lib';
+import { calculate, toDevanagari } from '../../lib/utils/lib';
 
 interface DayDetailsModalProps {
     date: Date | null;
@@ -8,11 +8,145 @@ interface DayDetailsModalProps {
     onClose: () => void;
 }
 
+// HELPER FUNCTIONS
+function getNepalDate(): Date {
+    const utcNow = new Date();
+    const nepalISOString = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kathmandu',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    }).format(utcNow);
+    const [year, month, day] = nepalISOString.split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day));
+}
+
+function getNepaliPeriod(hh: number): string {
+    if (hh >= 4 && hh < 8) { return "बिहान"; }
+    else if (hh >= 8 && hh < 12) { return "पूर्वान्ह"; }
+    else if (hh >= 12 && hh < 16) { return "अपरान्ह"; }
+    else if (hh >= 16 && hh < 20) { return "साँझ"; }
+    else { return "राति"; }
+}
+
+const formatPanchangaTime = (
+    isoString: string | null | undefined,
+    baseDate: Date,
+    todayDate: Date
+): string | null => {
+    if (!isoString) return null;
+    try {
+        const date = new Date(isoString);
+
+        const nepalTZ = 'Asia/Kathmandu';
+        const dateOptions: Intl.DateTimeFormatOptions = { timeZone: nepalTZ, year: 'numeric', month: '2-digit', day: '2-digit' };
+
+        const eventDateStr = new Intl.DateTimeFormat('en-CA', dateOptions).format(date);
+        const baseDateStr = new Intl.DateTimeFormat('en-CA', dateOptions).format(baseDate);
+        const todayDateStr = new Intl.DateTimeFormat('en-CA', dateOptions).format(todayDate);
+
+        const isBaseDateToday = (baseDateStr === todayDateStr);
+
+        const baseDay = new Date(baseDateStr + "T00:00:00Z");
+        const eventDay = new Date(eventDateStr + "T00:00:00Z");
+        const dayDiff = (eventDay.getTime() - baseDay.getTime()) / 86400000;
+
+        let dayContext = '';
+        if (dayDiff === -1) {
+            dayContext = isBaseDateToday ? 'हिजो ' : 'अघिल्लो दिन ';
+        } else if (dayDiff === 1) {
+            dayContext = isBaseDateToday ? 'भोलि ' : 'अर्को दिन ';
+        } else if (dayDiff < -1) {
+            dayContext = 'अघिल्लो दिन ';
+        } else if (dayDiff > 1) {
+            dayContext = 'अर्को दिन ';
+        }
+
+        const hourOptions: Intl.DateTimeFormatOptions = {
+            hour: '2-digit',
+            hour12: false,
+            timeZone: nepalTZ,
+        };
+        const hour24 = parseInt(new Intl.DateTimeFormat('en-US', hourOptions).format(date), 10);
+
+        const timeOptions: Intl.DateTimeFormatOptions = {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: nepalTZ,
+        };
+
+        let formatted = new Intl.DateTimeFormat('en-US', timeOptions).format(date);
+        const period = getNepaliPeriod(hour24);
+
+        formatted = formatted.replace(' AM', '').replace(' PM', '');
+        const [hour, minute] = formatted.split(':');
+
+        return `${dayContext}${toDevanagari(hour)}:${toDevanagari(minute)} ${period}`;
+
+    } catch (e) {
+        console.error("Failed to format time:", e);
+        return null;
+    }
+};
+
+
+// Sub-Components
+const InfoRow: React.FC<{ label: string; value?: string | null }> = ({ label, value }) => (
+    <div className="py-2.5 border-b border-gray-200 dark:border-gray-700/50">
+        <div className="flex justify-between items-center text-sm">
+            <span
+                className="text-gray-600 dark:text-gray-400 font-medium"
+                style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
+            >
+                {label}:
+            </span>
+            <strong
+                className="text-gray-900 dark:text-white"
+                style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
+            >
+                {value || '-'}
+            </strong>
+        </div>
+    </div>
+);
+
+const TimingDetailRow: React.FC<{
+    elements: Array<{ name?: string; startTime?: string | null; endTime?: string | null }>;
+    baseDate: Date;
+    todayDate: Date;
+}> = ({ elements, baseDate, todayDate }) => {
+
+    if (!elements || elements.length === 0) return null;
+
+    return (
+        <div className="pl-4 pt-1 pb-2 border-b border-gray-200 dark:border-gray-700/50">
+            {elements.map((element, index) => {
+                const startTime = formatPanchangaTime(element.startTime, baseDate, todayDate);
+                const endTime = formatPanchangaTime(element.endTime, baseDate, todayDate);
+
+                return (
+                    <div key={index} className="mt-1.5">
+                        <strong className="text-sm text-gray-800 dark:text-white" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+                            {element.name}
+                        </strong>
+                        <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-500 mt-0.5" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+                            <span>सुरु: {startTime || '-'}</span>
+                            <span>अन्त्य: {endTime || '-'}</span>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
+// MAIN COMPONENT
 const DayDetailsModal: React.FC<DayDetailsModalProps> = ({ date, isOpen, onClose }) => {
     if (!isOpen || !date) return null;
 
     const data = calculate(date);
-
+    const todayDate = getNepalDate();
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget) {
             onClose();
@@ -84,50 +218,46 @@ const DayDetailsModal: React.FC<DayDetailsModalProps> = ({ date, isOpen, onClose
 
                     {/* Panchanga Information */}
                     <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                        <h3 className="text-base font-semibold mb-3" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+                        <h3 className="text-base font-semibold mb-2" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
                             पञ्चाङ्ग विवरण
                         </h3>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                            {[
-                                { label: 'तिथी', value: data.tithi },
-                                { label: 'पक्ष', value: data.paksha },
-                                { label: 'चन्द्रमास', value: data.lunarMonth },
-                                { label: 'नक्षत्र', value: data.nakshatra },
-                                { label: 'योग', value: data.yoga },
-                                { label: 'करण', value: data.karana },
-                                { label: 'सूर्य राशि', value: data.sunRashi },
-                                { label: 'चन्द्र राशि', value: data.moonRashi }
-                            ].map((item, index) => (
-                                <div key={index} className="flex justify-between text-sm py-1">
-                                    <span
-                                        className="text-gray-600 dark:text-gray-400 font-medium"
-                                        style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
-                                    >
-                                        {item.label}:
-                                    </span>
-                                    <strong
-                                        className="text-gray-900 dark:text-white"
-                                        style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
-                                    >
-                                        {item.value || '-'}
-                                    </strong>
-                                </div>
-                            ))}
+                        <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-6">
+                            <div className="flex flex-col">
+                                <InfoRow label="तिथी" value={data.tithi} />
+                                <TimingDetailRow elements={data.tithis ?? []} baseDate={date} todayDate={todayDate} />
+
+                                <InfoRow label="नक्षत्र" value={data.nakshatra} />
+                                <TimingDetailRow elements={data.nakshatras ?? []} baseDate={date} todayDate={todayDate} />
+
+                                <InfoRow label="चन्द्रमास" value={data.lunarMonth} />
+                                <InfoRow label="सूर्य राशि" value={data.sunRashi} />
+                            </div>
+                            <div className="flex flex-col">
+                                <InfoRow label="पक्ष" value={data.paksha} />
+
+                                <InfoRow label="योग" value={data.yoga} />
+                                <TimingDetailRow elements={data.yogas ?? []} baseDate={date} todayDate={todayDate} />
+
+                                <InfoRow label="करण" value={data.karana} />
+                                <TimingDetailRow elements={data.karanas ?? []} baseDate={date} todayDate={todayDate} />
+
+                                <InfoRow label="चन्द्र राशि" value={data.moonRashi} />
+                            </div>
                         </div>
                     </div>
 
-                        {/* Events */}
+                    {/* Events */}
                     {data.events && data.events.length > 0 && (
                         <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-4">
                             <h3
                                 className="text-base font-semibold mb-3 text-green-800 dark:text-green-200"
                                 style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
                             >
-                                आजका घटनाहरू
+                                आजका चाडपर्वहरु
                             </h3>
                             <div className="space-y-2">
-                    {data.events.map((event: { name: string; detail?: string; holiday?: boolean; category?: string }, index: number) => (
-                        <div key={index} className="bg-slate-200/70 dark:bg-gray-800/70 rounded-lg p-3">
+                                {data.events.map((event: { name: string; detail?: string; holiday?: boolean; category?: string }, index: number) => (
+                                    <div key={index} className="bg-slate-200/70 dark:bg-gray-800/70 rounded-lg p-3">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-1">

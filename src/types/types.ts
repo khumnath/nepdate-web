@@ -138,8 +138,17 @@ export interface KundaliResponse {
   yoga: TimedPanchangaElement;
   karana: TimedPanchangaElement;
   ashtaKoota: AshtaKootaValues;
+  tithis: TimedPanchangaElement[];
+  nakshatras: TimedPanchangaElement[];
+  yogas: TimedPanchangaElement[];
+  karanas: TimedPanchangaElement[];
 }
 
+export interface TimedPanchangaElement {
+  name: string;
+  start: string;
+  end: string;
+}
 export interface GunaMilanScore {
   varna: number;
   vasya: number;
