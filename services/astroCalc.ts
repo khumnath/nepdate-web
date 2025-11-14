@@ -1,4 +1,17 @@
-// --- FULL CALCULATION ENGINE & HELPERS ---
+/**
+ * Nepdate-astroCalc Vedic Astrological Ephemeris Calculator
+ *
+ * Computes planetary positions (Sun, Moon, Mercury–Saturn, Rahu/Ketu)
+ * using simplified orbital elements and lunar corrections
+ * based on Jean Meeus' "Astronomical Algorithms" (VSOP87/ELP2000 approximations).
+ *
+ * Positions are adapted to the sidereal zodiac via ayanamsa subtraction.
+ * Outputs include longitude, latitude, speed, retrograde status, and rashi placement.
+ *
+ * Note: This is an approximation suitable for astrological use,
+ * not a full high‑precision VSOP87/ELP2000 implementation.
+ */
+
 
 export const d2r = Math.PI / 180;
 export const r2d = 180 / Math.PI;

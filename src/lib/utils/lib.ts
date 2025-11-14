@@ -30,6 +30,22 @@ export {
     rad,
     toBikramSambat,
     getDaysInADMonth,
-    formatDegrees
+    formatDegrees,
+    YugaRotation,
+    PlanetApogee,
+    PlanetCircumm,
+    mandaEquation,
+    YugaCivilDays,
+    UJJAIN_LONGITUDE,
+    getNepaliPeriod
 } from '../core/bikram';
-export { calculate, getEventsForDate, getPanchangaBasics } from '../core/panchangaCore';
+export {
+    calculate,
+    getEventsForDate,
+    getAharFor,
+    aharToDate,
+    absTrueLongitudeSun,
+    absTrueLongitudeMoon,
+    findTransit,
+    absElongation,
+} from '../core/panchangaCore';

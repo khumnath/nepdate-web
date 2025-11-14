@@ -1,122 +1,256 @@
-import type { KundaliRequest, KundaliResponse, ServiceError, ComparisonResult } from '../src/types/types';
-import { NEPALI_NAKSHATRA, NEPALI_YOGA, NEPALI_KARANA } from '../src/constants/constants';
-import { toJulianDay, getSunriseSunset } from '../src/lib/utils/lib';
-import { dTime, getPlanetPosition, calcayan } from './astroCalc';
-import { findAspectTime, findNakshatraTime, findYogaTime, findNakshatraPadaTime } from './panchangaService';
-import { 
-    getAscendant, 
-    getHouses, 
-    getVimshottariDasha, 
-    getTribhagiDasha, 
-    getYoginiDasha, 
-    getAshtottariDasha, 
-    getJaiminiDasha, 
-    getDivisionalChart, 
-    getAshtaKoota, 
-    calculateGunaMilan 
+import type {
+    KundaliRequest,
+    KundaliResponse,
+    ServiceError,
+    ComparisonResult,
+    TimedPanchangaElement,
+    PlanetInfo,
+    HouseInfo,
+    DashaInfo,
+    DivisionalChart,
+    AshtaKootaValues
+} from '../src/types/types';
+
+import {
+    NAKSHATRA_SYLLABLES,
+    NEPALI_YOGA,
+    NEPALI_KARANA
+} from '../src/constants/constants';
+
+import {
+    getAharFor,
+    aharToDate,
+    absTrueLongitudeSun,
+    absTrueLongitudeMoon,
+    absElongation,
+    findTransit,
+} from '../src/lib/core/panchangaCore';
+
+import { getSunriseSunset, toJulianDay } from '../src/lib/utils/lib'
+
+import { getPlanetPosition, calcayan } from './astroCalc';
+import {
+    getAscendant,
+    getHouses,
+    getVimshottariDasha,
+    getTribhagiDasha,
+    getYoginiDasha,
+    getAshtottariDasha,
+    getJaiminiDasha,
+    getDivisionalChart,
+    getAshtaKoota,
+    calculateGunaMilan
 } from './HoroscopeService';
+
+
+const PLANETS = ['SUN', 'MOON', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN', 'RAHU', 'KETU'] as const;
+const NAK_STEP = 360 / 27;
+const PADA_STEP = NAK_STEP / 4;
+const EPS = 1e-9;
+const wrap360 = (x: number) => ((x % 360) + 360) % 360;
 
 async function getKundali(req: KundaliRequest): Promise<KundaliResponse | ServiceError> {
     try {
-        const [datePart, timePart] = req.datetime.split('T');
-        const [year, month, day] = datePart.split('-').map(Number);
+        const [, timePart] = req.datetime.split('T');
         const [hour, minute, second] = timePart.split(':').map(Number);
 
-        const birthDateUTC = new Date(Date.UTC(year, month - 1, day, hour, minute, second) - req.offset * 3600 * 1000);
-        const jd_utc = toJulianDay(birthDateUTC.getUTCFullYear(), birthDateUTC.getUTCMonth(), birthDateUTC.getUTCDate()) + (birthDateUTC.getUTCHours() + birthDateUTC.getUTCMinutes() / 60 + birthDateUTC.getUTCSeconds() / 3600) / 24;
-        const dt = dTime(jd_utc);
-        const jd = jd_utc + dt / 24;
-        
-        // Use a date object representing the local day at UTC midnight for sunrise/sunset calculation
-        const localDayForCalc = new Date(Date.UTC(year, month - 1, day));
-        const sunEvents = getSunriseSunset(localDayForCalc, req.latitude, req.longitude, req.offset);
+        const birthLocalDate = new Date(new Date(req.datetime).getTime() + req.offset * 3600_000);
+        const birthTimeFraction = (hour * 3600 + minute * 60 + second) / 86400.0;
 
-        const ayanamsa = calcayan(jd);
+        const birthDateUTC = new Date(Date.parse(req.datetime));
+        const jd_utc =
+            toJulianDay(
+                birthDateUTC.getUTCFullYear(),
+                birthDateUTC.getUTCMonth(),
+                birthDateUTC.getUTCDate()
+            ) +
+            (birthDateUTC.getUTCHours() +
+                birthDateUTC.getUTCMinutes() / 60 +
+                birthDateUTC.getUTCSeconds() / 3600) / 24;
 
-        const planets = ['SUN', 'MOON', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN', 'RAHU', 'KETU'].map(p => {
-            const pos = getPlanetPosition(jd, p, ayanamsa);
-            const nakshatraLength = 360 / 27;
-            const nakshatraIndex = Math.floor(pos.eclipticLongitude / nakshatraLength);
-            
+        const ayanamsaValue = calcayan(jd_utc);
+        const birthAhar = getAharFor(birthLocalDate, req.longitude, birthTimeFraction);
+
+        const moonAbs = absTrueLongitudeMoon(birthAhar);
+        const sunAbs = absTrueLongitudeSun(birthAhar);
+        const moon360 = wrap360(moonAbs);
+
+        // Nakshatra & Pada (wrapped for names)
+        const nakIdx = Math.floor((moon360 - EPS) / NAK_STEP);
+        const progInNak = moon360 - nakIdx * NAK_STEP;
+        const padaIdx = Math.floor((progInNak - EPS) / PADA_STEP) + 1;
+        const nakName = NAKSHATRA_SYLLABLES[nakIdx]?.name ?? '?';
+
+        // Absolute targets for timings
+        const nakIdxAbs = Math.floor(moonAbs / NAK_STEP);
+        const nakStartAhar = findTransit(birthAhar - 1.0, absTrueLongitudeMoon, nakIdxAbs * NAK_STEP, 2);
+        const nakEndAhar = findTransit(birthAhar, absTrueLongitudeMoon, (nakIdxAbs + 1) * NAK_STEP, 2);
+
+        const absPadaIdx = nakIdxAbs * 4 + (padaIdx - 1);
+        const padaStartAhar = findTransit(birthAhar - 0.5, absTrueLongitudeMoon, absPadaIdx * PADA_STEP, 2);
+        const padaEndAhar = findTransit(birthAhar, absTrueLongitudeMoon, (absPadaIdx + 1) * PADA_STEP, 2);
+
+        // Tithi
+        const elongAbs = absElongation(birthAhar);
+        const tithiIndex = Math.floor(elongAbs / 12);
+        const tithiNum = (tithiIndex % 30) + 1;
+        const paksha = tithiNum <= 15 ? 'शुक्ल पक्ष' : 'कृष्ण पक्ष';
+        const tithiStartAhar = findTransit(birthAhar - 1.0, absElongation, tithiIndex * 12, 2);
+        const tithiEndAhar = findTransit(birthAhar, absElongation, (tithiIndex + 1) * 12, 2);
+
+        // YOGA Absolute sum at birth
+        const yogaTotalAbs = sunAbs + moonAbs;
+
+        // Index for naming (wrapped 0–360)
+        const yogaIndex = Math.floor(((yogaTotalAbs % 360) - EPS) / NAK_STEP);
+        const yogaName = NEPALI_YOGA[yogaIndex] ?? '?';
+
+        // Targets in absolute domain
+        const yogaIdxAbs = Math.floor(yogaTotalAbs / NAK_STEP);
+        const yogaStartTarget = yogaIdxAbs * NAK_STEP;
+        const yogaEndTarget = (yogaIdxAbs + 1) * NAK_STEP;
+
+        // Transit solver on absolute sum
+        const yogaFunc = (ah: number) => absTrueLongitudeSun(ah) + absTrueLongitudeMoon(ah);
+        const yogaStartAhar = findTransit(birthAhar - 1.0, yogaFunc, yogaStartTarget, 2);
+        const yogaEndAhar = findTransit(birthAhar, yogaFunc, yogaEndTarget, 2);
+
+        // Karana
+        const karanaIndex = Math.floor(elongAbs / 6);
+        const karanaName = NEPALI_KARANA[karanaIndex % NEPALI_KARANA.length];
+        const karanaStartAhar = findTransit(birthAhar - 1.0, absElongation, karanaIndex * 6, 2);
+        const karanaEndAhar = findTransit(birthAhar, absElongation, (karanaIndex + 1) * 6, 2);
+
+        const formatISO = (aharVal: number | null) =>
+            aharVal ? aharToDate(aharVal, birthAhar, birthLocalDate).toISOString() : '';
+
+        const sunEvents = getSunriseSunset(birthLocalDate, req.latitude, req.longitude, req.offset);
+
+        const planets: PlanetInfo[] = PLANETS.map(p => {
+            const pos = getPlanetPosition(jd_utc, p as any, ayanamsaValue);
+            const nIdx = Math.floor(pos.eclipticLongitude / NAK_STEP);
+            const nPada = Math.floor((pos.eclipticLongitude % NAK_STEP) / (NAK_STEP / 4)) + 1;
             return {
-                ...pos,
-                nakshatra: NEPALI_NAKSHATRA[nakshatraIndex],
-                nakshatraPada: Math.floor((pos.eclipticLongitude % nakshatraLength) / (nakshatraLength / 4)) + 1,
+                planet: p,
+                eclipticLongitude: pos.eclipticLongitude,
+                eclipticLatitude: pos.eclipticLatitude,
+                speedLon: pos.speedLon,
+                rashi: pos.rashi,
+                degreesInSign: pos.degreesInSign,
+                retrograde: pos.retrograde,
+                nakshatra: NAKSHATRA_SYLLABLES[nIdx]?.name ?? '?',
+                nakshatraPada: nPada
             };
         });
 
-        const ascendantLon_tropical = getAscendant(jd_utc, req.latitude, req.longitude);
-        const ascendantLon = ascendantLon_tropical;
-        const houses = getHouses(ascendantLon);
+        const ascendantLon = getAscendant(jd_utc, req.latitude, req.longitude);
+        const houses: HouseInfo[] = getHouses(ascendantLon);
 
-        const moonPlanetInfo = planets.find(p => p.planet === 'MOON')!;
-        const sunPlanetInfo = planets.find(p => p.planet === 'SUN')!;
-        
-        const nakshatraIndex = Math.floor(moonPlanetInfo.eclipticLongitude / (360 / 27));
+        const dashaSequence: DashaInfo[] = getVimshottariDasha(moon360, birthLocalDate);
+        const tribhagiDasha: DashaInfo[] = getTribhagiDasha(moon360, birthLocalDate);
+        const yoginiDasha: DashaInfo[] = getYoginiDasha(moon360, birthLocalDate);
+        const ashtottariDasha: DashaInfo[] = getAshtottariDasha(moon360, birthLocalDate, paksha);
+        const jaiminiDasha: DashaInfo[] = getJaiminiDasha(planets, ascendantLon, birthLocalDate);
 
-        const tithiInfo = findAspectTime(jd, req.offset, false);
-        const nakshatraInfo = findNakshatraTime(jd, req.offset);
-        const nakshatraPadaInfo = findNakshatraPadaTime(jd, req.offset);
-        const yogaInfo = findYogaTime(jd, req.offset);
-        const karanaInfo = findAspectTime(jd, req.offset, true);
+        const divisionalCharts: DivisionalChart[] = [9, 10, 3, 12, 4, 60].map(d =>
+            getDivisionalChart(d, planets, ascendantLon)
+        );
 
-        const sidereal_diff = (moonPlanetInfo.eclipticLongitude - sunPlanetInfo.eclipticLongitude + 360) % 360;
-        const tithiNumber = Math.floor(sidereal_diff / 12) + 1;
-        const paksha = sidereal_diff < 180 ? 'शुक्ल पक्ष' : 'कृष्ण पक्ष';
-        
-        const sidereal_sum = (moonPlanetInfo.eclipticLongitude + sunPlanetInfo.eclipticLongitude) % 360;
-        const yogaName = NEPALI_YOGA[Math.floor(sidereal_sum / (360/27))];
-        
-        const karanaNumber = Math.floor(sidereal_diff / 6);
-        let karanaIndex: number;
-        if (karanaNumber === 0 || karanaNumber === 59) karanaIndex = 0; 
-        else if (karanaNumber === 56) karanaIndex = 7;
-        else if (karanaNumber === 57) karanaIndex = 8;
-        else if (karanaNumber === 58) karanaIndex = 9;
-        else karanaIndex = (karanaNumber - 1) % 7 + 1;
-        const karanaName = NEPALI_KARANA[karanaIndex];
-
-        const birthDate = new Date(req.datetime);
+        const ashtaKoota: AshtaKootaValues = getAshtaKoota(
+            Math.floor(moon360 / 30) + 1,
+            nakIdx,
+            Math.floor(ascendantLon / 30) + 1
+        );
 
         return {
             birthDetails: { ...req },
-            calculationMeta: { backend: 'Nepdate-astroCalc', version: __APP_VERSION__, ayanamsa: 'Lahiri', ayanamsaValue: ayanamsa, zodiac: 'Sidereal', houseSystem: 'Whole Sign', calculationUtc: new Date().toISOString() },
+            calculationMeta: {
+                backend: 'Nepdate-astroCalc',
+                ayanamsa: 'Lahiri',
+                ayanamsaValue,
+                zodiac: 'Sidereal',
+                houseSystem: 'Whole Sign',
+                calculationUtc: new Date().toISOString(),
+                version: __APP_VERSION__
+            },
             sunRise: sunEvents.sunrise,
             sunSet: sunEvents.sunset,
             planets,
-            ascendant: { longitude: ascendantLon, sign: Math.floor(ascendantLon / 30) + 1, degreesInSign: ascendantLon % 30, nakshatra: NEPALI_NAKSHATRA[Math.floor(ascendantLon / (360 / 27))], nakshatraPada: Math.floor((ascendantLon % (360 / 27)) / ((360 / 27) / 4)) + 1 },
+            ascendant: {
+                longitude: ascendantLon,
+                sign: Math.floor(ascendantLon / 30) + 1,
+                degreesInSign: ascendantLon % 30,
+                nakshatra: NAKSHATRA_SYLLABLES[Math.floor((wrap360(ascendantLon) - EPS) / NAK_STEP)]?.name ?? '?',
+                nakshatraPada: Math.floor(((wrap360(ascendantLon) % NAK_STEP) - EPS) / PADA_STEP) + 1
+            },
             houses,
-            nakshatra: { index: nakshatraIndex, pada: moonPlanetInfo.nakshatraPada, nameNepali: moonPlanetInfo.nakshatra, start: nakshatraInfo.start, end: nakshatraInfo.end, padaStart: nakshatraPadaInfo.start, padaEnd: nakshatraPadaInfo.end },
-            tithi: { tithiNumber: tithiNumber, paksha: paksha, start: tithiInfo.start, end: tithiInfo.end },
-            yoga: { name: yogaName, start: yogaInfo.start, end: yogaInfo.end },
-            karana: { name: karanaName, start: karanaInfo.start, end: karanaInfo.end },
-            dashaSequence: getVimshottariDasha(moonPlanetInfo.eclipticLongitude, birthDate),
-            tribhagiDasha: getTribhagiDasha(moonPlanetInfo.eclipticLongitude, birthDate),
-            yoginiDasha: getYoginiDasha(moonPlanetInfo.eclipticLongitude, birthDate),
-            ashtottariDasha: getAshtottariDasha(moonPlanetInfo.eclipticLongitude, birthDate, paksha),
-            jaiminiDasha: getJaiminiDasha(planets, ascendantLon, birthDate),
-            divisionalCharts: [9, 10, 3, 12, 4, 60].map(d => getDivisionalChart(d, planets, ascendantLon)),
-            ashtaKoota: getAshtaKoota(moonPlanetInfo.rashi, nakshatraIndex, Math.floor(ascendantLon / 30) + 1),
+            nakshatra: {
+                index: nakIdx,
+                pada: padaIdx,
+                nameNepali: nakName,
+                start: formatISO(nakStartAhar),
+                end: formatISO(nakEndAhar),
+                padaStart: formatISO(padaStartAhar),
+                padaEnd: formatISO(padaEndAhar)
+            },
+            tithi: {
+                tithiNumber: tithiNum,
+                paksha,
+                start: formatISO(tithiStartAhar),
+                end: formatISO(tithiEndAhar)
+            },
+            yoga: {
+                name: yogaName,
+                start: formatISO(yogaStartAhar),
+                end: formatISO(yogaEndAhar)
+            },
+            karana: {
+                name: karanaName,
+                start: formatISO(karanaStartAhar),
+                end: formatISO(karanaEndAhar)
+            },
+            // Day arrays
+            tithis: [] as TimedPanchangaElement[],
+            nakshatras: [] as TimedPanchangaElement[],
+            yogas: [] as TimedPanchangaElement[],
+            karanas: [] as TimedPanchangaElement[],
+            // Dashas & charts
+            dashaSequence,
+            tribhagiDasha,
+            yoginiDasha,
+            ashtottariDasha,
+            jaiminiDasha,
+            divisionalCharts,
+            ashtaKoota
         };
     } catch (e) {
         return { error: e instanceof Error ? e.message : 'Unknown error during calculation.' };
     }
 }
 
-async function getComparison(groomReq: KundaliRequest, brideReq: KundaliRequest): Promise<ComparisonResult | ServiceError> {
+async function getComparison(
+    groomReq: KundaliRequest,
+    brideReq: KundaliRequest
+): Promise<ComparisonResult | ServiceError> {
     const groomData = await getKundali(groomReq);
     const brideData = await getKundali(brideReq);
 
     if ('error' in groomData || 'error' in brideData) {
         return { error: 'Could not calculate kundali for one or both individuals.' };
     }
-    
-    const { score, conclusion } = calculateGunaMilan(groomData, brideData);
 
-    return { groom: groomData, bride: brideData, score, conclusion };
+    const { score, conclusion, labels } = calculateGunaMilan(groomData, brideData);
+    return {
+        groom: groomData,
+        bride: brideData,
+        score,
+        conclusion,
+        labels
+    };
 }
+
 
 export const kundaliService = {
     getKundali,
-    getComparison,
+    getComparison
 };

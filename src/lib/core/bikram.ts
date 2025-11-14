@@ -5,6 +5,7 @@
  * based on the Surya Siddhanta to ensure wide historical and future date compatibility.
  */
 import { Bsdata } from '../../data/static/monthData';
+import { NEPALI_NUMERALS } from '../../constants/constants';
 
 export { Bsdata };
 
@@ -18,7 +19,7 @@ export const PlanetCircumm = { 'sun': 13 + 50 / 60, 'moon': 31 + 50 / 60 };
 const SOLAR_YEAR_IN_DAYS = YugaCivilDays / YugaRotation.sun;
 export const KaliEpoch = 588465.5; // UJJAIN_KALI_EPOCH, Julian days from AD epoch at Ujjain midnight
 const KATHMANDU_LONGITUDE = 85.324;
-const UJJAIN_LONGITUDE = 75.776;
+export const UJJAIN_LONGITUDE = 75.776;
 const DESHANTARA = (KATHMANDU_LONGITUDE - UJJAIN_LONGITUDE) / 360; // Longitude difference correction
 export const rad = 180 / Math.PI;
 
@@ -31,12 +32,14 @@ export const TITHI_NAMES = [
 ];
 
 // Helper & Utility Functions
-export function toDevanagari(n: number | string): string {
-    try {
-        if (n === 0 || n === '**') return n.toString();
-        return n.toString().replace(/[0-9]/g, d => '०१२३४५६७८९'[parseInt(d)]);
-    } catch { return n.toString(); }
+export function toDevanagari(num: number | string): string {
+    const map: Record<string, string> = {
+        '0': '०', '1': '१', '2': '२', '3': '३', '4': '४',
+        '5': '५', '6': '६', '7': '७', '8': '८', '9': '९',
+    };
+    return String(num).split('').map(ch => map[ch] ?? ch).join('');
 }
+
 
 export function fromDevanagari(input: string): string {
     try {
@@ -57,7 +60,7 @@ export function formatMonthDay(month: number, day: number): string {
 }
 
 
-// Julian Day Converters (Exactly from reference.html for historical accuracy)
+// Julian Day Converters
 export function toJulianDay(year: number, month: number, day: number) {
     const month_ = month + 1;
     const a = Math.floor((14 - month_) / 12);
@@ -69,13 +72,12 @@ export function toJulianDay(year: number, month: number, day: number) {
     } else {
         jdn = jdn - 32083;
     }
-    return jdn - 0.5;
+    return jdn - 0.5; // midnight
 }
 
 export function fromJulianDay(jd: number): Date {
-    // Split JD into integer and fractional parts
-    const z = Math.floor(jd + 0.5);
-    const f = (jd + 0.5) - z;
+    const z = Math.floor(jd);
+    const f = jd - z; // Fraction *from midnight*
 
     let a = z;
     if (z >= 2299161) {
@@ -88,21 +90,21 @@ export function fromJulianDay(jd: number): Date {
     const d = Math.floor(365.25 * c);
     const e = Math.floor((b - d) / 30.6001);
 
+    // Use the fraction 'f' directly
     const dayWithFraction = b - d - Math.floor(30.6001 * e) + f;
     const day = Math.floor(dayWithFraction);
-    const fractionalDay = dayWithFraction - day; // 0.0 to 1.0
+    const fractionalDay = dayWithFraction - day; // 0.0 to 1.0 from midnight
 
     const month = e < 14 ? e - 1 : e - 13;
     const year = month > 2 ? c - 4716 : c - 4715;
 
     // Convert fractional day to milliseconds
-    const msInDay = fractionalDay * 86400000; // 24*60*60*1000
+    const msInDay = fractionalDay * 86400000;
     const hours = Math.floor(msInDay / 3600000);
     const minutes = Math.floor((msInDay % 3600000) / 60000);
     const seconds = Math.floor((msInDay % 60000) / 1000);
     const ms = Math.floor(msInDay % 1000);
 
-    // Handle years 0–99 as actual AD years
     if (year >= 0 && year <= 99) {
         const iso = `${year.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}Z`;
         return new Date(iso);
@@ -202,42 +204,9 @@ export const YOGA_NAMES = ["विष्कुम्भ", "प्रीति", 
 export const KARANA_NAMES = ["किंस्तुघ्न", "बव", "बालव", "कौलव", "तैतिल", "गर", "वणिज", "विष्टि", "शकुनि", "चतुष्पाद", "नाग"];
 export const RASHI_NAMES = ["मेष", "वृषभ", "मिथुन", "कर्कट", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुम्भ", "मीन"];
 
-export function _getPanchangaBasics(gregorianDate: Date) {
-    const jd = toJulianDay(gregorianDate.getUTCFullYear(), gregorianDate.getUTCMonth(), gregorianDate.getUTCDate());
-    const ahar = jd - KaliEpoch;
-
-    const sunEvents = getSunriseSunset(gregorianDate);
-    let sunriseFraction = 0.25;
-    if (sunEvents.sunrise !== "N/A") {
-        const [hr, min] = sunEvents.sunrise.split(':').map(Number);
-        sunriseFraction = (hr * 60 + min) / 1440;
-    }
-    const aharAtSunrise = ahar + sunriseFraction - DESHANTARA;
-
-    const sunLong = trueLongitudeSun(aharAtSunrise);
-    const moonLong = trueLongitudeMoon(aharAtSunrise);
-
-    const tithiNum = zero360(moonLong - sunLong) / 12;
-    const tithiName = TITHI_NAMES[Math.floor(tithiNum)];
-    const nakshatraNum = moonLong / (360 / 27);
-    const nakshatraName = NAKSHATRA_NAMES[Math.floor(nakshatraNum)];
-    const yogaNum = zero360(sunLong + moonLong) / (360 / 27);
-    const yogaName = YOGA_NAMES[Math.floor(yogaNum)];
-    const karanaNum = Math.floor(tithiNum * 2);
-    let karanaName: string;
-    if (karanaNum <= 0 || karanaNum >= 57) {
-        if (karanaNum <= 0) karanaName = KARANA_NAMES[0];
-        else if (karanaNum === 57) karanaName = KARANA_NAMES[8];
-        else if (karanaNum === 58) karanaName = KARANA_NAMES[9];
-        else karanaName = KARANA_NAMES[10];
-    } else {
-        karanaName = KARANA_NAMES[(karanaNum - 1) % 7 + 1];
-    }
-
-    return { tithiName, nakshatraName, yogaName, karanaName };
+export function getTithi(sunLong: number, moonLong: number): number {
+    return zero360(moonLong - sunLong) / 12;
 }
-
-export function getTithi(sunLong: number, moonLong: number): number { return zero360(moonLong - sunLong) / 12; }
 
 export function findNewMoon(ahar: number): number {
     const getElongation = (a: number) => zero360(trueLongitudeMoon(a) - trueLongitudeSun(a));
@@ -314,7 +283,6 @@ export function toBikramSambat(gregorianDate: Date): BikramDate {
     const sauraMasaResult = getSauraMasaDay(ahar_at_ujjain_midnight);
     const monthIndex = sauraMasaResult.m;
 
-    // Direct calculation for year
     const aharForYearCalc = ahar_at_ujjain_midnight + (4 - monthIndex) * 30;
     const yearKali = Math.floor(aharForYearCalc / SOLAR_YEAR_IN_DAYS);
     const yearSaka = yearKali - 3179;
@@ -397,7 +365,6 @@ export function getMonthWarning(
     const currentBsYear = getCurrentBsYear();
     const isFutureYear = displayedBsYear > currentBsYear;
 
-    // If NOT precomputed → computed warning
     if (!isPrecomputed) {
         return {
             showWarning: true,
@@ -408,7 +375,6 @@ export function getMonthWarning(
         };
     }
 
-    // If precomputed AND in a future BS year → future warning
     if (isFutureYear) {
         return {
             showWarning: true,
@@ -419,7 +385,6 @@ export function getMonthWarning(
         };
     }
 
-    // current BS year → no warning
     return { showWarning: false, message: '' };
 }
 
@@ -440,25 +405,77 @@ export function isAdMonthPrecomputed(adYear: number | null, adMonth: number): bo
 }
 
 
-// Sunrise/Sunset Calculation
+export function getDaysInADMonth(year: number, month: number): number {
+    return new Date(year, month, 0).getDate();
+}
 
+
+export const formatDegrees = (decimal: number): string => {
+    const deg = Math.floor(decimal);
+    const minFloat = (decimal - deg) * 60;
+    const min = Math.floor(minFloat);
+    const secFloat = (minFloat - min) * 60;
+    const sec = Math.round(secFloat);
+
+    let adjMin = min;
+    let adjDeg = deg;
+    let adjSec = sec;
+    if (adjSec === 60) {
+        adjSec = 0;
+        adjMin += 1;
+    }
+    if (adjMin === 60) {
+        adjMin = 0;
+        adjDeg += 1;
+    }
+
+    const formattedDeg = toDevanagari(adjDeg).padStart(2, NEPALI_NUMERALS[0]);
+    const formattedMin = toDevanagari(adjMin).padStart(2, NEPALI_NUMERALS[0]);
+    const formattedSec = toDevanagari(adjSec).padStart(2, NEPALI_NUMERALS[0]);
+
+    return `${formattedDeg}° ${formattedMin}' ${formattedSec}"`;
+};
+
+
+export function getNepaliPeriod(hh: number): string {
+    if (hh < 0 || hh >= 24) {
+        return "not available";
+    } else if (hh >= 4 && hh < 6) {
+    return "ब्रह्ममुहूर्त";
+  } else if (hh >= 6 && hh < 8) {
+    return "प्रातः";
+    } else if (hh >= 8 && hh < 12) {
+    return "पूर्वाह्न";
+    } else if (hh >= 12 && hh < 16) {
+        return "अपरान्ह";
+    } else if (hh >= 16 && hh < 20) {
+        return "साँझ";
+    } else if (hh >= 20 && hh < 24) {
+        return "रात्री(पूर्वार्द्ध)";
+    } else {
+        return "रात्री(उत्तरार्ध)";
+    }
+}
+
+export const to12Hour = (hh: number, mm: number): string => {
+    const period = getNepaliPeriod(hh);
+    const hour12 = hh % 12 === 0 ? 12 : hh % 12;
+    return `${toDevanagari(hour12)}:${toDevanagari(mm.toString().padStart(2, "0"))} ${period}`;
+};
 
 type SunriseSunset = {
-    sunrise: string;
-    sunset: string;
+    sunrise: string; // 24-hour HH:mm:ss
+    sunset: string;  // 24-hour HH:mm:ss
+    sunriseFormatted: string; // 12-hour Nepali
+    sunsetFormatted: string;  // 12-hour Nepali
 };
 
-const to12Hour = (hh: number, mm: number): string => {
-    const period = hh < 12 ? "बिहान" : "साँझ";   // AM → बिहान, PM → साँझ
-    const hour12 = hh % 12 === 0 ? 12 : hh % 12;  // 12-hour format
-    return `${hour12}:${mm.toString().padStart(2, "0")} ${period}`;
-};
-
+// SUNRISE/SUNSET
 export function getSunriseSunset(
     date: Date,
-    lat: number = 27.7172,      // Kathmandu latitude
-    lon: number = 85.3240,      // Kathmandu longitude
-    tz: number = 5.75           // Nepal Time offset in hours
+    lat: number = 27.7172,
+    lon: number = 85.3240,
+    _tz: number = 5.75
 ): SunriseSunset {
 
     const jd0 = toJulianDay(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
@@ -472,7 +489,7 @@ export function getSunriseSunset(
     const cosH = (sinDeg(-0.833) - sinDeg(lat) * sinDeg(delta)) / (cosDeg(lat) * cosDeg(delta));
 
     if (!isFinite(cosH) || cosH < -1 || cosH > 1) {
-        return { sunrise: "N/A", sunset: "N/A" };
+        return { sunrise: "N/A", sunset: "N/A", sunriseFormatted: "N/A", sunsetFormatted: "N/A" };
     }
 
     const H = Math.acos(cosH) * (180 / Math.PI);
@@ -481,43 +498,42 @@ export function getSunriseSunset(
 
     const riseUtc = fromJulianDay(Jrise);
     const setUtc = fromJulianDay(Jset);
-    const tzMinutes = Math.round(tz * 60);
 
-    const toLocalHHMM = (utcDate: Date, isSunrise: boolean): string => {
-        let totalMinutes = utcDate.getUTCHours() * 60 + utcDate.getUTCMinutes() + tzMinutes;
-        totalMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+    // A robust way to get local time parts, immune to bugs
+    const getLocalTime = (utcDate: Date) => {
+        const timeZone = "Asia/Kathmandu";
 
-        let hh = Math.floor(totalMinutes / 60);
-        const mm = totalMinutes % 60;
+        const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone,
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+        }).formatToParts(utcDate);
 
-        // Ensure sunrise in morning, sunset in evening
-        if (isSunrise && hh >= 12) hh -= 12;
-        if (!isSunrise && hh < 12) hh += 12;
+        const get = (type: string) => parts.find(p => p.type === type)?.value || "00";
 
-        return to12Hour(hh, mm);
+        let hour = parseInt(get('hour'), 10);
+        if (hour === 24) hour = 0; // Handle midnight
+
+        return {
+            hh: hour,
+            mm: parseInt(get('minute'), 10),
+            ss: parseInt(get('second'), 10),
+        };
     };
+
+    const riseLocal = getLocalTime(riseUtc);
+    const setLocal = getLocalTime(setUtc);
+
+    // 24-hour HH:mm:ss string for calculations (used by panchangaCore.ts)
+    const sunriseHHMMSS = `${riseLocal.hh.toString().padStart(2, "0")}:${riseLocal.mm.toString().padStart(2, "0")}:${riseLocal.ss.toString().padStart(2, "0")}`;
+    const sunsetHHMMSS = `${setLocal.hh.toString().padStart(2, "0")}:${setLocal.mm.toString().padStart(2, "0")}:${setLocal.ss.toString().padStart(2, "0")}`;
 
     return {
-        sunrise: toLocalHHMM(riseUtc, true),
-        sunset: toLocalHHMM(setUtc, false),
+        sunrise: sunriseHHMMSS,
+        sunset: sunsetHHMMSS,
+        sunriseFormatted: to12Hour(riseLocal.hh, riseLocal.mm), // 12-hour Nepali for display
+        sunsetFormatted: to12Hour(setLocal.hh, setLocal.mm),   // 12-hour Nepali for display
     };
 }
-
-export function getDaysInADMonth(year: number, month: number): number {
-    // month is 1-based, Date constructor needs 0-based month
-    return new Date(year, month, 0).getDate();
-}
-
-
-import { NEPALI_NUMERALS } from '../../constants/constants';
-
-export const formatDegrees = (decimal: number): string => {
-    const deg = Math.floor(decimal);
-    const minFloat = (decimal - deg) * 60;
-    const min = Math.floor(minFloat);
-
-    const formattedDeg = toDevanagari(deg).padStart(2, NEPALI_NUMERALS[0]);
-    const formattedMin = toDevanagari(min).padStart(2, NEPALI_NUMERALS[0]);
-
-    return `${formattedDeg}° ${formattedMin}'`;
-};

@@ -30,7 +30,7 @@
     aspect-ratio: 1 / 1;
     margin: 0 auto;
     position: relative;
-    font-family: var(--font-devanagari, 'Noto Sans Devanagari', 'Preeti', sans-serif);
+    font-family: var(--font-devanagari, 'Noto Sans Devanagari', sans-serif);
   }
 
   .birth-chart {

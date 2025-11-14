@@ -1,175 +1,111 @@
-import { sun, moon, calcayan, calData, dTime, fix360 } from './astroCalc';
+import {
+    // Absolute Surya siddanta values used by the solver
+    absTrueLongitudeSun,
+    absTrueLongitudeMoon,
+    absElongation,
+    getAharFor,
+    aharToDate,
+    findTransit,
+} from '../src/lib/core/panchangaCore';
+import {
+    getSunriseSunset
+} from '../src/lib/core/bikram'
 
-export function findAspectTime(jd: number, tzone: number, isKarana: boolean): { start: string, end: string } {
-    let s_t: { start?: Date, end?: Date } = {};
-    const len = isKarana ? 6 : 12;
-    const totalAspects = isKarana ? 60 : 30;
-
-    const currentAyanamsa = calcayan(jd);
-    const siderealSun = fix360(sun(jd) - currentAyanamsa);
-    const siderealMoon = fix360(moon(jd) - currentAyanamsa);
-    const diff = fix360(siderealMoon - siderealSun);
-    const currentAspectNum = Math.floor(diff / len);
-
-    for (let i = 0; i < 2; i++) {
-        const targetAspectNum = (currentAspectNum + i + totalAspects) % totalAspects;
-        const targetAspect = targetAspectNum * len;
-
-        let jdt = jd;
-        let lsun0, lmoon0, asp1;
-
-        for (let j = 0; j < 5; j++) {
-            const tempAyanamsa = calcayan(jdt);
-            const sunJdt = sun(jdt);
-            const moonJdt = moon(jdt);
-            const cachedSun = sunJdt;
-            const cachedMoon = moonJdt;
-
-            lsun0 = fix360(cachedSun - tempAyanamsa);
-            lmoon0 = fix360(cachedMoon - tempAyanamsa);
-
-            let targetMoonLon = fix360(lsun0 + targetAspect);
-            asp1 = targetMoonLon - lmoon0;
-            if (asp1 > 180) asp1 -= 360;
-            if (asp1 < -180) asp1 += 360;
-
-            if (Math.abs(asp1) < 0.0001) break;
-            
-            const sunSpeed_trop = (sun(jdt + 0.001) - cachedSun) * 1000;
-            const moonSpeed_trop = (moon(jdt + 0.001) - cachedMoon) * 1000;
-            const sidereal_speed_diff = moonSpeed_trop - sunSpeed_trop;
-
-            jdt += asp1 / sidereal_speed_diff;
-        }
-        
-        const eventDate = calData(jdt + (tzone - dTime(jdt)) / 24);
-        if (i === 0) s_t.start = eventDate;
-        else s_t.end = eventDate;
+export function getDayAharBounds(date: Date, lat: number, lon: number, tz: number): {
+    sunriseAhar: number;
+    sunriseDate: Date;
+    midnightEndAhar: number;
+    sunriseHHMMSS: string;
+} {
+    const sun = getSunriseSunset(date, lat, lon, tz);
+    if (sun.sunrise === 'N/A') {
+        throw new Error('Could not calculate sunrise/sunset.');
     }
-    
-    return { start: s_t.start!.toISOString(), end: s_t.end!.toISOString() };
+
+    const tzString = (() => {
+        const sign = tz >= 0 ? '+' : '-';
+        const hours = String(Math.floor(Math.abs(tz))).padStart(2, '0');
+        const minutes = String(Math.abs(tz) * 60 % 60).padStart(2, '0');
+        return `${sign}${hours}:${minutes}`;
+    })();
+
+    const localDateStr = new Date(date.getTime() + tz * 3600_000).toISOString().split('T')[0];
+    const sunriseDate = new Date(`${localDateStr}T${sun.sunrise}${tzString}`);
+    if (isNaN(sunriseDate.getTime())) {
+        throw new Error('Failed to construct local sunrise time.');
+    }
+
+    // Ahar boundaries
+    const [hr, min, sec] = sun.sunrise.split(':').map(Number);
+    const sunriseFraction = (hr * 3600 + min * 60 + sec) / 86400.0;
+    const sunriseAhar = getAharFor(date, lon, sunriseFraction);
+    const tomorrow = new Date(date.getTime() + 86400000);
+    const midnightEndAhar = getAharFor(tomorrow, lon, 0.0);
+    return { sunriseAhar, sunriseDate, midnightEndAhar, sunriseHHMMSS: sun.sunrise };
 }
 
-export function findNakshatraTime(jd: number, tzone: number): { start: string, end: string } {
-    let s_t: { start?: Date, end?: Date } = {};
-    const n_len = 360 / 27;
-    const currentAyanamsa = calcayan(jd);
-    const currentNakshNum = Math.floor(fix360(moon(jd) - currentAyanamsa) / n_len);
-    
-    for (let i = 0; i < 2; i++) {
-        const targetNakshNum = (currentNakshNum + i + 27) % 27;
-        const targetNakshLon = targetNakshNum * n_len;
-
-        let jdt = jd;
-        let lmoon0, asp1;
-        
-        for (let j = 0; j < 5; j++) {
-            const tempAyanamsa = calcayan(jdt);
-            const moonJdt = moon(jdt);
-            const cachedMoon = moonJdt;
-            
-            lmoon0 = fix360(cachedMoon - tempAyanamsa);
-            asp1 = targetNakshLon - lmoon0;
-            if (asp1 > 180) asp1 -= 360;
-            if (asp1 < -180) asp1 += 360;
-            
-            if (Math.abs(asp1) < 0.0001) break;
-            const moonSpeed_trop = (moon(jdt + 0.001) - cachedMoon) * 1000;
-            jdt += asp1 / moonSpeed_trop;
-        }
-
-        const eventDate = calData(jdt + (tzone - dTime(jdt)) / 24);
-        if (i === 0) s_t.start = eventDate;
-        else s_t.end = eventDate;
-    }
-
-    return { start: s_t.start!.toISOString(), end: s_t.end!.toISOString() };
+export function findAspectTime(
+    sunriseAhar: number, sunriseDate: Date, isKarana: boolean): { start: string, end: string } {
+    const step = isKarana ? 6 : 12;      // degrees per aspect
+    const total = isKarana ? 60 : 30;    // total aspects
+    const valAtStart = absElongation(sunriseAhar);
+    const currentIndex = Math.floor(valAtStart / step);
+    const startTarget = currentIndex * step;
+    const endTarget = ((currentIndex + 1) % total) * step;
+    const startAhar = findTransit(sunriseAhar, absElongation, startTarget, 2);
+    const endAhar = findTransit(startAhar ?? sunriseAhar, absElongation, endTarget, 2);
+    const startISO = startAhar ? aharToDate(startAhar, sunriseAhar, sunriseDate).toISOString() : null;
+    const endISO = endAhar ? aharToDate(endAhar, sunriseAhar, sunriseDate).toISOString() : null;
+    return { start: startISO ?? '', end: endISO ?? '' };
 }
 
-export function findNakshatraPadaTime(jd: number, tzone: number): { start: string, end: string } {
-    const n_len = 360 / 27;
-    const p_len = n_len / 4;
-    const currentAyanamsa = calcayan(jd);
-    const siderealMoon = fix360(moon(jd) - currentAyanamsa);
+export function findNakshatraTime(
+    sunriseAhar: number, sunriseDate: Date,
+): { start: string, end: string } {
+    const step = 360 / 27;
+    const valAtStart = absTrueLongitudeMoon(sunriseAhar);
+    const currentIndex = Math.floor(valAtStart / step);
+    const startTarget = currentIndex * step;
+    const endTarget = (currentIndex + 1) * step;
+    const startAhar = findTransit(sunriseAhar, absTrueLongitudeMoon, startTarget, 2);
+    const endAhar = findTransit(startAhar ?? sunriseAhar, absTrueLongitudeMoon, endTarget, 2);
+    const startISO = startAhar ? aharToDate(startAhar, sunriseAhar, sunriseDate).toISOString() : null;
+    const endISO = endAhar ? aharToDate(endAhar, sunriseAhar, sunriseDate).toISOString() : null;
 
-    const currentNakshNum = Math.floor(siderealMoon / n_len);
-    const progressInNaksh = siderealMoon % n_len;
-    const currentPadaNum = Math.floor(progressInNaksh / p_len);
-
-    let s_t: { start?: Date, end?: Date } = {};
-    
-    for (let i = 0; i < 2; i++) {
-        const targetPadaAbsoluteNum = currentNakshNum * 4 + currentPadaNum + i;
-        const targetLon = (targetPadaAbsoluteNum * p_len);
-
-        let jdt = jd;
-        let lmoon0, asp1;
-
-        for (let j = 0; j < 5; j++) {
-            const tempAyanamsa = calcayan(jdt);
-            const moonJdt = moon(jdt);
-            const cachedMoon = moonJdt;
-            
-            lmoon0 = fix360(cachedMoon - tempAyanamsa);
-            asp1 = targetLon - lmoon0;
-            // Handle wrap-around
-            if (asp1 > 180) asp1 -= 360;
-            if (asp1 < -180) asp1 += 360;
-            
-            if (Math.abs(asp1) < 0.0001) break;
-
-            const moonSpeed_trop = (moon(jdt + 0.001) - cachedMoon) * 1000;
-            jdt += asp1 / moonSpeed_trop;
-        }
-
-        const eventDate = calData(jdt + (tzone - dTime(jdt)) / 24);
-        if (i === 0) s_t.start = eventDate;
-        else s_t.end = eventDate;
-    }
-
-    return { start: s_t.start!.toISOString(), end: s_t.end!.toISOString() };
+    return { start: startISO ?? '', end: endISO ?? '' };
 }
 
+export function findNakshatraPadaTime(
+    sunriseAhar: number, sunriseDate: Date,
+): { start: string, end: string } {
+    const nStep = 360 / 27;
+    const pStep = nStep / 4;
+    const siderealMoonAbs = absTrueLongitudeMoon(sunriseAhar);
+    const currentNaksh = Math.floor(siderealMoonAbs / nStep);
+    const progressInNaksh = siderealMoonAbs % nStep;
+    const currentPada = Math.floor(progressInNaksh / pStep);
+    const absolutePadaIndex = currentNaksh * 4 + currentPada; // 0..107
+    const startTarget = absolutePadaIndex * pStep;
+    const endTarget = (absolutePadaIndex + 1) * pStep;
+    const startAhar = findTransit(sunriseAhar, absTrueLongitudeMoon, startTarget, 2);
+    const endAhar = findTransit(startAhar ?? sunriseAhar, absTrueLongitudeMoon, endTarget, 2);
+    const startISO = startAhar ? aharToDate(startAhar, sunriseAhar, sunriseDate).toISOString() : null;
+    const endISO = endAhar ? aharToDate(endAhar, sunriseAhar, sunriseDate).toISOString() : null;
+    return { start: startISO ?? '', end: endISO ?? '' };
+}
 
-export function findYogaTime(jd: number, tzone: number): { start: string, end: string } {
-    let s_t: { start?: Date, end?: Date } = {};
-    const y_len = 360 / 27;
-    
-    const currentAyanamsa = calcayan(jd);
-    const siderealSun = fix360(sun(jd) - currentAyanamsa);
-    const siderealMoon = fix360(moon(jd) - currentAyanamsa);
-    const currentYogaNum = Math.floor(fix360(siderealSun + siderealMoon) / y_len);
-    
-    for (let i = 0; i < 2; i++) {
-        const targetYogaNum = (currentYogaNum + i + 27) % 27;
-        const targetYogaLon = targetYogaNum * y_len;
-
-        let jdt = jd;
-        let lsun0, lmoon0, totalLon, asp1;
-
-        for (let j = 0; j < 5; j++) {
-            const tempAyanamsa = calcayan(jdt);
-            const sunJdt = sun(jdt);
-            const moonJdt = moon(jdt);
-            const cachedSun = sunJdt;
-            const cachedMoon = moonJdt;
-            
-            lsun0 = fix360(cachedSun - tempAyanamsa);
-            lmoon0 = fix360(cachedMoon - tempAyanamsa);
-            totalLon = fix360(lsun0 + lmoon0);
-            asp1 = targetYogaLon - totalLon;
-            if (asp1 > 180) asp1 -= 360;
-            if (asp1 < -180) asp1 += 360;
-
-            if (Math.abs(asp1) < 0.0001) break;
-            const sunSpeed_trop = (sun(jdt+0.001)-cachedSun)*1000;
-            const moonSpeed_trop = (moon(jdt+0.001)-cachedMoon)*1000;
-            jdt += asp1 / (moonSpeed_trop + sunSpeed_trop);
-        }
-
-        const eventDate = calData(jdt + (tzone - dTime(jdt)) / 24);
-        if (i === 0) s_t.start = eventDate;
-        else s_t.end = eventDate;
-    }
-    return { start: s_t.start!.toISOString(), end: s_t.end!.toISOString() };
+export function findYogaTime(
+    sunriseAhar: number, sunriseDate: Date,
+): { start: string, end: string } {
+    const step = 360 / 27;
+    const getTotal = (ah: number) => absTrueLongitudeSun(ah) + absTrueLongitudeMoon(ah);
+    const totalAtStart = getTotal(sunriseAhar);
+    const currentIndex = Math.floor((totalAtStart % 360) / step);
+    const startTarget = currentIndex * step;
+    const endTarget = (currentIndex + 1) * step;
+    const startAhar = findTransit(sunriseAhar, getTotal, startTarget, 2);
+    const endAhar = findTransit(startAhar ?? sunriseAhar, getTotal, endTarget, 2);
+    const startISO = startAhar ? aharToDate(startAhar, sunriseAhar, sunriseDate).toISOString() : null;
+    const endISO = endAhar ? aharToDate(endAhar, sunriseAhar, sunriseDate).toISOString() : null;
+    return { start: startISO ?? '', end: endISO ?? '' };
 }

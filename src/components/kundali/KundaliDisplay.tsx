@@ -91,6 +91,10 @@ export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnTo
         <div className="hidden text-xs self-center print:block font-bold text-gray-400 dark:text-gray-400">
           {NEPALI_LABELS.printedDate}: {formattedDate} {timeFormatted}
         </div>
+        <div className="mt-2 text-xs text-orange-600 dark:text-orange-400 text-center px-2"
+                >
+                    {NEPALI_LABELS.kundaliDisclaimer}
+                </div>
       </header>
 
       {/* Birth details + planets */}
