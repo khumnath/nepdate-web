@@ -251,15 +251,16 @@ export interface BikramDate { year: number; monthIndex: number; day: number; mon
 
 // Public: Gregorian -> Bikram Sambat
 export function toBikramSambat(gregorianDate: Date): BikramDate {
-    const targetUtcDate = new Date(Date.UTC(gregorianDate.getFullYear(), gregorianDate.getMonth(), gregorianDate.getDate()));
-    const startDate = new Date(Date.UTC(Bsdata.BS_START_DATE_AD.getFullYear(), Bsdata.BS_START_DATE_AD.getMonth(), Bsdata.BS_START_DATE_AD.getDate()));
+    // Normalize to UTC midnight (date-only semantics)
+    const targetUtcDate = new Date(Date.UTC(gregorianDate.getUTCFullYear(), gregorianDate.getUTCMonth(), gregorianDate.getUTCDate()));
+    const startDate = new Date(Date.UTC(Bsdata.BS_START_DATE_AD.getUTCFullYear(), Bsdata.BS_START_DATE_AD.getUTCMonth(), Bsdata.BS_START_DATE_AD.getUTCDate()));
     const lastBsYear = Bsdata.BS_START_YEAR + Bsdata.NP_MONTHS_DATA.length - 1;
     const lastBsMonthData = Bsdata.NP_MONTHS_DATA[Bsdata.NP_MONTHS_DATA.length - 1];
     const daysInLastBsMonth = lastBsMonthData[lastBsMonthData.length - 1];
     const endDate = fromBikramSambat(lastBsYear, 11, daysInLastBsMonth);
 
     if (targetUtcDate >= startDate && targetUtcDate <= endDate) {
-        const daysOffset = Math.floor((targetUtcDate.getTime() - startDate.getTime()) / 86400000);
+        const daysOffset = Math.round((targetUtcDate.getTime() - startDate.getTime()) / 86400000);
         let remainingDays = daysOffset;
         for (let y = 0; y < Bsdata.NP_MONTHS_DATA.length; y++) {
             const currentBsYear = Bsdata.BS_START_YEAR + y;
@@ -301,13 +302,25 @@ export function fromBikramSambat(bsYear: number, monthIndex: number, day: number
         for (let m = 0; m < monthIndex; m++) {
             daysOffset += Bsdata.NP_MONTHS_DATA[yearIndex][m];
         }
-        const resultDate = new Date(Bsdata.BS_START_DATE_AD.getTime());
+        const start = Bsdata.BS_START_DATE_AD;
+        const resultDate = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
         resultDate.setUTCDate(resultDate.getUTCDate() + daysOffset);
         return resultDate;
     } else {
+        // Algorithmic fallback
         const ahar_at_ujjain_midnight = findAharForBsDate(bsYear, monthIndex, day);
         const julian_date = KaliEpoch + ahar_at_ujjain_midnight;
-        return fromJulianDay(julian_date);
+        const adDate = fromJulianDay(julian_date);
+
+        // Self-correction loop (attempt ±0..±2 day adjustments)
+        const offsets = [0, 1, -1, 2, -2];
+        for (const offset of offsets) {
+            const testDate = new Date(adDate.getTime());
+            if (offset !== 0) testDate.setUTCDate(adDate.getUTCDate() + offset);
+            const check = toBikramSambat(testDate);
+            if (check.year === bsYear && check.monthIndex === monthIndex && check.day === day) return testDate;
+        }
+        return adDate;
     }
 }
 
