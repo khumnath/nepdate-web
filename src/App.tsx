@@ -75,6 +75,17 @@ const App: React.FC = () => {
     toast.info('Settings reset to default', 2000);
   };
 
+
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const viewParam = params.get('activeView');
+
+  if (viewParam === 'radio') {
+    setActiveView('radio');
+    window.history.replaceState({}, '', '/');
+  }
+}, [setActiveView]);
+
   useEffect(() => {
     if (showExitToast) {
       toast.info(
