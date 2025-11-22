@@ -1,5 +1,5 @@
 import React from 'react';
-import { NEPALI_WEEKDAYS_SHORT, GREGORIAN_WEEKDAYS_SHORT, NEPALI_LABELS } from '../../constants/constants'
+import { NEPALI_WEEKDAYS_SHORT, GREGORIAN_WEEKDAYS_SHORT } from '../../constants/constants'
 import { fromBikramSambat, toBikramSambat, getBikramMonthInfo, toDevanagari, calculate } from '../../lib/utils/lib';
 
 interface CalendarGridProps {
@@ -147,11 +147,11 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                     {panchanga.events && panchanga.events.length > 0 && (
                         <div
                             className="
-                            event-dot absolute 
-                            bottom-1 right-0.5 
+                            event-dot absolute
+                            bottom-1 right-0.5
                             w-1.5 h-1.5   /* smaller dot on mobile (~6px) */
                             md:w-2 md:h-2 /* normal size on md and above (~8px) */
-                            bg-green-500 
+                            bg-green-500
                             rounded-full
                             "
                         />
@@ -286,20 +286,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                 {activeSystem === 'bs' ? renderBikramSambatCalendar() : renderGregorianCalendar()}
             </div>
 
-            <div className="flex-grow" />
+            <div className="mb-2 flex-grow" />
 
-            {activeSystem === 'bs' ? (
-                <div className="mt-2">
-                    <span className="text-tithi-warning text-xs text-yellow-600 dark:text-yellow-700">
-                        {NEPALI_LABELS.tithiWarning}
-                    </span>
-                </div>
-            ) : (
-                <div className="mt-2">
-                    <span className="text-tithi-warning sub-xs text-yellow-600 dark:text-yellow-600">
-                        {NEPALI_LABELS.tithiWarningEn} </span>
-                </div>
-            )}
         </div>
     );
 };

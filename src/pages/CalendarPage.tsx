@@ -54,8 +54,9 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onDayClick }) => {
           adMonth={currentAdMonth}
           onSystemChange={switchSystem}
           onTodayClick={goToToday}
-          theme={theme}
-          onThemeToggle={handleThemeToggle}
+            theme={theme}
+            onThemeToggle={handleThemeToggle}
+            todayDetails={todayDetails}
         />
       </div>
 

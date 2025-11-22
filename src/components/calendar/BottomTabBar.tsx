@@ -55,7 +55,8 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
       className="
         fixed bottom-0 left-0 right-0 w-full h-16
         bg-slate-200 dark:bg-gray-800
-        border-t border-gray-300 dark:border-gray-700
+        border-t border-gray-400 dark:border-gray-900
+				shadow-md
         z-50 lg:hidden
         [padding-bottom:env(safe-area-inset-bottom)]
       "

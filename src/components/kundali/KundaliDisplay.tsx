@@ -184,7 +184,7 @@ export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnTo
           </button>
           <button
             className="bg-gray-600 dark:bg-gray-500 text-white px-6 py-2 rounded shadow-md hover:bg-gray-700 transition flex items-center gap-2"
-            onClick={() => handlePrint}
+             onClick={handlePrint}
           >
             <PrintIcon className="w-4 h-4" /> {NEPALI_LABELS.print}
           </button>

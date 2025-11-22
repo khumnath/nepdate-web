@@ -207,7 +207,7 @@ useEffect(() => {
             </Suspense>
           ) : activeView === 'calendar' ? (
             <>
-              <CalendarHeader activeSystem={activeSystem} bsYear={currentBsYear} bsMonth={currentBsMonth} adYear={currentAdYear} adMonth={currentAdMonth} onSystemChange={switchSystem} onTodayClick={goToToday} theme={theme} onThemeToggle={toggleTheme} />
+              <CalendarHeader activeSystem={activeSystem} bsYear={currentBsYear} bsMonth={currentBsMonth} adYear={currentAdYear} adMonth={currentAdMonth} onSystemChange={switchSystem} onTodayClick={goToToday} theme={theme} onThemeToggle={toggleTheme} todayDetails={todayDetails} />
               <main className="min-h-[60vh] md:grid md:grid-cols-12 md:gap-x-6">
                 <aside className="hidden md:block md:col-span-4">
                   <TodayWidget todayAd={initialToday} todayBs={initialTodayBs} todayDetails={todayDetails} onShowDetailsClick={handleShowDetailsClick} />

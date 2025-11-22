@@ -10,7 +10,7 @@ import { Sunrise, Sunset, ArrowRight } from 'lucide-react';
 
 type BikramSambatDate = ReturnType<typeof toBikramSambat>;
 type CalculateResult = ReturnType<typeof calculate>;
-type TodayDetails = Exclude<CalculateResult, { error: string }>;
+export type TodayDetails = Exclude<CalculateResult, { error: string }>;
 type CalendarEvent = TodayDetails extends { events: (infer E)[] } ? E : never;
 
 interface TodayWidgetProps {
@@ -24,7 +24,7 @@ const PanchangaRow: React.FC<{ label: string; value: string }> = ({
   label,
   value,
 }) => (
-  <li className="flex justify-between items-center text-sm py-1.5 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+  <li className="flex justify-around items-center text-sm py-1.5 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
     <span className="text-gray-500 dark:text-gray-400">{label}:</span>
     <span className="font-medium text-gray-800 dark:text-gray-200 text-right">
       {value}
@@ -80,7 +80,7 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
           {todayBs.monthName}, {bsYearNep}
         </div>
       </div>
-      <hr className="my-4 border-gray-200 dark:border-gray-600" />
+      <hr className="border-gray-200 dark:border-gray-600" />
       <div className="text-center">
         <div className="text-base font-semibold text-gray-800 dark:text-gray-100">
           {adDay} {adMonth} {adYear}
@@ -92,11 +92,11 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
 
       {todayDetails && (
         <>
-          <hr className="my-4 border-gray-200 dark:border-gray-600" />
-          <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">
+          <hr className="my-2 border-gray-200 dark:border-gray-600" />
+          <h4 className="font-semibold text-center text-gray-800 dark:text-gray-200 mb-2">
             पञ्चाङ्ग (सुर्योदयकालीन)
           </h4>
-          <ul className="divide-y divide-gray-200 dark:divide-gray-600">
+          <ul className="text-center text-gray-200 dark:text-gray-600">
             {tithi && <PanchangaRow label="तिथि" value={tithi.name} />}
             {nakshatra && <PanchangaRow label="नक्षत्र" value={nakshatra.name} />}
             {yoga && <PanchangaRow label="योग" value={yoga.name} />}

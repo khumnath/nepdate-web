@@ -321,31 +321,50 @@ export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
         return { error: "Failed to construct local sunrise time." };
     }
 
+
+
     // Define Day Boundaries in Ahar
     const [hr, min, sec] = todaySunriseSunset.sunrise.split(':').map(Number);
     const sunriseFraction = (hr * 3600 + min * 60 + sec) / 86400.0; // Fraction of a 24-hour day
 
     const sunriseAhar = getAharFor(date, longitude, sunriseFraction);
     const tomorrowDate = new Date(date.getTime() + 86400000);
+    // Compute next day's sunrise (needed for display rules and to set the day's end boundary)
+    const tomorrowSunriseSunset = getSunriseSunset(tomorrowDate, latitude, longitude, timezone);
+    let nextSunriseDate: Date | null = null;
+    let nextSunriseAhar: number | null = null;
+    if (tomorrowSunriseSunset && tomorrowSunriseSunset.sunrise !== "N/A") {
+        nextSunriseDate = new Date(`${new Date(tomorrowDate.getTime() + timezone * 60 * 60 * 1000).toISOString().split('T')[0]}T${tomorrowSunriseSunset.sunrise}${tzString}`);
+        if (isNaN(nextSunriseDate.getTime())) {
+            nextSunriseDate = null;
+        } else {
+            // compute ahar for next sunrise
+            const [thr, tmin, tsec] = tomorrowSunriseSunset.sunrise.split(':').map(Number);
+            const nextSunriseFraction = (thr * 3600 + tmin * 60 + tsec) / 86400.0;
+            nextSunriseAhar = getAharFor(tomorrowDate, longitude, nextSunriseFraction);
+        }
+    }
     const midnightEndAhar = getAharFor(tomorrowDate, longitude, 0.0);
+    // Use nextSunriseAhar as day's end boundary when available, otherwise fallback to midnight
+    const dayEndAhar = nextSunriseAhar ?? midnightEndAhar;
 
     if (isNaN(sunriseAhar) || isNaN(midnightEndAhar)) {
         return { error: "Failed to calculate ahar boundaries. Input date may be invalid." };
     }
 
     const lunarInfo = getPanchangaDetailsAtAhar(sunriseAhar);
-    const tithiElements = findElementsForDay(sunriseAhar, midnightEndAhar, absElongation, 12, TITHI_NAMES, (index) => {
+    const tithiElements = findElementsForDay(sunriseAhar, dayEndAhar, absElongation, 12, TITHI_NAMES, (index) => {
         const tithiNum = (index % 30) + 1;
         const paksha = tithiNum <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
         const tithiDay = tithiNum > 15 ? tithiNum - 15 : tithiNum;
         return resolveTithiName(tithiDay, paksha);
     });
 
-    const nakshatraElements = findElementsForDay(sunriseAhar, midnightEndAhar, absTrueLongitudeMoon, (360 / 27), NAKSHATRA_NAMES);
+    const nakshatraElements = findElementsForDay(sunriseAhar, dayEndAhar, absTrueLongitudeMoon, (360 / 27), NAKSHATRA_NAMES);
 
-    const yogaElements = findElementsForDay(sunriseAhar, midnightEndAhar, (ah) => absTrueLongitudeSun(ah) + absTrueLongitudeMoon(ah), (360 / 27), YOGA_NAMES);
+    const yogaElements = findElementsForDay(sunriseAhar, dayEndAhar, (ah) => absTrueLongitudeSun(ah) + absTrueLongitudeMoon(ah), (360 / 27), YOGA_NAMES);
 
-    const karanaElements = findElementsForDay(sunriseAhar, midnightEndAhar, absElongation, 6, KARANA_NAMES, (index) => {
+    const karanaElements = findElementsForDay(sunriseAhar, dayEndAhar, absElongation, 6, KARANA_NAMES, (index) => {
         const karanaIdx = index % 60;
         if (karanaIdx === 0) return KARANA_NAMES[0];
         if (karanaIdx < 57) return KARANA_NAMES[(karanaIdx - 1) % 7 + 1];
@@ -410,6 +429,9 @@ export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
             startTime: formatTime(k.startTime),
             endTime: formatTime(k.endTime)
         })),
+        // Expose today's sunrise ISO and next sunrise ISO to help display logic in UI
+        sunriseIso: sunriseDate.toISOString(),
+        nextSunriseIso: nextSunriseDate ? nextSunriseDate.toISOString() : null,
 
         events,
     };
