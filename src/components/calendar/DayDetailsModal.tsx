@@ -214,6 +214,7 @@ const DayDetailsModal: React.FC<DayDetailsModalProps> = ({ date, isOpen, onClose
                                 <h4 className="font-bold text-sm" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
                                     भद्रा (विष्टि करण) सक्रिय छ
                                 </h4>
+																<TimingDetailRow elements={data.bhadraTiming ?? []} baseDate={date} todayDate={todayDate} />
                                 <p className="text-sm mt-1" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
                                     बास: <strong>{bhadra.residence}</strong>
                                 </p>

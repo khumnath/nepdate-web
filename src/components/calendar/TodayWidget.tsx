@@ -5,9 +5,10 @@ import {
   toBikramSambat,
   weekdays,
   calculate,
+  getNepaliPeriod
 } from '../../lib/utils/lib';
 
-import { Sunrise, Sunset, ArrowRight, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Sunrise, Sunset, ArrowRight, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 
 type BikramSambatDate = ReturnType<typeof toBikramSambat>;
 type CalculateResult = ReturnType<typeof calculate>;
@@ -68,6 +69,48 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
   // Get Bhadra info from the calculate result
   const bhadra = todayDetails?.bhadra;
 
+  // Helpers for Time Formatting
+  const formatTimeNepali = (iso?: string | null) => {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Kathmandu',
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit'
+    }).formatToParts(d);
+
+    const get = (type: string) => parts.find(p => p.type === type)?.value || '00';
+    let hh = parseInt(get('hour'), 10);
+    const mm = parseInt(get('minute'), 10);
+    if (!isFinite(hh) || !isFinite(mm)) return null;
+
+    const period = getNepaliPeriod(hh);
+    const hour12 = hh % 12 === 0 ? 12 : hh % 12;
+    return `${toDevanagari(hour12)}:${toDevanagari(String(mm).padStart(2, '0'))} ${period}`;
+  };
+
+  const getBhadraTimeDisplay = () => {
+    if (!todayDetails) return null;
+    const timings = (todayDetails as any).bhadraTiming as Array<{ startTime: string | null, endTime: string | null }>;
+
+    if (!timings || timings.length === 0) return null;
+
+    return timings.map(t => {
+       const start = formatTimeNepali(t.startTime);
+       const end = formatTimeNepali(t.endTime);
+
+       if (start && end) return `${start}-${end}`;
+       if (start) return `${start} देखि`;
+       if (end) return `${end} सम्म`;
+       return null;
+    }).filter(Boolean).join(', ');
+  };
+
+  const bhadraTimeStr = getBhadraTimeDisplay();
+
   return (
     <div className="p-4 bg-azure dark:bg-gray-700 rounded-lg shadow-md border dark:border-gray-600">
       <h3 className="text-lg text-center font-semibold text-blue-600 dark:text-blue-400 mb-3">
@@ -118,7 +161,7 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
           </div>
 
           {/* BHADRA DISPLAY LOGIC */}
-          {bhadra && bhadra.isActive && (
+          {bhadra && bhadra.isActive &&(
             <div className={`mt-3 p-2 rounded-md text-sm border flex items-center justify-center gap-2 ${
               bhadra.isHarmful
                 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 text-red-700 dark:text-red-300'
@@ -129,13 +172,17 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
               ) : (
                 <CheckCircle size={16} className="shrink-0" />
               )}
-              <span>
+              <div className="flex flex-col">
                 <p className="font-medium">भद्रा: {bhadra.residence}</p>
-								<p className="text-xs mt-1 opacity-90">{bhadra.status}</p>
-              </span>
+                {bhadraTimeStr && (
+                  <p className="text-xs font-semibold mt-0.5 flex items-center gap-1 opacity-90">
+                    <Clock size={12} /> {bhadraTimeStr}
+                  </p>
+                )}
+                <p className="text-xs mt-0.5 opacity-80">{bhadra.status}</p>
+              </div>
             </div>
           )}
-          {/*  */}
         </>
       )}
 

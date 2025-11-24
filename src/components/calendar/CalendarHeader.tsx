@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sun, Moon, X, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Sun, Moon, X, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { toDevanagari, getNepaliPeriod } from '../../lib/utils/lib';
 import {
 	NEPALI_LABELS,
@@ -37,6 +37,46 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 }) => {
 	const [isBhadraModalOpen, setBhadraModalOpen] = useState(false);
 
+	const formatTimeNepali = (iso?: string | null) => {
+		if (!iso) return null;
+		const d = new Date(iso);
+		if (isNaN(d.getTime())) return null;
+
+		const parts = new Intl.DateTimeFormat('en-US', {
+			timeZone: 'Asia/Kathmandu',
+			hour12: false,
+			hour: '2-digit',
+			minute: '2-digit'
+		}).formatToParts(d);
+
+		const get = (type: string) => parts.find(p => p.type === type)?.value || '00';
+		let hh = parseInt(get('hour'), 10);
+		const mm = parseInt(get('minute'), 10);
+		if (!isFinite(hh) || !isFinite(mm)) return null;
+
+		const period = getNepaliPeriod(hh);
+		const hour12 = hh % 12 === 0 ? 12 : hh % 12;
+		return `${toDevanagari(hour12)}:${toDevanagari(String(mm).padStart(2, '0'))} ${period}`;
+	};
+
+	const getBhadraTimeDisplay = () => {
+		if (!todayDetails) return null;
+		const timings = (todayDetails as any).bhadraTiming as Array<{ startTime: string | null, endTime: string | null }>;
+
+		if (!timings || timings.length === 0) return null;
+
+		return timings.map(t => {
+			const start = formatTimeNepali(t.startTime);
+			const end = formatTimeNepali(t.endTime);
+
+			if (start && end) return `${start} देखि ${end} सम्म`;
+			if (start) return `${start} देखि सुरु`;
+			if (end) return `${end} सम्म`;
+			return null;
+		}).filter(Boolean).join(', ');
+	};
+
+
 	const bsDisplay = bsYear !== null
 		? (
 			<>
@@ -65,28 +105,6 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 	const renderLunarSummary = () => {
 		if (!todayDetails) return "—";
 		const bhadra = todayDetails.bhadra;
-
-		const formatTimeNepali = (iso?: string | null) => {
-			if (!iso) return null;
-			const d = new Date(iso);
-			if (isNaN(d.getTime())) return null;
-
-			const parts = new Intl.DateTimeFormat('en-US', {
-				timeZone: 'Asia/Kathmandu',
-				hour12: false,
-				hour: '2-digit',
-				minute: '2-digit'
-			}).formatToParts(d);
-
-			const get = (type: string) => parts.find(p => p.type === type)?.value || '00';
-			let hh = parseInt(get('hour'), 10);
-			const mm = parseInt(get('minute'), 10);
-			if (!isFinite(hh) || !isFinite(mm)) return null;
-
-			const period = getNepaliPeriod(hh);
-			const hour12 = hh % 12 === 0 ? 12 : hh % 12;
-			return `${toDevanagari(hour12)}:${toDevanagari(String(mm).padStart(2, '0'))} ${period}`;
-		};
 
 		// formatElements to return ReactNode array
 		const formatElements = (
@@ -181,13 +199,10 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 
 		return (
 			<div className="text-center">
-				<strong className="font-bold text-green-600 text-lg">आज</strong>
-				<span className="align-middle ml-1 text-bold text-base sm:text-sm text-black dark:text-gray-100" style={{ textWrap: 'auto' }}>
-					{bsMonthName} {bsDay} गते {bsWeekday}
-				</span>
+				<strong className="font-bold text-green-600 text-base">आज</strong>
 				<span className="text-gray-600 dark:text-gray-300 text-sm" style={{ textWrap: 'auto' }}>
 					,&nbsp;
-					<strong className="font-bold">तिथि:</strong> {formatElements(todayDetails.tithis)}。
+					<strong className="font-bold">{bsMonthName} {bsDay} गते {bsWeekday}, तिथि:</strong> {formatElements(todayDetails.tithis)}。
 					<strong className="font-bold">नक्षत्र:</strong> {formatElements(todayDetails.nakshatras)}。
 					<strong className="font-bold">योग:</strong> {formatElements(todayDetails.yogas)}。
 					<strong className="font-bold">करण:</strong> {formatElements(todayDetails.karanas, true)}
@@ -285,6 +300,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 					{(() => {
 						const bhadra = todayDetails.bhadra;
 						if (!bhadra) return null;
+						const bhadraTimeStr = getBhadraTimeDisplay();
 
 						return (
 							<div
@@ -309,9 +325,22 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 								</div>
 
 								<div className={`p-4 rounded-lg border ${bhadra.isHarmful
-										? 'bg-red-50 border-red-100 dark:bg-red-900/20 dark:border-red-800'
-										: 'bg-green-50 border-green-100 dark:bg-green-900/20 dark:border-green-800'
+									? 'bg-red-50 border-red-100 dark:bg-red-900/20 dark:border-red-800'
+									: 'bg-green-50 border-green-100 dark:bg-green-900/20 dark:border-green-800'
 									}`}>
+
+									{/* TIME SECTION */}
+									{bhadraTimeStr && (
+										<div className="mb-3 pb-3 border-b border-black/5 dark:border-white/10">
+											<span className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-1">
+												<Clock size={12} /> समय (Time)
+											</span>
+											<p className="text-base font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+												{bhadraTimeStr}
+											</p>
+										</div>
+									)}
+
 									<div className="mb-3">
 										<span className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold block mb-1">
 											वास (Residence)

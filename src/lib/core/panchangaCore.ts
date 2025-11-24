@@ -29,6 +29,12 @@ import {
 // 1 Day = 60 Ghatis. So 1 Ghati = 1/60 of a day fraction.
 const GHATI = 1.0 / 60.0;
 
+/**
+ * Calculates the Ahar (Ahargana - days since Kali Epoch) for a specific date and time.
+ * @param date The Date object (provides Year, Month, Day)
+ * @param lon Local Longitude (for Deshantara correction)
+ * @param timeFraction Fraction of the day (0.0 to 1.0)
+ */
 export function getAharFor(date: Date, lon: number, timeFraction: number): number {
 	const jd = toJulianDay(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 	const aharAtUjjainMidnight = jd - KaliEpoch;
@@ -101,16 +107,30 @@ export function getBhadraDetails(karanaName: string, moonLong: number) {
 	let isHarmful = false;
 
 	if ([3, 4, 10, 11].includes(rashiIndex)) {
+		// पृथ्वी लोक (अशुभ)
 		residence = "पृथ्वी लोक (मृत्युलोक)";
-		status = "अशुभ  (शुभ कार्य वर्जित)";
+		status =
+			"अशुभ — भद्रा पृथ्वी लोकमा हुँदा अत्यन्त अशुभ मानिन्छ। " +
+			"विवाह, नयाँ कार्य, यात्रा, खरीद-बिक्री जस्ता शुभ कार्य पूर्णतः वर्जित। " +
+			"बाधा, दुर्घटना, विवाद, हानी हुने सम्भावना। केवल कठोर/दण्डात्मक वा विनाशक कार्यका लागि उपयुक्त।";
 		isHarmful = true;
+
 	} else if ([0, 1, 2, 7].includes(rashiIndex)) {
+		// स्वर्ग लोक (तटस्थ)
 		residence = "स्वर्ग लोक (स्वर्ग)";
-		status = "तटस्थ  (शुभ कार्य गर्न सकिन्छ। )";
+		status =
+			"तटस्थ — भद्रा स्वर्ग लोकमा हुँदा मध्यम/तटस्थ मानिन्छ। " +
+			"कुनै ठूलो हानि हुँदैन, शुभ कार्य गर्न सकिन्छ तर यो सर्वोत्तम समय भने होइन। " +
+			"सामान्य कार्य तथा छोटो यात्रा उपयुक्त।";
 		isHarmful = false;
+
 	} else {
+		// पाताल लोक (शुभ)
 		residence = "पाताल लोक (पाताल)";
-		status = "शुभ कार्य गर्न सकिन्छ। धन लाभ हुनेछ।";
+		status =
+			"शुभ — भद्रा पाताल लोकमा हुँदा अत्यन्त शुभ मानिन्छ। " +
+			"विवाह, नयाँ कार्य, यात्रा, खरीद-बिक्री, पूजा, घर प्रवेश सबैका लागि उत्तम समय। " +
+			"हानि वा बाधा हुने डर हुँदैन।";
 		isHarmful = false;
 	}
 
@@ -152,7 +172,7 @@ export function getEventsForDate(
 	const defaultLat = 27.7172;
 	const defaultTz = 5.75;
 
-	//Solar Calculations
+	// Solar Calculations
 	const sunEvents = getSunriseSunset(date, defaultLat, defaultLon, defaultTz);
 
 	const nextDay = new Date(date);
@@ -187,19 +207,13 @@ export function getEventsForDate(
 	const nishithaStartAhar = getAharFor(date, defaultLon, trueMidnightFraction - (1 * GHATI));
 	const nishithaEndAhar = getAharFor(date, defaultLon, trueMidnightFraction + (1 * GHATI));
 
-	// Pre-calculate Panchanga at Boundaries
 	const infoUdaya = getPanchangaDetailsAtAhar(sunriseAhar);
-
-	// We only calculate specific window details if we actually have events requiring them?
-	const infoMadhyannaStart = getPanchangaDetailsAtAhar(madhyannaStartAhar);
-	const infoMadhyannaEnd = getPanchangaDetailsAtAhar(madhyannaEndAhar);
-
 	const infoPradoshStart = getPanchangaDetailsAtAhar(pradoshStartAhar);
 	const infoPradoshEnd = getPanchangaDetailsAtAhar(pradoshEndAhar);
-
 	const infoNishithaStart = getPanchangaDetailsAtAhar(nishithaStartAhar);
 	const infoNishithaEnd = getPanchangaDetailsAtAhar(nishithaEndAhar);
-
+	const infoMadhyannaStart = getPanchangaDetailsAtAhar(madhyannaStartAhar);
+	const infoMadhyannaEnd = getPanchangaDetailsAtAhar(madhyannaEndAhar);
 
 	// ============================================================
 	// DYNAMIC EVENTS (Weekday + Tithi Combinations)
@@ -208,34 +222,69 @@ export function getEventsForDate(
 
 	// Mangal Chaturthi (Uses Udaya)
 	if (weekday === 2 && infoUdaya.tithiName === 'चतुर्थी' && infoUdaya.paksha === 'कृष्ण पक्ष') {
-		events.push({ name: 'मंगल चतुर्थी (अङ्गारकी)', detail: '...', holiday: false });
+		events.push({
+			name: 'मंगल चतुर्थी',
+			detail: 'कृष्ण पक्षको चतुर्थी मंगलबार पर्नु मंगल चतुर्थी हो। यस दिन भगवान् गणेशको पूजा-अर्चना गरिन्छ। व्रत बस्दा विघ्न-बाधा हट्ने, रोग-शोक कम हुने र कार्यसिद्धि हुने विश्वास छ।',
+			holiday: false
+		});
 	}
-	// Somvati Amavasya (Uses Udaya)
+
+	// Somvati Amavasya
 	if (weekday === 1 && infoUdaya.tithiName === 'अमावस्या') {
-		events.push({ name: 'सोमवती औंसी', detail: '...', holiday: false });
+		events.push({
+			name: 'सोमवती औंसी',
+			detail: 'सोमबारको अमावस्या सोमवती औंसी हो। यस दिन व्रत बस्नेले दीर्घायु, स्वास्थ्य र सौभाग्य प्राप्त गर्ने विश्वास छ। विशेष गरी महिलाले पतिको आयु र परिवारको कल्याणका लागि व्रत गर्छन्।',
+			holiday: false
+		});
 	}
-	// Ravi Saptami (Uses Udaya)
+
+	// Ravi Saptami
 	if (weekday === 0 && infoUdaya.tithiName === 'सप्तमी' && infoUdaya.paksha === 'शुक्ल पक्ष') {
-		events.push({ name: 'रवि सप्तमी', detail: '...', holiday: false });
+		events.push({
+			name: 'रवि सप्तमी',
+			detail: 'शुक्ल पक्षको सप्तमी आइतबार पर्नु रवि सप्तमी हो। यस दिन सूर्यदेवको पूजा-अर्चना गरिन्छ। स्नान, दान र व्रतले रोग-शोक नाश हुने, आयु वृद्धि हुने र तेज प्राप्त हुने विश्वास छ।',
+			holiday: false
+		});
 	}
-	// Budhashtami (Uses Udaya)
+
+	// Budhashtami
 	if (weekday === 3 && infoUdaya.tithiName === 'अष्टमी' && infoUdaya.paksha === 'शुक्ल पक्ष') {
-		events.push({ name: 'बुधाष्टमी', detail: '...', holiday: false });
+		events.push({
+			name: 'बुधाष्टमी (भौमाष्टमी',
+			detail: 'शुक्ल पक्षको अष्टमी बुधबार पर्नु बुधाष्टमी हो। यस दिन देवी दुर्गाको पूजा गरिन्छ। व्रत बस्दा सन्तान सुख, परिवारको कल्याण र रोग-शोक नाश हुने विश्वास छ।',
+			holiday: false
+		});
 	}
-	// Shani Amavasya (Uses Udaya)
+
+	// Shani Amavasya
 	if (weekday === 6 && infoUdaya.tithiName === 'अमावस्या') {
-		events.push({ name: 'शनिश्चरी औंसी', detail: '...', holiday: false });
+		events.push({
+			name: 'शनिश्चरी औंसी',
+			detail: 'शनिबारको अमावस्या शनिश्चरी औंसी हो। यस दिन शनिदेवको पूजा-अर्चना गरिन्छ। व्रत बस्दा शनि दोष नाश हुने, बाधा हट्ने र कार्यसिद्धि हुने विश्वास छ।',
+			holiday: false
+		});
 	}
 
-	// Pradosh Vrat Checks (Uses Pradosh Window)
-	// Logic: Is Trayodashi present at ANY point during Pradosh Kaal?
+	// Pradosh Vrat Checks
 	if (isTithiInWindow('त्रयोदशी', infoPradoshStart.paksha, infoPradoshStart, infoPradoshEnd)) {
-		if (weekday === 1) events.push({ name: 'सोम प्रदोष', detail: '...', holiday: false });
-		if (weekday === 2) events.push({ name: 'भौम प्रदोष', detail: '...', holiday: false });
-		if (weekday === 6) events.push({ name: 'शनि प्रदोष', detail: '...', holiday: false });
+		if (weekday === 1) events.push({
+			name: 'सोम प्रदोष',
+			detail: 'त्रयोदशी सोमबार पर्नु सोम प्रदोष हो। यस दिन भगवान् शिवको पूजा-अर्चना गरिन्छ। व्रत बस्दा स्वास्थ्य, दीर्घायु र सुख-समृद्धि प्राप्त हुने विश्वास छ।',
+			holiday: false
+		});
+		if (weekday === 2) events.push({
+			name: 'भौम प्रदोष',
+			detail: 'त्रयोदशी मंगलबार पर्नु भौम प्रदोष हो। यस दिन शिवपूजा विशेष फलदायी हुन्छ। व्रत बस्दा विघ्न-बाधा हट्ने, साहस र कार्यसिद्धि हुने विश्वास छ।',
+			holiday: false
+		});
+		if (weekday === 6) events.push({
+			name: 'शनि प्रदोष',
+			detail: 'त्रयोदशी शनिबार पर्नु शनि प्रदोष हो। यस दिन शिवपूजा र व्रतले शनि दोष नाश गर्ने, बाधा हटाउने र सुख-समृद्धि दिने विश्वास छ।',
+			holiday: false
+		});
 	}
 
-	// Gregorian & Bikram Fixed/Recurring Events
+	// Gregorian & Bikram Events
 	(EventsData.gregorianEvents as any[])?.forEach(event => {
 		if ((event.startYear && gregorianYear < event.startYear) || (event.endYear && gregorianYear > event.endYear)) return;
 		if (event.date === formattedGregorianDate) {
@@ -254,35 +303,25 @@ export function getEventsForDate(
 		}
 	});
 
-	// ============================================================
-	// LUNAR EVENTS (Span Logic)
-	// ============================================================
+	// Lunar Events
 	if (EventsData.lunarEvents) {
 		if (infoUdaya.isAdhika) return events;
-
 		(EventsData.lunarEvents as any[])?.forEach(lunarEvent => {
 			if ((lunarEvent.startYear && bsYear < lunarEvent.startYear) || (lunarEvent.endYear && bsYear > lunarEvent.endYear)) return;
 
-			// 1. Check Month Match (Usually based on Udaya Month)
+			// Check Month Match
 			if (lunarEvent.lunarMonth !== infoUdaya.lunarMonthName) return;
 
 			const rule = lunarEvent.rule || 'udaya';
 			let isMatch = false;
 
-			// 2. Apply Rule Logic (Span vs Point)
 			if (rule === 'udaya') {
 				isMatch = (infoUdaya.paksha === lunarEvent.paksha && infoUdaya.tithiName === lunarEvent.tithi);
-			}
-			else if (rule === 'nishitha') {
-				// Check if Tithi exists at Start OR End of Nishitha Window
+			} else if (rule === 'nishitha') {
 				isMatch = isTithiInWindow(lunarEvent.tithi, lunarEvent.paksha, infoNishithaStart, infoNishithaEnd);
-			}
-			else if (rule === 'pradosh') {
-				// Check if Tithi exists at Start OR End of Pradosh Window
+			} else if (rule === 'pradosh') {
 				isMatch = isTithiInWindow(lunarEvent.tithi, lunarEvent.paksha, infoPradoshStart, infoPradoshEnd);
-			}
-			else if (rule === 'madhyanna') {
-				// Check if Tithi exists at Start OR End of Madhyanna Window
+			} else if (rule === 'madhyanna') {
 				isMatch = isTithiInWindow(lunarEvent.tithi, lunarEvent.paksha, infoMadhyannaStart, infoMadhyannaEnd);
 			}
 
@@ -295,28 +334,25 @@ export function getEventsForDate(
 	return events;
 }
 
-// ... rest of math functions (absMeanLongitude, calculate, etc.) same as before ...
 export const absMeanLongitude = (ahar: number, rotation: number): number => {
 	return (rotation * ahar * 360 / YugaCivilDays);
 };
-// ... include the rest of the file ...
 export const absTrueLongitudeSun = (ahar: number): number => {
 	const meanLong = absMeanLongitude(ahar, YugaRotation.sun);
 	const manda = mandaEquation(meanLong, PlanetApogee.sun, PlanetCircumm.sun);
-	return meanLong - manda; // No zero360
+	return meanLong - manda;
 };
 
 export const absTrueLongitudeMoon = (ahar: number): number => {
 	const meanLong = absMeanLongitude(ahar, YugaRotation.moon);
 	const apogee = absMeanLongitude(ahar, YugaRotation.Candrocca) + 90;
 	const manda = mandaEquation(meanLong, apogee, PlanetCircumm.moon);
-	return meanLong - manda; // No zero360
+	return meanLong - manda;
 };
 
 export const absElongation = (ahar: number): number => {
 	return absTrueLongitudeMoon(ahar) - absTrueLongitudeSun(ahar);
 };
-
 
 export function findTransit(
 	searchStartAhar: number,
@@ -324,7 +360,6 @@ export function findTransit(
 	targetValue: number,
 	maxDays: number = 2
 ): number | null {
-
 	let low = searchStartAhar;
 	let high = searchStartAhar + maxDays;
 	let startVal = getValueFunc(low);
@@ -332,7 +367,7 @@ export function findTransit(
 
 	if (startVal <= targetValue && targetValue <= endVal) {
 	}
-	else if (targetValue < startVal) {
+	 else if (targetValue < startVal) {
 		low = searchStartAhar - maxDays;
 		high = searchStartAhar;
 		startVal = getValueFunc(low);
@@ -357,7 +392,11 @@ export function findTransit(
 	return high;
 }
 
-
+/**
+ * Finds all panchanga elements (Tithi, Nakshatra, etc.) that occur between startAhar and endAhar.
+ * @param startAhar Typically Sunrise
+ * @param endAhar Typically Next Sunrise
+ */
 function findElementsForDay(
 	startAhar: number,
 	endAhar: number,
@@ -372,13 +411,12 @@ function findElementsForDay(
 	//  Find the element active *at* the start time (sunrise)
 	let valAtStart = getValueFunc(startAhar);
 	let currentIndex = Math.floor(valAtStart / divisor);
-	let targetStartValue = currentIndex * divisor;
 	let targetEndValue = (currentIndex + 1) * divisor;
 
-	// Find the start time of this first element (it was probably yesterday)
-	let startTimeAhar = findTransit(startAhar, getValueFunc, targetStartValue, 2);
+	// Find when the CURRENT element started (past)
+	let startTimeAhar = findTransit(startAhar, getValueFunc, currentIndex * divisor, 2);
 
-	// Find the end time
+	// Find when the CURRENT element ends (future)
 	let endTimeAhar = findTransit(startTimeAhar ?? startAhar, getValueFunc, targetEndValue, 2);
 
 	let name: string;
@@ -388,12 +426,17 @@ function findElementsForDay(
 		name = nameArray[currentIndex % nameArray.length];
 	}
 
+	// Add the element active at sunrise.
 	elements.push({ name, startTime: startTimeAhar, endTime: endTimeAhar });
 
+	// Look for subsequent elements that start AND end within the window,
+	// or start within the window and end after.
 	while (endTimeAhar && endTimeAhar < endAhar) {
 		let currentStartTimeAhar = endTimeAhar;
 		currentIndex++;
 		targetEndValue = (currentIndex + 1) * divisor;
+
+		// Find end of this NEXT element
 		endTimeAhar = findTransit(currentStartTimeAhar, getValueFunc, targetEndValue, 2);
 
 		if (getSpecialName) {
@@ -403,8 +446,11 @@ function findElementsForDay(
 		}
 
 		if (endTimeAhar && endTimeAhar > currentStartTimeAhar) {
+			// Normal case: We found an end time
 			elements.push({ name, startTime: currentStartTimeAhar, endTime: endTimeAhar });
 		} else {
+			// Edge case: We couldn't find the end time (maybe > 2 days away or calc error),
+			// OR we reached limit. We still add this element because it started within our window.
 			if (elements.at(-1)?.name !== name) {
 				elements.push({ name, startTime: currentStartTimeAhar, endTime: endTimeAhar });
 			}
@@ -415,14 +461,11 @@ function findElementsForDay(
 	return elements;
 }
 
-
-
 export function aharToDate(ahar: number, sunriseAhar: number, sunriseDate: Date): Date {
 	const dayFraction = ahar - sunriseAhar;
 	const timestamp = sunriseDate.getTime() + dayFraction * 24 * 60 * 60 * 1000;
 	return new Date(timestamp);
 }
-
 
 function getTzString(tz: number): string {
 	const sign = tz >= 0 ? '+' : '-';
@@ -435,62 +478,52 @@ function getTzString(tz: number): string {
 
 export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
 	const bsInfo = toBikramSambat(date);
-	if (!bsInfo) {
-		return { error: "Date out of range or invalid." };
-	}
+	if (!bsInfo) return { error: "Date out of range or invalid." };
 
 	const latitude = lat ?? 27.7172;
 	const longitude = lon ?? 85.3240;
 	const timezone = tz ?? 5.75;
-
 	const tzString = getTzString(timezone);
+
+	// Calculate Today's Sunrise
 	const todaySunriseSunset = getSunriseSunset(date, latitude, longitude, timezone);
-	if (!todaySunriseSunset || todaySunriseSunset.sunrise === "N/A") {
-		return { error: "Could not calculate sunrise/sunset. Location or date might be invalid." };
-	}
+	if (!todaySunriseSunset || todaySunriseSunset.sunrise === "N/A") return { error: "Could not calculate sunrise/sunset." };
+
 	const localDateStr = new Date(date.getTime() + timezone * 60 * 60 * 1000).toISOString().split('T')[0];
 	const sunriseDate = new Date(`${localDateStr}T${todaySunriseSunset.sunrise}${tzString}`);
-	if (isNaN(sunriseDate.getTime())) {
-		return { error: "Failed to construct local sunrise time." };
-	}
-
-
-
-	// Define Day Boundaries in Ahar
 	const [hr, min, sec] = todaySunriseSunset.sunrise.split(':').map(Number);
-	const sunriseFraction = (hr * 3600 + min * 60 + sec) / 86400.0; // Fraction of a 24-hour day
-
+	const sunriseFraction = (hr * 3600 + min * 60 + sec) / 86400.0;
 	const sunriseAhar = getAharFor(date, longitude, sunriseFraction);
+
+	// Calculate Tomorrow's Sunrise (Accurate End of Day)
 	const tomorrowDate = new Date(date.getTime() + 86400000);
-	// Compute next day's sunrise (needed for display rules and to set the day's end boundary)
 	const tomorrowSunriseSunset = getSunriseSunset(tomorrowDate, latitude, longitude, timezone);
 	let nextSunriseDate: Date | null = null;
 	let nextSunriseAhar: number | null = null;
+
+	// Ensure we use the exact date object for next sunrise to get Julian Day
 	if (tomorrowSunriseSunset && tomorrowSunriseSunset.sunrise !== "N/A") {
-		nextSunriseDate = new Date(`${new Date(tomorrowDate.getTime() + timezone * 60 * 60 * 1000).toISOString().split('T')[0]}T${tomorrowSunriseSunset.sunrise}${tzString}`);
-		if (isNaN(nextSunriseDate.getTime())) {
-			nextSunriseDate = null;
-		} else {
-			// compute ahar for next sunrise
+		const tomorrowLocalStr = new Date(tomorrowDate.getTime() + timezone * 60 * 60 * 1000).toISOString().split('T')[0];
+		nextSunriseDate = new Date(`${tomorrowLocalStr}T${tomorrowSunriseSunset.sunrise}${tzString}`);
+
+		if (nextSunriseDate && !isNaN(nextSunriseDate.getTime())) {
 			const [thr, tmin, tsec] = tomorrowSunriseSunset.sunrise.split(':').map(Number);
 			const nextSunriseFraction = (thr * 3600 + tmin * 60 + tsec) / 86400.0;
-			nextSunriseAhar = getAharFor(tomorrowDate, longitude, nextSunriseFraction);
+			// Use nextSunriseDate (not generic tomorrowDate) to align Julian Day calculation exactly
+			nextSunriseAhar = getAharFor(nextSunriseDate, longitude, nextSunriseFraction);
 		}
 	}
-	const midnightEndAhar = getAharFor(tomorrowDate, longitude, 0.0);
-	// Use nextSunriseAhar as day's end boundary when available, otherwise fallback to midnight
-	const dayEndAhar = nextSunriseAhar ?? midnightEndAhar;
 
-	if (isNaN(sunriseAhar) || isNaN(midnightEndAhar)) {
-		return { error: "Failed to calculate ahar boundaries. Input date may be invalid." };
-	}
+	// Fallback: If next sunrise calculation fails, assume 24h later (approx)
+	const midnightEndAhar = getAharFor(tomorrowDate, longitude, 0.0);
+	const dayEndAhar = nextSunriseAhar ?? (sunriseAhar + 1.0); // Safe fallback
+
+	if (isNaN(sunriseAhar)) return { error: "Failed to calculate ahar boundaries." };
 
 	const lunarInfo = getPanchangaDetailsAtAhar(sunriseAhar);
+	const formatTime = (aharVal: number | null) => aharVal ? aharToDate(aharVal, sunriseAhar, sunriseDate).toISOString() : null;
 
-	// --- CALCULATE BHADRA DETAILS (AT SUNRISE) ---
-	// We check Bhadra status based on the Karana prevailing at sunrise.
-	const bhadraInfo = getBhadraDetails(lunarInfo.karanaName, lunarInfo.moonLong);
-
+	// STANDARD PANCHANG ELEMENTS
 	const tithiElements = findElementsForDay(sunriseAhar, dayEndAhar, absElongation, 12, TITHI_NAMES, (index) => {
 		const tithiNum = (index % 30) + 1;
 		const paksha = tithiNum <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
@@ -502,6 +535,7 @@ export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
 
 	const yogaElements = findElementsForDay(sunriseAhar, dayEndAhar, (ah) => absTrueLongitudeSun(ah) + absTrueLongitudeMoon(ah), (360 / 27), YOGA_NAMES);
 
+	// Karana (Half-Tithi) - often changes multiple times a day
 	const karanaElements = findElementsForDay(sunriseAhar, dayEndAhar, absElongation, 6, KARANA_NAMES, (index) => {
 		const karanaIdx = index % 60;
 		if (karanaIdx === 0) return KARANA_NAMES[0];
@@ -509,18 +543,31 @@ export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
 		return KARANA_NAMES[karanaIdx - 57 + 8];
 	});
 
+	//  BHADRA LOGIC
+	// We separate Bhadra logic here to specifically ignore episodes starting after midnight for display।
+
+	// Get ALL Vishti episodes in the generic window (Sunrise -> Next Sunrise)
+	const vishtiEpisodes = karanaElements.filter(k =>
+		k.name.includes("विष्टि") || k.name.includes("Vishti")
+	);
+
+	// Filter: Only keep episodes that start BEFORE local midnight (tomorrowDate @ 0.0)
+	//    This prevents Bhadra starting at 2 AM from showing up in the primary "Day View".
+	const validBhadraEpisodes = vishtiEpisodes.filter(v => {
+		if (!v.startTime) return true; // Starts before sunrise, definitely keep
+		return v.startTime < midnightEndAhar;
+	});
+
+	let bhadraInfo = null;
+	if (validBhadraEpisodes.length > 0) {
+		bhadraInfo = getBhadraDetails(validBhadraEpisodes[0].name, lunarInfo.moonLong);
+	}
+
 	const events = getEventsForDate(date, bsInfo.year, bsInfo.monthIndex, bsInfo.day);
-
-	const lunarMonthDisplayName = lunarInfo.isAdhika
-		? "अधिक " + lunarInfo.lunarMonthName
-		: lunarInfo.lunarMonthName;
-
-	const gregorianOptions: Intl.DateTimeFormatOptions = {
+	const lunarMonthDisplayName = lunarInfo.isAdhika ? "अधिक " + lunarInfo.lunarMonthName : lunarInfo.lunarMonthName;
+	const gregorianDateFormatted = date.toLocaleDateString('en-US', {
 		weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
-	};
-	const gregorianDateFormatted = date.toLocaleDateString('en-US', gregorianOptions);
-
-	const formatTime = (aharVal: number | null) => aharVal ? aharToDate(aharVal, sunriseAhar, sunriseDate).toISOString() : null;
+	});
 
 	return {
 		gregorianDate: gregorianDateFormatted,
@@ -537,43 +584,39 @@ export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
 		moonRashi: lunarInfo.moonRashi,
 		adhikaMasa: lunarInfo.adhikaStatus,
 		isComputed: bsInfo.isComputed || false,
-		// Sunrise-specific elements
 		tithi: lunarInfo.tithiName,
 		nakshatra: lunarInfo.nakshatraName,
 		yoga: lunarInfo.yogaName,
 		karana: lunarInfo.karanaName,
 
-		// Return Bhadra Info Object
 		bhadra: bhadraInfo,
+		bhadraTiming: validBhadraEpisodes.map(v => ({
+			startTime: formatTime(v.startTime),
+			endTime: formatTime(v.endTime)
+		})),
 
-		// Multi-value array properties (for the whole day)
 		tithis: tithiElements.map(t => ({
 			name: t.name,
 			startTime: formatTime(t.startTime),
 			endTime: formatTime(t.endTime)
 		})),
-
 		nakshatras: nakshatraElements.map(n => ({
 			name: n.name,
 			startTime: formatTime(n.startTime),
 			endTime: formatTime(n.endTime)
 		})),
-
 		yogas: yogaElements.map(y => ({
 			name: y.name,
 			startTime: formatTime(y.startTime),
 			endTime: formatTime(y.endTime)
 		})),
-
 		karanas: karanaElements.map(k => ({
 			name: k.name,
 			startTime: formatTime(k.startTime),
 			endTime: formatTime(k.endTime)
 		})),
-		// Expose today's sunrise ISO and next sunrise ISO to help display logic in UI
 		sunriseIso: sunriseDate.toISOString(),
 		nextSunriseIso: nextSunriseDate ? nextSunriseDate.toISOString() : null,
-
 		events,
 	};
 }
