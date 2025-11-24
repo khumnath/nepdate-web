@@ -1,5 +1,5 @@
 import React, { lazy } from "react";
-import { Home, SwitchCamera, Info, Settings, FileText, RadioIcon } from "lucide-react";
+import { Home, SwitchCamera, RadioIcon, Info, Settings, FileText, BookOpen } from "lucide-react";
 import { NEPALI_LABELS } from "./constants";
 
 // Lazy-loaded pages
@@ -10,7 +10,7 @@ const SettingsPage = lazy(() => import("../pages/SettingsPage"));
 const AboutPage = lazy(() => import("../pages/AboutPopup"));
 const PrivacyPage = lazy(() => import("../pages/PrivacyPage"));
 const radioPage = lazy(() => import("../pages/radioPage"));
-
+const DharmaPage = lazy(() => import("../pages/DharmaPage"));
 export interface MenuItem {
   key: string;                                      // Unique identifier
   label: string;                                    // Nepali label
@@ -33,6 +33,13 @@ export const MENU_ITEMS: MenuItem[] = [
     label: NEPALI_LABELS.converter,
     icon: <SwitchCamera className="w-5 h-5" />,
     page: ConverterPage,
+    fixed: true,
+  },
+  {
+    key: "dharma",
+    label: "धर्म र संस्कृति",
+    icon: <BookOpen className="w-5 h-5" />,
+    page: DharmaPage,
     fixed: true,
   },
   {

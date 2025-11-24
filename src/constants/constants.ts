@@ -12,6 +12,7 @@ export const NEPALI_LABELS = {
   lightMode: "उज्यालो मोड",
   settings: "सेटिङ",
   theme: 'थीम',
+  dharma: 'dharma',
   mobileNavStyle: 'मोबाइल मेनु स्टाइल',
   desktopNavStyle: 'डेस्क्टप मेनु स्टाइल',
   desktopNavDesc: 'मनपर्ने मेनु स्टाइल छन्नुहोस।',

@@ -8,7 +8,7 @@ import DayDetailsModal from './components/calendar/DayDetailsModal';
 import MonthlyEvents from './components/calendar/MonthlyEvents';
 import Footer from './components/calendar/Footer';
 import AboutPopup from './pages/AboutPopup';
-import { Menu, X, Download, Info, Home, SwitchCamera, Moon, Sun, RefreshCcw, Settings, RadioIcon } from 'lucide-react';
+import { Menu, X, Download, Info, Home, SwitchCamera, Moon, Sun, RefreshCcw, Settings, RadioIcon , BookOpen } from 'lucide-react';
 import { NEPALI_LABELS } from './constants/constants';
 import { toast, ToastContainer } from './components/shared/toast';
 import { TodayWidget } from './components/calendar/TodayWidget';
@@ -27,6 +27,7 @@ const ConverterPage = lazy(() => import('./pages/ConverterPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const RadioPage = lazy(() => import('./pages/radioPage'));
+const DharmaPage = lazy(() => import('./pages/DharmaPage'));
 
 const App: React.FC = () => {
   const { theme, toggleTheme, resetTheme } = useTheme();
@@ -183,6 +184,7 @@ useEffect(() => {
             <button onClick={() => { setActiveView('converter'); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"><SwitchCamera className="w-4 h-4" /> {NEPALI_LABELS.converter}</button>
             <button onClick={() => { setActiveView('kundali'); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700">🔯 {NEPALI_LABELS.kundali}</button>
             <button onClick={() => { setActiveView('radio'); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"><RadioIcon className="w-4 h-4" /> {NEPALI_LABELS.radio}</button>
+<button onClick={() => { setActiveView('dharma'); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"><BookOpen className="w-4 h-4" /> {NEPALI_LABELS.dharma}</button>
 						<button onClick={() => { setActiveView('settings'); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"><Settings className="w-4 h-4" /> {NEPALI_LABELS.settings}</button>
             <button onClick={() => { setActiveView('privacy'); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"><Info className="w-4 h-4" /> {NEPALI_LABELS.privacyPolicy}</button>
             <button onClick={() => { setIsAboutOpen(true); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"><Info className="w-4 h-4" /> {NEPALI_LABELS.about}</button>
@@ -219,6 +221,10 @@ useEffect(() => {
                 </div>
               </main>
             </>
+) : activeView === 'dharma' ? (
+            <Suspense fallback={<div className="flex justify-center items-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
+              <DharmaPage onBack={() => setActiveView('calendar')} /> </Suspense>
+
           ) : activeView === 'converter' ? (
             <Suspense fallback={<div className="flex justify-center items-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
               <ConverterPage onBack={() => setActiveView('calendar')} />
