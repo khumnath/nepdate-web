@@ -14,7 +14,6 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
   activeView,
   onNavigate,
   showInstall = false,
-  onInstallClick,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -31,16 +30,15 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
       const containerWidth = containerRef.current.offsetWidth;
 
       const brandWidth = 120;          // Approx width of "Nepdate"
-      const installWidth = showInstall ? 120 : 0; // Approx width of Install button
       const moreButtonWidth = 60;      // Width of the "More" trigger
-      const availableWidth = containerWidth - brandWidth - installWidth - moreButtonWidth;
+      const availableWidth = containerWidth - brandWidth - moreButtonWidth;
 
       let totalWidth = 0;
       const newVisible: MenuItem[] = [];
       const newMore: MenuItem[] = [];
 
       MENU_ITEMS.forEach((menu) => {
-        const approxMenuWidth = 120; // Per-item width budget; approximation
+        const approxMenuWidth = 90; // Per-item width budget; approximation
         totalWidth += approxMenuWidth;
         if (totalWidth <= availableWidth) {
           newVisible.push(menu);
@@ -137,15 +135,6 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
         )}
       </div>
 
-      {/* Install Button */}
-      {showInstall && onInstallClick && (
-        <button
-          onClick={onInstallClick}
-          className="ml-4 px-4 py-2 rounded-md bg-blue-600 text-white flex items-center gap-1 whitespace-nowrap"
-        >
-          Install
-        </button>
-      )}
     </nav>
   );
 };

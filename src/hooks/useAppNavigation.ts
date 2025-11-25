@@ -9,10 +9,11 @@ export const useAppNavigation = () => {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isKundaliResultsVisible, setIsKundaliResultsVisible] = useState(false);
 
+  // --- Refs for internal back handlers ---
   const kundaliBackActionRef = useRef<(() => void) | null>(null);
+  const dharmaBackActionRef = useRef<(() => boolean) | null>(null);
 
   const [showExitToast, setShowExitToast] = useState(false);
-
   const backPressedTimerRef = useRef<number | null>(null);
   const backPressedCounterRef = useRef(0);
 
@@ -29,16 +30,13 @@ export const useAppNavigation = () => {
       if (typeof window.Android !== 'undefined' && typeof window.Android.isAndroidApp === 'function') {
         setIsAndroidWebView(true);
         if (intervalId) clearInterval(intervalId);
-      } else if (attempts >= MAX_ATTEMPTS) {
-        if (intervalId) clearInterval(intervalId);
+      } else if (attempts >= MAX_ATTEMPTS && intervalId) {
+        clearInterval(intervalId);
       }
     };
 
     checkIfAndroidApp();
-
-    if (!isAndroidWebView) {
-      intervalId = window.setInterval(checkIfAndroidApp, 2000);
-    }
+    if (!isAndroidWebView) intervalId = window.setInterval(checkIfAndroidApp, 2000);
 
     return () => {
       if (intervalId) clearInterval(intervalId);
@@ -54,17 +52,13 @@ export const useAppNavigation = () => {
         setIsMenuOpen(false);
       }
     };
-    if (isMenuOpen) {
-      window.addEventListener('keydown', handleKeyDown);
-    }
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    if (isMenuOpen) window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isMenuOpen]);
 
-  // Internal navigation logic
+  // --- Internal navigation logic ---
   const handleInternalBackNavigation = useCallback((): boolean => {
-    // 1. Close Modals/Overlays first
+    // 1. Close modals/overlays first
     if (isModalOpen) {
       setIsModalOpen(false);
       return true;
@@ -78,7 +72,7 @@ export const useAppNavigation = () => {
       return true;
     }
 
-    // Handle specific complex pages
+    // 2. Handle Kundali back
     if (activeView === 'kundali') {
       if (isKundaliResultsVisible && kundaliBackActionRef.current) {
         kundaliBackActionRef.current();
@@ -89,22 +83,23 @@ export const useAppNavigation = () => {
       }
     }
 
-    // Handle simple pages (Radio, Settings, Converter, Privacy)
-    if (
-      activeView === 'converter' ||
-      activeView === 'settings' ||
-      activeView === 'privacy' ||
-      activeView === 'radio'
-    ) {
+    // 3. Handle Dharma back
+    if (activeView === 'dharma' && dharmaBackActionRef.current) {
+      const handled = dharmaBackActionRef.current();
+      if (handled) return true;
+    }
+
+    // 4. Handle simple pages
+    if (['converter', 'settings', 'privacy', 'radio'].includes(activeView)) {
       setActiveView('calendar');
       return true;
     }
 
-    // Default: allow system back (which usually exits if on calendar)
+    // 5. Default: allow system back
     return false;
-  }, [isModalOpen, isAboutOpen, isMenuOpen, activeView, isKundaliResultsVisible]);
+  }, [activeView, isModalOpen, isAboutOpen, isMenuOpen, isKundaliResultsVisible]);
 
-  // Back press handling
+  // --- Back press handling ---
   useEffect(() => {
     const resetBackPress = () => {
       backPressedCounterRef.current = 0;
@@ -115,7 +110,6 @@ export const useAppNavigation = () => {
       }
     };
 
-    // Android WebView handler
     window.handleBackPress = (): boolean => {
       const handledInternal = handleInternalBackNavigation();
       if (handledInternal) {
@@ -132,19 +126,16 @@ export const useAppNavigation = () => {
         return true;
       } else {
         resetBackPress();
-
         const androidInterface = window.Android as any;
-
-        if (typeof androidInterface !== 'undefined' && typeof androidInterface.exitApp === 'function') {
+        if (androidInterface?.exitApp) {
           androidInterface.exitApp();
           return true;
         }
-
         return false;
       }
     };
 
-    // PWA back button handling (Browser History)
+    // PWA back button handling
     if (!isAndroidWebView) {
       const pushDummyState = () => {
         const url = new URL(window.location.href);
@@ -153,53 +144,55 @@ export const useAppNavigation = () => {
       };
 
       pushDummyState();
-
       const handlePopState = () => {
         const handledInternal = handleInternalBackNavigation();
-
         if (handledInternal) {
           pushDummyState();
           return;
         }
 
         backPressedCounterRef.current += 1;
-
         if (backPressedCounterRef.current === 1) {
           setShowExitToast(true);
           if (navigator.vibrate) navigator.vibrate(50);
           if (backPressedTimerRef.current) clearTimeout(backPressedTimerRef.current);
-          backPressedTimerRef.current = window.setTimeout(() => resetBackPress(), 2000);
+          backPressedTimerRef.current = window.setTimeout(() => {
+            backPressedCounterRef.current = 0;
+            setShowExitToast(false);
+          }, 2000);
           pushDummyState();
         } else {
-          resetBackPress();
           window.history.go(-2);
+          backPressedCounterRef.current = 0;
+          setShowExitToast(false);
         }
       };
 
       window.addEventListener('popstate', handlePopState);
-
-      return () => {
-        window.removeEventListener('popstate', handlePopState);
-        resetBackPress();
-        window.handleBackPress = undefined;
-      };
+      return () => window.removeEventListener('popstate', handlePopState);
     }
 
-    // Android WebView cleanup
     return () => {
-      if (isAndroidWebView) resetBackPress();
+      if (isAndroidWebView) {
+        backPressedCounterRef.current = 0;
+        setShowExitToast(false);
+      }
     };
   }, [isAndroidWebView, handleInternalBackNavigation]);
 
-  // Day click
+  // --- Day click ---
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
     setIsModalOpen(true);
   };
 
-  // Set Kundali back action
+  // --- Set back actions for complex pages ---
   const setKundaliBackAction = useCallback((action: () => void) => {
     kundaliBackActionRef.current = action;
+  }, []);
+
+  const setDharmaBackAction = useCallback((action: (() => boolean) | null) => {
+    dharmaBackActionRef.current = action;
   }, []);
 
   return {
@@ -218,5 +211,6 @@ export const useAppNavigation = () => {
     handleDayClick,
     isAndroidWebView,
     setKundaliBackAction,
+    setDharmaBackAction,
   };
 };

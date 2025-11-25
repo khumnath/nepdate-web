@@ -104,7 +104,5 @@ export const EventsData = {
 	bikramFixedEvents: [
 		{ event: "भोटो जात्रा", date: "2082/02/18", detail: "रातो मच्छिन्द्रनाथ जात्राको समापन दिन।", category: "Jatra", holiday: true },
 		{ event: "तमु ल्होसार", date: "2082/09/15", detail: "गुरुङ समुदायको नयाँ वर्ष।", category: "Lhosar", holiday: true },
-		{ event: "सोनाम ल्होसार", date: "2082/10/05", detail: "तमाङ समुदायको नयाँ वर्ष।", category: "Lhosar", holiday: true },
-		{ event: "ग्याल्पो ल्होछार", date: "2082/11/06", detail: "शेर्पा समुदायको नयाँ वर्ष।", category: "Lhosar", holiday: true }
 	]
 };
