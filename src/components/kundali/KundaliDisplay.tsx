@@ -174,7 +174,7 @@ export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnTo
       </div>
 
       {/* Fixed return & print buttons */}
-      <div className="fixed bottom-12 left-1/2 transform -translate-x-1/2 z-[999] print:hidden print:h-0 w-full px-4 text-center">
+      <div className="fixed bottom-16 left-1/2 transform -translate-x-1/2 z-[40] print:hidden print:h-0 w-full px-4 text-center">
         <div className="flex gap-4 justify-center">
           <button
             className="bg-blue-600 dark:bg-blue-600 text-white px-6 py-2 rounded shadow-md hover:bg-blue-700 transition flex items-center gap-2"

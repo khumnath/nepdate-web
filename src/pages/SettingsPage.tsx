@@ -62,7 +62,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     }
   };
   return (
-    <div className="p-3 max-w-2xl mx-auto">
+    <div className="p-3 max-w-2xl pb-20 mx-auto">
       <div className="space-y-5">
         <section className="p-4 bg-white dark:bg-gray-700 rounded-lg shadow">
           <h2 className="text-lg font-semibold mb-2">Reload App</h2>

@@ -182,7 +182,7 @@ const App: React.FC = () => {
 
 			{/* Main Content */}
 			<div className="flex-1 overflow-hidden">
-				<div className={`h-full overflow-auto px-4 md:px-6 max-w-7xl xl:max-w-6xl mx-auto w-full ${menuStyle === 'tabs' ? 'pb-24 md:pb-6' : 'pb-20 md:pb-6'}`}>
+				<div className={`h-full overflow-auto px-4 md:px-6 max-w-7xl xl:max-w-6xl mx-auto w-full ${menuStyle === 'tabs' ? 'pb-2 md:pb-6' : 'pb-20 md:pb-6'}`}>
 					{activeView === 'kundali' && (
 						<Suspense fallback={<div className="flex justify-center items-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
 							<KundaliPage onBack={() => setActiveView('calendar')} setIsKundaliResultsVisible={setIsKundaliResultsVisible} setKundaliBackAction={setKundaliBackAction} />
@@ -192,7 +192,7 @@ const App: React.FC = () => {
 					{activeView === 'calendar' && (
 						<>
 							<CalendarHeader activeSystem={activeSystem} bsYear={currentBsYear} bsMonth={currentBsMonth} adYear={currentAdYear} adMonth={currentAdMonth} onSystemChange={switchSystem} onTodayClick={goToToday} theme={theme} onThemeToggle={toggleTheme} todayDetails={todayDetails} />
-							<main className="min-h-[60vh] md:grid md:grid-cols-12 md:gap-x-6">
+							<main className="min-h-[60vh] pb-20 md:grid md:grid-cols-12 md:gap-x-6">
 								<aside className="hidden md:block md:col-span-4">
 									<TodayWidget todayAd={initialToday} todayBs={initialTodayBs} todayDetails={todayDetails} onShowDetailsClick={handleShowDetailsClick} />
 								</aside>
@@ -206,7 +206,7 @@ const App: React.FC = () => {
 					)}
 
 					{activeView === 'dharma' && (
-						<Suspense fallback={<div className="flex justify-center items-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
+						<Suspense fallback={<div className="flex justify-center items-center pb-20 min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
 							<DharmaPage onBack={() => setActiveView('calendar')} setIsDharmaResultsVisible={setIsDharmaResultsVisible} setDharmaBackAction={setDharmaBackAction} />
 						</Suspense>
 					)}
@@ -218,19 +218,19 @@ const App: React.FC = () => {
 					)}
 
 					{activeView === 'settings' && (
-						<Suspense fallback={<div className="flex justify-center items-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
+						<Suspense fallback={<div className="flex justify-center items-center pb-20 min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
 							<SettingsPage onBack={() => setActiveView('calendar')} currentTheme={theme} onThemeChange={toggleTheme} currentMenuStyle={menuStyle} onMenuStyleChange={handleSetMenuStyle} currentDesktopLayoutStyle={desktopLayoutStyle} onDesktopLayoutStyleChange={handleSetDesktopLayoutStyle} onResetSettings={handleResetSettings} isAndroidApp={isAndroidApp} onReloadApp={handleReloadApp} />
 						</Suspense>
 					)}
 
 					{activeView === 'privacy' && (
-						<Suspense fallback={<div className="flex justify-center items-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
+						<Suspense fallback={<div className="flex justify-center items-center pb-20 min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
 							<PrivacyPage />
 						</Suspense>
 					)}
 
 					{activeView === 'radio' && (
-						<Suspense fallback={<div className="flex justify-center items-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
+						<Suspense fallback={<div className="flex justify-center items-center pb-20 min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
 							<RadioPage />
 						</Suspense>
 					)}
@@ -239,7 +239,17 @@ const App: React.FC = () => {
 
 			{/* Bottom menus */}
 			{menuStyle === 'slide' && <div className="fixed bottom-0 left-0 right-0 w-full bg-slate-200 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 print:hidden md:hidden"><Footer /></div>}
-			{menuStyle === 'tabs' && <div className="md:hidden print:hidden"><BottomTabBar activeView={activeView} onNavigate={(view) => { if (view === 'about') setIsAboutOpen(true); else setActiveView(view); }} /></div>}
+			{menuStyle === 'tabs' && (
+				<div className="md:hidden print:hidden">
+					<BottomTabBar
+						activeView={activeView}
+						onNavigate={(view) => { if (view === 'about') setIsAboutOpen(true); else setActiveView(view); }}
+						theme={theme}
+						onThemeToggle={toggleTheme}
+						themeLabel={theme === 'light' ? NEPALI_LABELS.darkMode : NEPALI_LABELS.lightMode}
+					/>
+				</div>
+			)}
 
 			<DayDetailsModal date={selectedDate} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 			{isAboutOpen && <AboutPopup setIsAboutOpen={setIsAboutOpen} />}

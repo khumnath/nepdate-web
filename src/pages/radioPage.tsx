@@ -8,6 +8,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { radioStations } from "../data/static/radioPlaylist";
+import darkLeather from "../../public/img/dark-leather.png";
 
 // TYPES
 type StreamStatus = "pending" | "checking" | "connecting" | "online" | "offline" | "reconnecting";
@@ -50,7 +51,7 @@ const RadioPage: React.FC = () => {
   const [retryCount, setRetryCount] = useState<number>(0);
 
   // Refs
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const playbackStabilityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const playGraceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -155,9 +156,11 @@ const RadioPage: React.FC = () => {
     }
     if (!id) return "offline";
 
-    if (!force && station.id === currentStation.id && isPlaying) {
-      if (updateUi) setStationStatusById(id, "online");
-      return "online";
+    // If this station is currently active in the main player, don't let the crawler kill it.
+    if (!force && station.id === currentStation.id) {
+        if (isPlaying || mainPlayerStatus === 'connecting' || mainPlayerStatus === 'online') {
+            return 'online';
+        }
     }
 
     if (!force && stationStatusesRef.current[id] === "online") return "online";
@@ -217,7 +220,7 @@ const RadioPage: React.FC = () => {
         audio.load();
       } catch { onError(); }
     });
-  }, [isOnline, currentStation.id, isPlaying, setStationStatusById]);
+  }, [isOnline, currentStation.id, isPlaying, mainPlayerStatus, setStationStatusById]);
 
   useEffect(() => {
     if (!isOnline) return;
@@ -292,16 +295,20 @@ const RadioPage: React.FC = () => {
     }
     setStationStatusById(currentStation.id, "checking");
 
-    if (skipImmediately === false && retryCount === 0) {
-      setMainPlayerStatus("connecting");
+    // RETRY ONCE
+    if (!skipImmediately && retryCount === 0) {
+      setMainPlayerStatus("reconnecting");
       setRetryCount(1);
-      if (playGraceTimeoutRef.current) clearTimeout(playGraceTimeoutRef.current);
-      playGraceTimeoutRef.current = setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.load();
-          audioRef.current.play().catch(() => handlePlayError(true));
-        }
-      }, CONFIG.PLAY_GRACE_MS);
+
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+
+      retryTimeoutRef.current = setTimeout(() => {
+         if (audioRef.current) {
+             audioRef.current.load();
+             const p = audioRef.current.play();
+             if(p !== undefined) p.catch(() => handlePlayError(true));
+         }
+      }, 2000);
       return;
     }
 
@@ -310,15 +317,11 @@ const RadioPage: React.FC = () => {
       setMainPlayerStatus("reconnecting");
       if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
       retryTimeoutRef.current = setTimeout(() => {
-        probeStation(currentStation, { updateUi: false, force: true }).then(status => {
-          if (status === "online") {
-            audioRef.current?.load();
-            audioRef.current?.play().catch(() => handlePlayError(true));
-          } else {
-            setStationStatusById(currentStation.id, "offline");
-            skipToNextAndPlay();
-          }
-        });
+        // Direct retry without probe first (Trust Player)
+        if (audioRef.current && isOnline) {
+            audioRef.current.load();
+            audioRef.current.play().catch(() => handlePlayError(true));
+        }
       }, CONFIG.RECONNECT_BASE_MS * Math.pow(1.5, retryCount));
       return;
     }
@@ -332,6 +335,9 @@ const RadioPage: React.FC = () => {
   const onAudioPlaying = () => {
     setIsPlaying(true);
     if (bufferingTimeoutRef.current) clearTimeout(bufferingTimeoutRef.current);
+    if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+
+    // LOCK STATUS TO ONLINE
     if (retryCount === 0) {
       setMainPlayerStatus("online");
       setStationStatusById(currentStation.id, "online");
@@ -343,8 +349,10 @@ const RadioPage: React.FC = () => {
   };
 
   const onAudioPause = () => {
-    // Keeps UI in sync if the audio actually stops (e.g. lost focus or error)
-    setIsPlaying(false);
+    if (mainPlayerStatus === 'connecting' || mainPlayerStatus === 'reconnecting') return;
+    if (audioRef.current && audioRef.current.paused) {
+        setIsPlaying(false);
+    }
   };
 
   const onAudioWaiting = () => {
@@ -355,17 +363,17 @@ const RadioPage: React.FC = () => {
   };
 
   const onAudioTimeUpdate = () => {
-    if (audioRef.current && audioRef.current.currentTime > 0.5 && !audioRef.current.paused) {
-      if (bufferingTimeoutRef.current) clearTimeout(bufferingTimeoutRef.current);
-      if (mainPlayerStatus !== "online" && retryCount === 0) setMainPlayerStatus("online");
+    if (audioRef.current && audioRef.current.currentTime > 0 && !audioRef.current.paused) {
       if (!isPlaying) setIsPlaying(true);
+      if (mainPlayerStatus !== "online" && retryCount === 0) {
+          setMainPlayerStatus("online");
+          setStationStatusById(currentStation.id, "online");
+      }
+      if (bufferingTimeoutRef.current) clearTimeout(bufferingTimeoutRef.current);
     }
   };
 
   const onAudioError = () => handlePlayError(false);
-
-
-  // EFFECTS
 
 
   // Volume Sync
@@ -375,14 +383,44 @@ const RadioPage: React.FC = () => {
     }
   }, [volume, isMuted]);
 
-  // Main Playback Logic
+  // AUDIO INITIALIZATION (PROGRAMMATIC)
+  useEffect(() => {
+    if (!audioRef.current) {
+        const audio = new Audio();
+        audio.preload = "auto";
+        audio.volume = isMuted ? 0 : volume;
+        audioRef.current = audio;
+    }
+  }, []);
+
+  // AUDIO EVENT BINDING
+  useEffect(() => {
+    const audio = audioRef.current;
+    if(!audio) return;
+
+    audio.addEventListener('playing', onAudioPlaying);
+    audio.addEventListener('pause', onAudioPause);
+    audio.addEventListener('waiting', onAudioWaiting);
+    audio.addEventListener('error', onAudioError);
+    audio.addEventListener('timeupdate', onAudioTimeUpdate);
+
+    return () => {
+        audio.removeEventListener('playing', onAudioPlaying);
+        audio.removeEventListener('pause', onAudioPause);
+        audio.removeEventListener('waiting', onAudioWaiting);
+        audio.removeEventListener('error', onAudioError);
+        audio.removeEventListener('timeupdate', onAudioTimeUpdate);
+    };
+  }, [onAudioPlaying, onAudioPause, onAudioWaiting, onAudioError, onAudioTimeUpdate]);
+
+
+  // MAIN PLAYBACK LOOP
   useEffect(() => {
     if (!audioRef.current) return;
     setRetryCount(0);
     if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
     if (playGraceTimeoutRef.current) clearTimeout(playGraceTimeoutRef.current);
 
-    // Initial Status Logic
     const knownStatus = stationStatuses[currentStation.id];
     if (!isOnline) {
       setMainPlayerStatus("offline");
@@ -404,20 +442,23 @@ const RadioPage: React.FC = () => {
     if (isPlaying && isOnline) {
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => handlePlayError(true));
+        playPromise.catch((e) => {
+             if (e.name === 'NotAllowedError') {
+                 // Autoplay blocked
+                 setIsPlaying(false);
+             } else if (e.name !== 'AbortError') {
+                 handlePlayError(true);
+             }
+        });
       }
     } else {
       if(!audioRef.current.paused) audioRef.current.pause();
     }
   }, [currentStationIndex, isOnline]);
 
-  /* ANDROID INTERFACE SYNCHRONIZATION */
-  // Outbound: Tell Android what is happening
+  /* ANDROID INTERFACE */
   useEffect(() => {
     if (window.Android && window.Android.onHtml5AudioEvent) {
-      const name = currentStation.name || "Unknown Station";
-      const author = currentStation.author || "Live Radio";
-      // Ensure cover is a full URL
       const cover = currentStation.cover.startsWith('http')
         ? currentStation.cover
         : `${window.location.origin}/${currentStation.cover}`;
@@ -425,17 +466,15 @@ const RadioPage: React.FC = () => {
       window.Android.onHtml5AudioEvent(
         currentStation.src,
         isPlaying,
-        name,
-        author,
+        currentStation.name || "Unknown",
+        currentStation.author || "Radio",
         cover
       );
     }
   }, [isPlaying, currentStation]);
 
-  // Inbound: Receive commands from Android
   useEffect(() => {
     const controlPlayer = (command: 'play' | 'pause' | 'stop') => {
-      // FORCE UI UPDATES IMMEDIATELY
       if (command === 'pause' || command === 'stop') {
         setIsPlaying(false);
         setMainPlayerStatus(isOnline ? 'online' : 'offline');
@@ -448,7 +487,6 @@ const RadioPage: React.FC = () => {
           setMainPlayerStatus('connecting');
           audioRef.current.play().catch(() => handlePlayError(true));
         } else if (!isPlaying) {
-             // Audio thinks it's playing, but UI says paused? Force UI.
              setIsPlaying(true);
         }
       }
@@ -456,7 +494,7 @@ const RadioPage: React.FC = () => {
 
     window.controlPlayer = controlPlayer;
     return () => { delete window.controlPlayer; };
-  }, [handlePlayError, isPlaying, isOnline]); // Depend on state to keep function fresh
+  }, [handlePlayError, isPlaying, isOnline]);
 
   /* ===========================
      UI HANDLERS
@@ -473,7 +511,6 @@ const RadioPage: React.FC = () => {
 
     if (isPlaying) {
       audioRef.current.pause();
-      // onAudioPause will handle the setIsPlaying(false)
     } else {
       const status = stationStatusesRef.current[currentStation.id];
       if (status === 'offline') {
@@ -509,21 +546,10 @@ const RadioPage: React.FC = () => {
   return (
     <div className="w-full max-h-[84vh] flex flex-col bg-gray-100 dark:bg-black select-none font-sans">
 
-      {/* Audio tag in JSX */}
-      <audio
-        ref={audioRef}
-        onError={onAudioError}
-        onPlaying={onAudioPlaying}
-        onPause={onAudioPause}
-        onWaiting={onAudioWaiting}
-        onTimeUpdate={onAudioTimeUpdate}
-        crossOrigin="anonymous"
-        style={{ display: "none" }}
-      />
 
       {/* CHASSIS HEADER */}
       <div className="shrink-0 relative z-20 transition-colors duration-300 bg-zinc-300 dark:bg-[#222] shadow-2xl border-b-[6px] border-zinc-400 dark:border-[#151515]">
-         <div className="absolute inset-0 opacity-5 dark:opacity-10 bg-[url('/dark-leather.png')] pointer-events-none"></div>
+         <div className="absolute inset-0 opacity-5 dark:opacity-10 pointer-events-none" style={{ backgroundImage: `url(${darkLeather})` }}></div>
 
          <div className="p-3 pb-5 flex flex-col gap-3 relative">
             {/* Top Row */}
@@ -609,7 +635,7 @@ const RadioPage: React.FC = () => {
 
       {/* SCROLLABLE LIST */}
       <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-[#0a0a0a] scroll-smooth">
-         {/* --- OFFLINE BANNER (Fixed to use isCheckingNet) --- */}
+         {/* OFFLINE BANNER */}
          {!isOnline && (
             <div className="bg-red-600 text-white text-xs font-bold p-2 text-center shadow-inner flex items-center justify-center gap-2 sticky top-0 z-10">
                <WifiOff size={14} />

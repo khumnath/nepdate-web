@@ -1,4 +1,5 @@
-import React, { JSX } from 'react';
+import React, { JSX, useState, useEffect, useRef, useCallback } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { NEPALI_BS_MONTHS } from '../../constants/constants';
 import { toBikramSambat, fromBikramSambat, getBikramMonthInfo, getEventsForDate, toDevanagari } from '../../lib/utils/lib';
 import MonthlyMuhurta from './Muhurtas';
@@ -9,12 +10,88 @@ interface MonthlyEventsProps {
 	currentMonth: number;
 }
 
+interface UpcomingEvent {
+	name: string;
+	daysRemaining: number;
+	holiday: boolean;
+	adDate: Date;
+	bsDate: any;
+}
+
 const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 	activeSystem,
 	currentYear,
 	currentMonth
 }) => {
-	// Logic for Monthly Events
+	// STATE FOR UPCOMING EVENTS
+	const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
+	const [hasMore, setHasMore] = useState(true);
+	const [isLoading, setIsLoading] = useState(false);
+
+	// Use a Ref to track the date cursor so we can resume scanning without re-renders
+	const scanCursor = useRef<Date | null>(null);
+	// Keep track of total days scanned to prevent infinite loops
+	const totalDaysScanned = useRef(0);
+
+	// Initialize cursor on first load
+	useEffect(() => {
+		const today = new Date();
+		// UTC 00:00:00 to avoid timezone issues
+		scanCursor.current = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+
+		// Initial load: Find first 10 events
+		loadMoreEvents(10);
+	}, []);
+
+	// --- SCANNING LOGIC ---
+	const loadMoreEvents = useCallback((limit: number) => {
+		if (!scanCursor.current || !hasMore) return;
+
+		setIsLoading(true);
+		const newEvents: UpcomingEvent[] = [];
+
+		// Safety: Don't look further than 1 year (365 days) total
+		const MAX_LOOKAHEAD = 365;
+
+		let itemsFound = 0;
+
+		// Scan day by day until we find 'limit' events or hit the safety wall
+		while (itemsFound < limit && totalDaysScanned.current < MAX_LOOKAHEAD) {
+			// Current date to check
+			const dateToCheck = new Date(scanCursor.current);
+
+			// Check events for this date
+			const bsDate = toBikramSambat(dateToCheck);
+			const dayEvents = getEventsForDate(dateToCheck, bsDate.year, bsDate.monthIndex, bsDate.day);
+
+			if (dayEvents.length > 0) {
+				dayEvents.forEach(e => {
+					newEvents.push({
+						name: e.name,
+						daysRemaining: totalDaysScanned.current, // Use the tracked index
+						holiday: e.holiday || false,
+						adDate: new Date(dateToCheck),
+						bsDate: bsDate
+					});
+				});
+				itemsFound++;
+			}
+
+			// Advance cursor to next day
+			scanCursor.current.setUTCDate(scanCursor.current.getUTCDate() + 1);
+			totalDaysScanned.current++;
+		}
+
+		if (totalDaysScanned.current >= MAX_LOOKAHEAD) {
+			setHasMore(false);
+		}
+
+		setUpcomingEvents(prev => [...prev, ...newEvents]);
+		setIsLoading(false);
+	}, [hasMore]);
+
+
+	// MONTHLY EVENTS LOGIC
 	const getMonthlyEvents = () => {
 		const eventsMap = new Map<number, Array<{ name: string, holiday: boolean }>>();
 
@@ -47,54 +124,13 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 		return eventsMap;
 	};
 
-	// Logic for Upcoming Events
-	const getUpcomingEvents = () => {
-		const upcoming: Array<{
-			name: string;
-			daysRemaining: number;
-			holiday: boolean;
-			adDate: Date;
-			bsDate: any;
-		}> = [];
-		const today = new Date();
-
-		// UTC date for "Today" at 00:00:00 to avoid timezone shifts
-		const start = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-
-		// Check the next 150 days for upcoming events
-		for (let i = 0; i < 150; i++) {
-			const date = new Date(start);
-			date.setUTCDate(start.getUTCDate() + i);
-
-			// Convert to BS to check for events
-			const bsDate = toBikramSambat(date);
-			const dayEvents = getEventsForDate(date, bsDate.year, bsDate.monthIndex, bsDate.day);
-
-			if (dayEvents.length > 0) {
-				dayEvents.forEach(e => {
-					upcoming.push({
-						name: e.name,
-						daysRemaining: i,
-						holiday: e.holiday || false,
-						adDate: new Date(date),
-						bsDate: bsDate
-					});
-				});
-			}
-			// Limit to 10 upcoming events
-			if (upcoming.length >= 10) break;
-		}
-		return upcoming;
-	};
-
 	const monthlyEventsMap = getMonthlyEvents();
-	const upcomingEvents = getUpcomingEvents();
 
-	if (monthlyEventsMap.size === 0 && upcomingEvents.length === 0) {
+	if (monthlyEventsMap.size === 0 && upcomingEvents.length === 0 && !isLoading) {
 		return null;
 	}
 
-	// Render Function for Monthly List
+	// RENDERERS
 	const renderMonthlyList = () => {
 		if (monthlyEventsMap.size === 0) return null;
 
@@ -122,7 +158,7 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 		});
 
 		return (
-			<div className="bg-alabaster dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-gray-700 px-3 py-2 flex-shrink-0">
+			<div className="bg-alabaster dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-gray-700 px-3 py-2 flex-shrink-0 pb-3">
 				<div
 					className="text-xs text-blue-800 dark:text-gray-300 flex flex-wrap gap-x-3 gap-y-1"
 					style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
@@ -138,9 +174,8 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 		);
 	};
 
-	// Render Function for Upcoming Events
 	const renderUpcomingList = () => {
-		if (upcomingEvents.length === 0) return null;
+		if (upcomingEvents.length === 0 && !isLoading) return null;
 
 		const isBs = activeSystem === 'bs';
 		const title = isBs ? 'आगामी कार्यक्रम हरु' : 'Upcoming Events';
@@ -201,6 +236,25 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 						);
 					})}
 				</div>
+
+				{/* Load More Button */}
+				{hasMore && (
+					<button
+						onClick={() => loadMoreEvents(5)}
+						disabled={isLoading}
+						className="w-full mt-2 py-1 text-[10px] text-blue-600 dark:text-blue-400 hover:bg-blue-300 hover:text-black dark:hover:bg-gray-700 dark:hover:text-gray-400 rounded transition-colors flex items-center justify-center gap-1 font-medium disabled:opacity-50"
+					>
+						{isLoading
+							? (isBs ? 'लोड हुँदैछ...' : 'Loading...')
+							: (
+								<>
+									{isBs ? 'थप हेर्नुहोस्' : 'Load More'}
+									<ChevronDown className="w-3 h-3" />
+								</>
+							)
+						}
+					</button>
+				)}
 			</div>
 		);
 	};

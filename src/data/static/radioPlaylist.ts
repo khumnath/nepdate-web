@@ -68,7 +68,7 @@ export const radioStations: Station[] = [
     src: "https://shoutcast.prixa.live/annapurna",
     name: "Radio Annapurna Nepal",
     author: "annapurnanepal",
-    cover: "img/radio_annapurna_nepal.png"
+    cover: "img/radioannapurna.png"
   },
   {
     id: 11,
