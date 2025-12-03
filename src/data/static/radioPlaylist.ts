@@ -30,7 +30,7 @@ export const radioStations: Station[] = [
   },
   {
     id: 4,
-    src: "http://kalika-stream.softnep.com:7740/;",
+    src: "https://streaming.softnep.net:10828/;",
     name: "kalika fm",
     author: "95.2 MHZ butwal",
     cover: "img/kalikafm.png"
@@ -48,13 +48,6 @@ export const radioStations: Station[] = [
     name: "radio audio",
     author: "106.3 MHZ kathmandu",
     cover: "img/radioaudio.png"
-  },
-  {
-    id: 7,
-    src: "https://live.itech.host:9598/stream",
-    name: "shreenagar fm",
-    author: "93.2 MHZ tansen palpa",
-    cover: "img/shreenagarfm.png"
   },
   {
     id: 8,
@@ -113,20 +106,6 @@ export const radioStations: Station[] = [
     cover: "img/barahathawa_fm.png"
   },
   {
-    id: 16,
-    src: "https://onlineradio.websoftitnepal.com/8002/stream",
-    name: "Sky FM 106.6",
-    author: "sky",
-    cover: "img/sky_fm_106_6.png"
-  },
-  {
-    id: 17,
-    src: "https://streaming.webhostnepal.com/8010/stream",
-    name: "Shuklaphanta FM",
-    author: "shuklaphanta",
-    cover: "img/shuklaphanta_fm.png"
-  },
-  {
     id: 18,
     src: "https://live.itech.host:8167/stream?1611505122592",
     name: "Good News FM",
@@ -153,13 +132,6 @@ export const radioStations: Station[] = [
     name: "Classic FM",
     author: "classic",
     cover: "img/classic_fm.png"
-  },
-  {
-    id: 22,
-    src: "https://astream.nepalipatro.com.np:8119/index.html",
-    name: "Times FM",
-    author: "times",
-    cover: "img/times_fm.png"
   },
   {
     id: 23,
@@ -195,12 +167,5 @@ export const radioStations: Station[] = [
     name: "Radio Nepalbani",
     author: "nepalbani",
     cover: "img/radio_nepalbani.png"
-  },
-  {
-    id: 28,
-    src: "https://streaming.webhostnepal.com:7032/;stream.nsv&type:mp3&volume:30",
-    name: "Radio Marsyangdi",
-    author: "marsyangdi",
-    cover: "img/radio_marsyangdi.png"
   }
 ];

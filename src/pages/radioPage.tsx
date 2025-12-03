@@ -1,520 +1,677 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Zap, ShieldCheck, Signal, RefreshCw, WifiOff } from 'lucide-react';
-import { radioStations } from '../data/static/radioPlaylist';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  RefreshCw,
+  WifiOff,
+} from "lucide-react";
+import { radioStations } from "../data/static/radioPlaylist";
 
-type StreamStatus = 'pending' | 'checking' | 'connecting' | 'online' | 'offline' | 'reconnecting';
-type StabilityMode = 'standard' | 'high';
+// TYPES
+type StreamStatus = "pending" | "checking" | "connecting" | "online" | "offline" | "reconnecting";
+type StabilityMode = "standard" | "high";
+
+// CONFIG
+const CONFIG = {
+  PROBE_TIMEOUT_MS: 10000,
+  CRAWL_DELAY_MS: 800,
+  PLAY_GRACE_MS: 7000,
+  RECONNECT_BASE_MS: 6000,
+  MAX_RETRIES: 4,
+  HEARTBEAT_MS: 15000,
+  STABILITY_MS: 5000,
+  PING_TIMEOUT_MS: 3000,
+  BUFFERING_DEBOUNCE_MS: 500,
+};
 
 const RadioPage: React.FC = () => {
-	const [currentStationIndex, setCurrentStationIndex] = useState<number>(0);
-	const [isPlaying, setIsPlaying] = useState<boolean>(false);
-	const [isMuted, setIsMuted] = useState<boolean>(false);
-
-	// --- GLOBAL CONNECTIVITY STATE ---
-	// We trust navigator.onLine initially, but verify with ping immediately
-	const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
-	const [isCheckingNet, setIsCheckingNet] = useState<boolean>(false);
-
-	const [volume, setVolume] = useState<number>(() => {
-		const saved = localStorage.getItem('nepali_fm_volume');
-		return saved ? parseFloat(saved) : 1;
-	});
-
-	const [stabilityMode, setStabilityMode] = useState<StabilityMode>('standard');
-	const [retryCount, setRetryCount] = useState<number>(0);
-	const [mainPlayerStatus, setMainPlayerStatus] = useState<StreamStatus>('pending');
-	const [stationStatuses, setStationStatuses] = useState<Record<number, StreamStatus>>({});
-
-	const audioRef = useRef<HTMLAudioElement>(null);
-	const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-	const currentStation = radioStations[currentStationIndex];
-
-	// --- 1. ROBUST CONNECTIVITY CHECK (Bypasses Service Worker) ---
-	const checkGlobalConnectivity = useCallback(async () => {
-		setIsCheckingNet(true);
-
-		// Step 1: Quick Navigator Check
-		if (!navigator.onLine) {
-			setIsOnline(false);
-			setIsCheckingNet(false);
-			if (isPlaying) setIsPlaying(false); // Stop player if OS says offline
-			return;
-		}
-
-		// Step 2: Real Network Ping (Bypassing Cache)
-		try {
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
-
-			// CACHE BUSTING: ?t=Date.now() forces the browser & SW to fetch from network
-			await fetch(`${window.location.origin}/favicon.svg?t=${Date.now()}`, {
-				method: 'HEAD',
-				cache: 'no-store',
-				signal: controller.signal
-			});
-
-			clearTimeout(timeoutId);
-			setIsOnline(true);
-		} catch (error) {
-			console.log("Network Ping Failed: Offline");
-			setIsOnline(false);
-			if (isPlaying) setIsPlaying(false);
-		} finally {
-			setIsCheckingNet(false);
-		}
-	}, [isPlaying]);
-
-	// Initial Check & Listeners
-	useEffect(() => {
-		checkGlobalConnectivity();
-
-		const handleOnline = () => checkGlobalConnectivity();
-		const handleOffline = () => setIsOnline(false);
-
-		window.addEventListener('online', handleOnline);
-		window.addEventListener('offline', handleOffline);
-
-		// Periodic heartbeat (every 15s) to ensure we don't get stuck in offline state
-		const interval = setInterval(checkGlobalConnectivity, 15000);
-
-		return () => {
-			window.removeEventListener('online', handleOnline);
-			window.removeEventListener('offline', handleOffline);
-			clearInterval(interval);
-		};
-	}, [checkGlobalConnectivity]);
-
-
-	// --- PLAYER LOGIC ---
-
-	const getStationStatus = (index: number): StreamStatus | undefined => {
-		const id = radioStations[index]?.id;
-		return id != null ? stationStatuses[id] : undefined;
-	};
-
-	const nextIndex = (index: number) => (index + 1) % radioStations.length;
-	const prevIndex = (index: number) => (index === 0 ? radioStations.length - 1 : index - 1);
-
-	// --- 2. CIRCUIT BREAKER: Prevent Loop if Offline ---
-	const skipToNextAndPlay = (triesLeft = radioStations.length) => {
-		// STOP: If global internet is down, do not skip. Just stop.
-		if (!isOnline) {
-			setIsPlaying(false);
-			setMainPlayerStatus('offline');
-			return;
-		}
-
-		if (triesLeft <= 0) {
-			setIsPlaying(false);
-			setMainPlayerStatus('offline');
-			return;
-		}
-		const idx = nextIndex(currentStationIndex);
-		const status = getStationStatus(idx);
-
-		setCurrentStationIndex(idx);
-
-		// If known offline, keep skipping immediately
-		if (status === 'offline') {
-			skipToNextAndPlay(triesLeft - 1);
-			return;
-		}
-
-		setIsPlaying(true);
-		setMainPlayerStatus(status === 'online' ? 'connecting' : 'checking');
-	};
-
-	// BACKGROUND CRAWLER
-	useEffect(() => {
-		if (!isOnline) return; // Don't crawl if offline
-
-		let isMounted = true;
-		const checkQueue = async () => {
-			for (const station of radioStations) {
-				if (!isMounted || !isOnline) break;
-				if (stationStatuses[station.id] && stationStatuses[station.id] !== 'pending') continue;
-
-				setStationStatuses(prev => ({ ...prev, [station.id]: 'checking' }));
-
-				try {
-					const controller = new AbortController();
-					const timeoutId = setTimeout(() => controller.abort(), 3000);
-					await fetch(station.src, { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
-					clearTimeout(timeoutId);
-					if (isMounted) setStationStatuses(prev => ({ ...prev, [station.id]: 'online' }));
-				} catch {
-					if (isMounted) setStationStatuses(prev => ({ ...prev, [station.id]: 'offline' }));
-				}
-				await new Promise(resolve => setTimeout(resolve, 200));
-			}
-
-			if (isMounted && isPlaying && stationStatuses[currentStation.id] === 'offline' && isOnline) {
-				skipToNextAndPlay();
-			}
-		};
-		checkQueue();
-		return () => { isMounted = false; };
-	}, [isOnline]);
-
-	// PLAYER EFFECT
-	useEffect(() => {
-		if (!audioRef.current) return;
-
-		setRetryCount(0);
-		if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
-
-		const knownStatus = stationStatuses[currentStation.id];
-
-		if (!isOnline) {
-			setMainPlayerStatus('offline');
-		} else {
-			setMainPlayerStatus(knownStatus === 'online' ? 'connecting' : 'checking');
-		}
-
-		audioRef.current.src = currentStation.src;
-		audioRef.current.load();
-
-		if (isPlaying) {
-			if (!isOnline) {
-				setIsPlaying(false);
-				setMainPlayerStatus('offline');
-				return;
-			}
-
-			const playPromise = audioRef.current.play();
-			if (playPromise !== undefined) {
-				playPromise.catch((_e) => handlePlayError(true));
-			}
-		}
-	}, [currentStationIndex, isOnline]);
-
-	// VOLUME SYNC
-	useEffect(() => {
-		if (audioRef.current) {
-			audioRef.current.volume = isMuted ? 0 : volume;
-		}
-	}, [volume, isMuted]);
-
-	// ANDROID INTERFACE
-	useEffect(() => {
-		if (window.Android && window.Android.onHtml5AudioEvent) {
-			const name = currentStation.name || "Unknown Station";
-			const author = currentStation.author || "Live Radio";
-			const cover = currentStation.cover.startsWith('http')
-				? currentStation.cover
-				: `${window.location.origin}/${currentStation.cover}`;
-
-			window.Android.onHtml5AudioEvent(
-				currentStation.src,
-				isPlaying,
-				name,
-				author,
-				cover
-			);
-		}
-	}, [isPlaying, currentStation]);
-
-	useEffect(() => {
-		const controlPlayer = (command: 'play' | 'pause' | 'stop') => {
-			if (command === 'pause' || command === 'stop') {
-				if (audioRef.current && !audioRef.current.paused) {
-					audioRef.current.pause();
-				} else {
-					setIsPlaying(false);
-				}
-			} else if (command === 'play') {
-				if (audioRef.current && audioRef.current.paused) {
-					setMainPlayerStatus('connecting');
-					audioRef.current.play().catch(() => handlePlayError(true));
-				}
-			}
-		};
-		window.controlPlayer = controlPlayer;
-		return () => { delete window.controlPlayer; };
-	}, []);
-
-	// HANDLERS
-	const handlePlayError = (skipImmediately = false) => {
-		// GUARD: If device is offline, do NOT skip. Just fail.
-		if (!isOnline) {
-			setMainPlayerStatus('offline');
-			setIsPlaying(false);
-			return;
-		}
-
-		setStationStatuses(prev => ({ ...prev, [currentStation.id]: 'offline' }));
-
-		if (stabilityMode === 'high' && retryCount < 5 && !skipImmediately) {
-			setMainPlayerStatus('reconnecting');
-			setRetryCount(prev => prev + 1);
-
-			retryTimeoutRef.current = setTimeout(() => {
-				if (audioRef.current && isPlaying && isOnline) {
-					audioRef.current.load();
-					audioRef.current.play().catch(() => {
-						skipToNextAndPlay();
-					});
-				}
-			}, 1500);
-		} else {
-			skipToNextAndPlay();
-		}
-	};
-
-	const onAudioError = () => handlePlayError();
-	const onAudioStalled = () => { if (isPlaying && stabilityMode === 'high') handlePlayError(); };
-	const onAudioPlaying = () => {
-		setIsPlaying(true);
-		setRetryCount(0);
-		setMainPlayerStatus('online');
-		setStationStatuses(prev => ({ ...prev, [currentStation.id]: 'online' }));
-	};
-	const onAudioPause = () => setIsPlaying(false);
-	const onAudioWaiting = () => {
-		if (mainPlayerStatus !== 'offline' && mainPlayerStatus !== 'reconnecting') {
-			setMainPlayerStatus('connecting');
-		}
-	};
-
-	const togglePlay = () => {
-		if (!audioRef.current) return;
-		if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
-		setRetryCount(0);
-
-		if (!isOnline) {
-			// If offline when clicking play, trigger a manual check immediately
-			checkGlobalConnectivity();
-			return;
-		}
-
-		if (isPlaying) {
-			audioRef.current.pause();
-		} else {
-			const status = stationStatuses[currentStation.id];
-			if (status === 'offline') {
-				skipToNextAndPlay();
-				return;
-			}
-			setIsPlaying(true);
-			setMainPlayerStatus(status === 'online' ? 'connecting' : 'checking');
-			const playPromise = audioRef.current.play();
-			if (playPromise !== undefined) {
-				playPromise.catch(() => handlePlayError(true));
-			}
-		}
-	};
-
-	const handleNext = () => {
-		setCurrentStationIndex(prev => nextIndex(prev));
-		if (isOnline) setIsPlaying(true);
-	};
-
-	const handlePrev = () => {
-		setCurrentStationIndex(prev => prevIndex(prev));
-		if (isOnline) setIsPlaying(true);
-	};
-
-	const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const newVol = parseFloat(e.target.value);
-		setVolume(newVol);
-		localStorage.setItem('nepali_fm_volume', newVol.toString());
-		if (newVol > 0) setIsMuted(false);
-	};
-
-	const getStatusColor = (status: StreamStatus) => {
-		switch (status) {
-			case 'online': return 'bg-green-500';
-			case 'connecting': return 'bg-blue-500';
-			case 'reconnecting': return 'bg-orange-500';
-			case 'checking': return 'bg-yellow-400';
-			case 'offline': return 'bg-red-500';
-			default: return 'bg-gray-300';
-		}
-	};
-
-	return (
-		<div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4 select-none">
-			<audio
-				ref={audioRef}
-				onError={onAudioError}
-				onPlaying={onAudioPlaying}
-				onPause={onAudioPause}
-				onWaiting={onAudioWaiting}
-				onStalled={onAudioStalled}
-				crossOrigin="anonymous"
-			/>
-
-			<div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl w-full max-w-md overflow-hidden relative flex flex-col max-h-[90vh]">
-
-				{/* --- 3. OFFLINE BANNER WITH RELOAD BUTTON --- */}
-				{!isOnline && (
-					<div className="bg-red-500 text-white p-3 flex flex-col items-center justify-center gap-2">
-						<div className="flex items-center gap-2 text-sm font-bold">
-							<WifiOff size={16} />
-							<span>No Internet Connection</span>
-						</div>
-
-						<button
-							onClick={checkGlobalConnectivity}
-							disabled={isCheckingNet}
-							className="bg-white text-red-600 px-4 py-1 rounded-full text-xs font-bold active:scale-95 transition-transform flex items-center gap-2 hover:bg-gray-100"
-						>
-							{isCheckingNet ? <RefreshCw size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-							{isCheckingNet ? "Checking..." : "Retry Connection"}
-						</button>
-					</div>
-				)}
-
-				<header className="text-center py-4 sm:py-6 bg-gradient-to-r from-sky-500 to-indigo-500 dark:from-gray-800 dark:to-gray-950 text-white font-bold text-xl sm:text-3xl shadow">
-					नेपडेट रेडियो प्लेयर
-			</header>
-
-				{/* HEADER / COVER AREA */}
-				<div className="p-4 pt-6 flex flex-col items-center shrink-0">
-
-					{/* ROTATING LOGO */}
-					<div
-						className={`relative w-32 h-32 rounded-full border-4 border-gray-100 dark:border-gray-700 shadow-inner overflow-hidden mb-4 transition-transform duration-[10000ms] linear ${isPlaying ? 'rotate-slow' : ''
-							}`}
-					>
-						<img
-							src={currentStation.cover}
-							alt={currentStation.name}
-							className="w-full h-full object-cover"
-						/>
-						<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white dark:bg-gray-700 rounded-full border border-gray-200 dark:border-gray-600 z-10"></div>
-					</div>
-
-					{/* INFO */}
-					<div className="text-center mb-4 w-full">
-						<h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 line-clamp-1 px-2">
-							{currentStation.name}
-						</h2>
-						<div className="flex items-center justify-center gap-2 mt-1 h-5">
-							{!isOnline ? (
-								<span className="text-red-500 text-xs font-medium flex items-center gap-1">
-									<WifiOff size={12} /> Device Offline
-								</span>
-							) : mainPlayerStatus === 'offline' ? (
-								<span className="text-red-500 text-xs font-medium flex items-center gap-1">
-									<Signal size={12} /> Stream Offline
-								</span>
-							) : mainPlayerStatus === 'reconnecting' ? (
-								<span className="text-orange-500 text-xs font-medium animate-pulse flex items-center gap-1">
-									<RefreshCw size={12} className="animate-spin" /> Reconnecting...
-								</span>
-							) : mainPlayerStatus === 'connecting' ? (
-								<span className="text-blue-500 text-xs font-medium animate-pulse">
-									Buffering...
-								</span>
-							) : mainPlayerStatus === 'checking' ? (
-								<span className="text-yellow-500 text-xs font-medium animate-pulse">
-									Checking...
-								</span>
-							) : (
-								<span className="text-gray-500 dark:text-gray-400 text-xs font-mono tracking-wide">
-									{currentStation.author}
-								</span>
-							)}
-						</div>
-					</div>
-
-					{/* CONTROLS */}
-					<div className="flex items-center justify-center gap-8 mb-6 w-full">
-						<button onClick={handlePrev} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition"><SkipBack className="w-8 h-8" fill="currentColor" /></button>
-
-						<button
-							onClick={togglePlay}
-							disabled={!isOnline}
-							className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg transition transform active:scale-95 hover:scale-105 ${mainPlayerStatus === 'offline' || !isOnline
-									? 'bg-gray-300 dark:bg-gray-600'
-									: 'bg-blue-600 hover:bg-blue-700'
-								}`}
-						>
-							{mainPlayerStatus === 'connecting' || mainPlayerStatus === 'checking' || mainPlayerStatus === 'reconnecting' ? (
-								<div className="w-7 h-7 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-							) : isPlaying ? (
-								<Pause className="w-7 h-7" fill="currentColor" />
-							) : (
-								<Play className="w-7 h-7 ml-1" fill="currentColor" />
-							)}
-						</button>
-
-						<button onClick={handleNext} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition"><SkipForward className="w-8 h-8" fill="currentColor" /></button>
-					</div>
-
-					{/* VOLUME */}
-					<div className="w-full flex items-center gap-3 px-6 mb-4">
-						<button onClick={() => setIsMuted(!isMuted)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
-							{isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
-						</button>
-						<input type="range" min="0" max="1" step="0.01" value={isMuted ? 0 : volume} onChange={handleVolumeChange} className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-					</div>
-
-					<div className="w-full px-4 flex justify-center">
-						<div className="bg-gray-100 dark:bg-gray-700 p-1 rounded-lg flex gap-1">
-							<button onClick={() => setStabilityMode('standard')} className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-[10px] font-medium transition-all ${stabilityMode === 'standard' ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}><Zap size={12} /> Standard</button>
-							<button onClick={() => setStabilityMode('high')} className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-[10px] font-medium transition-all ${stabilityMode === 'high' ? 'bg-white dark:bg-gray-800 text-orange-600 shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}><ShieldCheck size={12} /> Auto-Retry</button>
-						</div>
-					</div>
-
-				</div>
-
-				{/* PLAYLIST */}
-				<div className="bg-gray-50 dark:bg-gray-900 border-t dark:border-gray-700 overflow-y-auto flex-1">
-					{radioStations.map((station, index) => {
-						const isCurrent = index === currentStationIndex;
-						const status = isCurrent && isPlaying ? 'online' : stationStatuses[station.id] || 'pending';
-						const visualStatus: StreamStatus = !isOnline ? 'offline' : (isCurrent ? mainPlayerStatus : status);
-
-						return (
-							<div
-								key={station.id}
-								onClick={() => {
-									if (isCurrent && isPlaying) {
-										togglePlay();
-									} else {
-										setCurrentStationIndex(index);
-										if (isOnline) {
-											setIsPlaying(true);
-											setMainPlayerStatus(stationStatuses[station.id] === 'online' ? 'connecting' : 'checking');
-										}
-									}
-								}}
-								className={`p-3 px-4 flex items-center border-b dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition ${isCurrent ? 'bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500' : ''
-									}`}
-							>
-								<div className="mr-3 relative flex items-center justify-center w-3 h-3">
-									<span className={`w-2.5 h-2.5 rounded-full transition-colors duration-300 ${getStatusColor(visualStatus)}`}></span>
-									{['online', 'checking', 'connecting', 'reconnecting'].includes(visualStatus) && (
-										<span className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${visualStatus === 'reconnecting' ? 'bg-orange-400' : visualStatus === 'online' ? 'bg-green-400' : 'bg-blue-400'}`}></span>
-									)}
-								</div>
-								<div className="flex-1 min-w-0">
-									<h4 className={`text-sm font-medium truncate ${isCurrent ? 'text-blue-700' : 'text-gray-700'}`}>{station.name}</h4>
-									<p className={`text-[10px] truncate ${visualStatus === 'offline' ? 'text-red-400' : 'text-gray-400'}`}>
-										{isCurrent
-											? (visualStatus === 'reconnecting' ? 'Reconnecting...' :
-												visualStatus === 'connecting' ? 'Connecting...' :
-													visualStatus === 'offline' ? 'Offline' : station.author)
-											: (visualStatus === 'offline' ? 'Offline' :
-												visualStatus === 'checking' ? 'Checking...' : station.author)}
-									</p>
-								</div>
-								{isCurrent && isPlaying && mainPlayerStatus === 'online' && (
-									<div className="flex space-x-0.5 items-end h-3 ml-2">
-										<div className="w-0.5 bg-blue-500 animate-bounce h-2"></div>
-										<div className="w-0.5 bg-blue-500 animate-bounce h-3 delay-75"></div>
-										<div className="w-0.5 bg-blue-500 animate-bounce h-1 delay-150"></div>
-									</div>
-								)}
-							</div>
-						);
-					})}
-				</div>
-			</div>
-		</div>
-	);
+  // STATE & REFS
+  const [currentStationIndex, setCurrentStationIndex] = useState<number>(0);
+  const [isPlaying, setIsPlaying] = useState<boolean>(true);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
+
+  // Global Connectivity
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+  const [isCheckingNet, setIsCheckingNet] = useState<boolean>(false);
+
+  const [volume, setVolume] = useState<number>(() => {
+    const saved = localStorage.getItem("nepali_fm_volume");
+    return saved ? parseFloat(saved) : 1;
+  });
+
+  const [stabilityMode, setStabilityMode] = useState<StabilityMode>("standard");
+
+  // Statuses
+  const [stationStatuses, setStationStatuses] = useState<Record<number, StreamStatus>>({});
+  const stationStatusesRef = useRef<Record<number, StreamStatus>>({});
+  const [mainPlayerStatus, setMainPlayerStatus] = useState<StreamStatus>("pending");
+  const [retryCount, setRetryCount] = useState<number>(0);
+
+  // Refs
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const playbackStabilityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const playGraceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const heartbeatIntervalRef = useRef<number | null>(null);
+  const bufferingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const probeCancelFns = useRef<Record<number, () => void>>({});
+  const crawlerActiveRef = useRef<boolean>(true);
+
+  const currentStation = radioStations[currentStationIndex];
+
+  // Sync ref for crawler
+  useEffect(() => {
+    stationStatusesRef.current = stationStatuses;
+  }, [stationStatuses]);
+
+
+  // CONNECTIVITY LOGIC
+  const checkGlobalConnectivity = useCallback(async () => {
+    setIsCheckingNet(true);
+
+    if (!navigator.onLine) {
+      setIsOnline(false);
+      setIsCheckingNet(false);
+      if (isPlaying) setIsPlaying(false);
+      setMainPlayerStatus("offline");
+      return;
+    }
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), CONFIG.PING_TIMEOUT_MS);
+
+      await fetch(`${window.location.origin}/favicon.svg?t=${Date.now()}`, {
+        method: "HEAD",
+        cache: "no-store",
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      setIsOnline(true);
+    } catch (err) {
+      setIsOnline(false);
+      if (isPlaying) setIsPlaying(false);
+      setMainPlayerStatus("offline");
+    } finally {
+      setIsCheckingNet(false);
+    }
+  }, [isPlaying]);
+
+  useEffect(() => {
+    checkGlobalConnectivity();
+    const handleOnline = () => checkGlobalConnectivity();
+    const handleOffline = () => {
+      setIsOnline(false);
+      setMainPlayerStatus("offline");
+      if (isPlaying) setIsPlaying(false);
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    heartbeatIntervalRef.current = window.setInterval(checkGlobalConnectivity, CONFIG.HEARTBEAT_MS);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+      if (heartbeatIntervalRef.current) window.clearInterval(heartbeatIntervalRef.current);
+    };
+  }, [checkGlobalConnectivity, isPlaying]);
+
+
+  // HELPERS
+  const setStationStatusById = useCallback((id: number, status: StreamStatus) => {
+    setStationStatuses(prev => ({ ...prev, [id]: status }));
+  }, []);
+
+  const nextIndex = useCallback((index: number) => (index + 1) % radioStations.length, []);
+  const prevIndex = useCallback((index: number) => (index === 0 ? radioStations.length - 1 : index - 1), []);
+
+  const getStatusColor = (status: StreamStatus) => {
+    switch (status) {
+      case "online": return "bg-green-500";
+      case "connecting": return "bg-blue-500";
+      case "reconnecting": return "bg-orange-500";
+      case "checking": return "bg-yellow-400";
+      case "offline": return "bg-red-500";
+      default: return "bg-gray-300";
+    }
+  };
+
+
+  // PROBE & CRAWLER LOGIC
+  const probeStation = useCallback(async (
+    station: typeof radioStations[number],
+    options: { updateUi?: boolean; force?: boolean } = {}
+  ): Promise<StreamStatus> => {
+    const { updateUi = true, force = false } = options;
+    const id = station.id;
+
+    if (!isOnline) {
+      if (updateUi) setStationStatusById(id, "offline");
+      return "offline";
+    }
+    if (!id) return "offline";
+
+    if (!force && station.id === currentStation.id && isPlaying) {
+      if (updateUi) setStationStatusById(id, "online");
+      return "online";
+    }
+
+    if (!force && stationStatusesRef.current[id] === "online") return "online";
+
+    if (updateUi) setStationStatusById(id, "checking");
+    if (probeCancelFns.current[id]) {
+      probeCancelFns.current[id]();
+      delete probeCancelFns.current[id];
+    }
+
+    return new Promise<StreamStatus>((resolve) => {
+      const audio = new Audio();
+      audio.muted = true;
+      audio.preload = "metadata";
+
+      const cleanup = () => {
+        audio.onloadedmetadata = null;
+        audio.oncanplay = null;
+        audio.onerror = null;
+        try {
+          audio.src = "";
+          audio.remove();
+        } catch {}
+        if (probeCancelFns.current[id]) delete probeCancelFns.current[id];
+      };
+
+      const timer = setTimeout(() => {
+        cleanup();
+        if (updateUi) setStationStatusById(id, "offline");
+        resolve("offline");
+      }, CONFIG.PROBE_TIMEOUT_MS);
+
+      const onSuccess = () => {
+        clearTimeout(timer);
+        cleanup();
+        if (updateUi) setStationStatusById(id, "online");
+        resolve("online");
+      };
+
+      const onError = () => {
+        clearTimeout(timer);
+        cleanup();
+        if (updateUi) setStationStatusById(id, "offline");
+        resolve("offline");
+      };
+
+      probeCancelFns.current[id] = () => {
+        clearTimeout(timer);
+        cleanup();
+        resolve("checking");
+      };
+
+      audio.oncanplay = onSuccess;
+      audio.onerror = onError;
+      try {
+        audio.src = station.src;
+        audio.load();
+      } catch { onError(); }
+    });
+  }, [isOnline, currentStation.id, isPlaying, setStationStatusById]);
+
+  useEffect(() => {
+    if (!isOnline) return;
+    let isMounted = true;
+    crawlerActiveRef.current = true;
+
+    const run = async () => {
+      const BATCH_SIZE = 3;
+      let batch: typeof radioStations = [];
+
+      for (let i = 0; i < radioStations.length; i++) {
+        if (!isMounted || !isOnline || !crawlerActiveRef.current) break;
+        const station = radioStations[i];
+        if (station.id === currentStation.id && isPlaying) continue;
+
+        if (stationStatusesRef.current[station.id] !== "online") batch.push(station);
+
+        if (batch.length >= BATCH_SIZE) {
+          await Promise.all(batch.map(s => probeStation(s)));
+          batch = [];
+          await new Promise(res => setTimeout(res, CONFIG.CRAWL_DELAY_MS));
+        }
+      }
+      if (batch.length > 0 && isMounted && isOnline) {
+        await Promise.all(batch.map(s => probeStation(s)));
+      }
+
+      const curStatus = stationStatusesRef.current[currentStation.id];
+      if (isMounted && isPlaying && isOnline && curStatus === "offline") {
+        skipToNextAndPlay();
+      }
+    };
+
+    run();
+    const interval = window.setInterval(run, 60000);
+    return () => {
+      isMounted = false;
+      crawlerActiveRef.current = false;
+      clearInterval(interval);
+      Object.values(probeCancelFns.current).forEach(c => c());
+    };
+  }, [isOnline, currentStationIndex, isPlaying, probeStation]);
+
+
+  // PLAYBACK CONTROLS
+
+  const skipToNextAndPlay = useCallback((triesLeft = radioStations.length) => {
+    if (!isOnline || triesLeft <= 0) {
+      setIsPlaying(false);
+      setMainPlayerStatus("offline");
+      return;
+    }
+
+    const idx = nextIndex(currentStationIndex);
+    setCurrentStationIndex(idx);
+    const id = radioStations[idx].id;
+    const status = stationStatusesRef.current[id];
+
+    if (status === "offline") {
+      skipToNextAndPlay(triesLeft - 1);
+    } else {
+      setIsPlaying(true);
+      setMainPlayerStatus(status === "online" ? "connecting" : "checking");
+    }
+  }, [currentStationIndex, isOnline, nextIndex]);
+
+  const handlePlayError = useCallback((skipImmediately = false) => {
+    if (!isOnline) {
+      setMainPlayerStatus("offline");
+      setIsPlaying(false);
+      return;
+    }
+    setStationStatusById(currentStation.id, "checking");
+
+    if (skipImmediately === false && retryCount === 0) {
+      setMainPlayerStatus("connecting");
+      setRetryCount(1);
+      if (playGraceTimeoutRef.current) clearTimeout(playGraceTimeoutRef.current);
+      playGraceTimeoutRef.current = setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.load();
+          audioRef.current.play().catch(() => handlePlayError(true));
+        }
+      }, CONFIG.PLAY_GRACE_MS);
+      return;
+    }
+
+    if (retryCount < CONFIG.MAX_RETRIES) {
+      setRetryCount(prev => prev + 1);
+      setMainPlayerStatus("reconnecting");
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = setTimeout(() => {
+        probeStation(currentStation, { updateUi: false, force: true }).then(status => {
+          if (status === "online") {
+            audioRef.current?.load();
+            audioRef.current?.play().catch(() => handlePlayError(true));
+          } else {
+            setStationStatusById(currentStation.id, "offline");
+            skipToNextAndPlay();
+          }
+        });
+      }, CONFIG.RECONNECT_BASE_MS * Math.pow(1.5, retryCount));
+      return;
+    }
+    setStationStatusById(currentStation.id, "offline");
+    skipToNextAndPlay();
+  }, [isOnline, currentStation, retryCount, skipToNextAndPlay, probeStation, setStationStatusById]);
+
+
+  // AUDIO HANDLERS
+
+  const onAudioPlaying = () => {
+    setIsPlaying(true);
+    if (bufferingTimeoutRef.current) clearTimeout(bufferingTimeoutRef.current);
+    if (retryCount === 0) {
+      setMainPlayerStatus("online");
+      setStationStatusById(currentStation.id, "online");
+    }
+    if (playbackStabilityTimeoutRef.current) clearTimeout(playbackStabilityTimeoutRef.current);
+    playbackStabilityTimeoutRef.current = setTimeout(() => {
+      setRetryCount(0);
+    }, CONFIG.STABILITY_MS);
+  };
+
+  const onAudioPause = () => {
+    // Keeps UI in sync if the audio actually stops (e.g. lost focus or error)
+    setIsPlaying(false);
+  };
+
+  const onAudioWaiting = () => {
+    if (isPlaying && mainPlayerStatus !== "offline") {
+       if (bufferingTimeoutRef.current) clearTimeout(bufferingTimeoutRef.current);
+       bufferingTimeoutRef.current = setTimeout(() => setMainPlayerStatus("connecting"), CONFIG.BUFFERING_DEBOUNCE_MS);
+    }
+  };
+
+  const onAudioTimeUpdate = () => {
+    if (audioRef.current && audioRef.current.currentTime > 0.5 && !audioRef.current.paused) {
+      if (bufferingTimeoutRef.current) clearTimeout(bufferingTimeoutRef.current);
+      if (mainPlayerStatus !== "online" && retryCount === 0) setMainPlayerStatus("online");
+      if (!isPlaying) setIsPlaying(true);
+    }
+  };
+
+  const onAudioError = () => handlePlayError(false);
+
+
+  // EFFECTS
+
+
+  // Volume Sync
+  useEffect(() => {
+    if (audioRef.current) {
+        audioRef.current.volume = isMuted ? 0 : volume;
+    }
+  }, [volume, isMuted]);
+
+  // Main Playback Logic
+  useEffect(() => {
+    if (!audioRef.current) return;
+    setRetryCount(0);
+    if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+    if (playGraceTimeoutRef.current) clearTimeout(playGraceTimeoutRef.current);
+
+    // Initial Status Logic
+    const knownStatus = stationStatuses[currentStation.id];
+    if (!isOnline) {
+      setMainPlayerStatus("offline");
+    } else {
+      if (isPlaying) {
+        setMainPlayerStatus(knownStatus === "online" ? "connecting" : "checking");
+      } else {
+        if (knownStatus === "online") setMainPlayerStatus("online");
+        else if (knownStatus === "offline") setMainPlayerStatus("offline");
+        else setMainPlayerStatus("checking");
+      }
+    }
+
+    if (audioRef.current.src !== currentStation.src) {
+      audioRef.current.src = currentStation.src;
+      audioRef.current.load();
+    }
+
+    if (isPlaying && isOnline) {
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => handlePlayError(true));
+      }
+    } else {
+      if(!audioRef.current.paused) audioRef.current.pause();
+    }
+  }, [currentStationIndex, isOnline]);
+
+  /* ANDROID INTERFACE SYNCHRONIZATION */
+  // Outbound: Tell Android what is happening
+  useEffect(() => {
+    if (window.Android && window.Android.onHtml5AudioEvent) {
+      const name = currentStation.name || "Unknown Station";
+      const author = currentStation.author || "Live Radio";
+      // Ensure cover is a full URL
+      const cover = currentStation.cover.startsWith('http')
+        ? currentStation.cover
+        : `${window.location.origin}/${currentStation.cover}`;
+
+      window.Android.onHtml5AudioEvent(
+        currentStation.src,
+        isPlaying,
+        name,
+        author,
+        cover
+      );
+    }
+  }, [isPlaying, currentStation]);
+
+  // Inbound: Receive commands from Android
+  useEffect(() => {
+    const controlPlayer = (command: 'play' | 'pause' | 'stop') => {
+      // FORCE UI UPDATES IMMEDIATELY
+      if (command === 'pause' || command === 'stop') {
+        setIsPlaying(false);
+        setMainPlayerStatus(isOnline ? 'online' : 'offline');
+        if (audioRef.current && !audioRef.current.paused) {
+          audioRef.current.pause();
+        }
+      }
+      else if (command === 'play') {
+        if (audioRef.current && audioRef.current.paused) {
+          setMainPlayerStatus('connecting');
+          audioRef.current.play().catch(() => handlePlayError(true));
+        } else if (!isPlaying) {
+             // Audio thinks it's playing, but UI says paused? Force UI.
+             setIsPlaying(true);
+        }
+      }
+    };
+
+    window.controlPlayer = controlPlayer;
+    return () => { delete window.controlPlayer; };
+  }, [handlePlayError, isPlaying, isOnline]); // Depend on state to keep function fresh
+
+  /* ===========================
+     UI HANDLERS
+     =========================== */
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+    setRetryCount(0);
+
+    if (!isOnline) {
+      checkGlobalConnectivity();
+      return;
+    }
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      // onAudioPause will handle the setIsPlaying(false)
+    } else {
+      const status = stationStatusesRef.current[currentStation.id];
+      if (status === 'offline') {
+        skipToNextAndPlay();
+        return;
+      }
+      setIsPlaying(true);
+      setMainPlayerStatus(status === 'online' ? 'connecting' : 'checking');
+      audioRef.current.play().catch(() => handlePlayError(true));
+    }
+  };
+
+  const handleNext = () => {
+    setCurrentStationIndex(prev => nextIndex(prev));
+    if (isOnline) setIsPlaying(true);
+  };
+
+  const handlePrev = () => {
+    setCurrentStationIndex(prev => prevIndex(prev));
+    if (isOnline) setIsPlaying(true);
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVol = parseFloat(e.target.value);
+    setVolume(newVol);
+    localStorage.setItem("nepali_fm_volume", newVol.toString());
+    if (newVol > 0) setIsMuted(false);
+  };
+
+  /* ===========================
+     RENDER
+     =========================== */
+  return (
+    <div className="w-full max-h-[84vh] flex flex-col bg-gray-100 dark:bg-black select-none font-sans">
+
+      {/* Audio tag in JSX */}
+      <audio
+        ref={audioRef}
+        onError={onAudioError}
+        onPlaying={onAudioPlaying}
+        onPause={onAudioPause}
+        onWaiting={onAudioWaiting}
+        onTimeUpdate={onAudioTimeUpdate}
+        crossOrigin="anonymous"
+        style={{ display: "none" }}
+      />
+
+      {/* CHASSIS HEADER */}
+      <div className="shrink-0 relative z-20 transition-colors duration-300 bg-zinc-300 dark:bg-[#222] shadow-2xl border-b-[6px] border-zinc-400 dark:border-[#151515]">
+         <div className="absolute inset-0 opacity-5 dark:opacity-10 bg-[url('/dark-leather.png')] pointer-events-none"></div>
+
+         <div className="p-3 pb-5 flex flex-col gap-3 relative">
+            {/* Top Row */}
+            <div className="flex justify-between items-center px-1">
+               <div className="flex gap-1">
+                 {[...Array(6)].map((_,i) => <div key={i} className="w-1 h-6 bg-zinc-400 dark:bg-black/60 rounded-full shadow-[inset_0_0_2px_rgba(255,255,255,0.5)] dark:shadow-[inset_0_0_2px_rgba(255,255,255,0.1)]"></div>)}
+               </div>
+               <div className="text-zinc-500 dark:text-gray-600 font-bold text-[10px] tracking-[0.3em] uppercase drop-shadow-sm">NEPDATE RADIO</div>
+               <div className="flex gap-1">
+                 {[...Array(6)].map((_,i) => <div key={i} className="w-1 h-6 bg-zinc-400 dark:bg-black/60 rounded-full shadow-[inset_0_0_2px_rgba(255,255,255,0.5)] dark:shadow-[inset_0_0_2px_rgba(255,255,255,0.1)]"></div>)}
+               </div>
+            </div>
+
+            {/* Middle Row */}
+            <div className="flex gap-4 items-center">
+               <div className="flex-1 relative h-20 bg-[#bcc5b3] dark:bg-[#9ea792] rounded shadow-[inset_0_0_15px_rgba(0,0,0,0.4)] dark:shadow-[inset_0_0_15px_rgba(0,0,0,0.6)] border-[3px] border-zinc-400 dark:border-[#444] flex items-center px-3 overflow-hidden">
+                   <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(120deg,transparent_30%,rgba(255,255,255,0.2)_45%,transparent_60%)]"></div>
+                   <div className="w-full font-mono text-[#282f2c] z-10 flex flex-col justify-center">
+                      <div className="flex justify-between text-[9px] font-bold opacity-70 mb-0.5">
+                         <span>{isOnline ? (mainPlayerStatus === 'offline' ? 'NO SIGNAL' : 'STEREO') : 'OFFLINE'}</span>
+                         <span>FM 90-108</span>
+                      </div>
+                      <div className="text-lg leading-tight font-black uppercase truncate tracking-tighter opacity-90 w-full">
+                        {currentStation.name}
+                      </div>
+                      <div className="text-[10px] uppercase truncate opacity-80 mt-0.5 font-semibold">
+                         {mainPlayerStatus === 'reconnecting' ? '>>> SCANNING' :
+                          mainPlayerStatus === 'connecting' ? '>>> LOADING' :
+                          mainPlayerStatus === 'checking' ? '>>> TUNING' :
+                          mainPlayerStatus === 'offline' || !isOnline ? '' :
+                          isPlaying ? `>>> PLAYING` : 'PAUSED'}
+                      </div>
+                   </div>
+               </div>
+
+               <div className={`shrink-0 w-28 h-28 rounded-full bg-zinc-800 dark:bg-[#111] border-[3px] border-zinc-400 dark:border-[#333] shadow-lg flex items-center justify-center relative overflow-hidden ${isPlaying ? 'animate-[spin_4s_linear_infinite]' : ''}`}>
+                  <img src={currentStation.cover} className="absolute inset-0 w-full h-full object-fill opacity-80" alt="" />
+                  <div className="w-5 h-5 bg-[#e5e5e5] rounded-full border-4 border-[#333] z-10 shadow-md"></div>
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none"></div>
+               </div>
+            </div>
+
+            {/* Bottom Row */}
+            <div className="flex items-center justify-between mt-1 px-1">
+               <div className="flex flex-col items-center gap-1 group">
+                  <div className="relative w-16 h-6">
+                    <input type="range" min="0" max="1" step="0.01" value={isMuted ? 0 : volume} onChange={handleVolumeChange} className="absolute w-full h-full opacity-0 cursor-pointer z-20" />
+                    <div className="w-full h-1.5 bg-zinc-400/50 dark:bg-gray-800 rounded-full mt-2.5 overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] dark:shadow-[inset_0_1px_2px_rgba(0,0,0,1)]">
+                       <div className="h-full bg-orange-600" style={{width: `${(isMuted ? 0 : volume) * 100}%`}}></div>
+                    </div>
+                    <div className="absolute top-1/2 left-0 w-2 h-2 bg-zinc-500 dark:bg-gray-400 rounded-full -translate-y-1/2 pointer-events-none shadow-md" style={{left: `calc(${(isMuted ? 0 : volume) * 100}% - 4px)`}}></div>
+                  </div>
+                  <span className="text-[8px] text-zinc-500 dark:text-gray-500 font-bold uppercase tracking-wider">Vol</span>
+               </div>
+
+               <div className="flex items-center gap-3 bg-zinc-400/20 dark:bg-[#181818] p-1.5 px-3 rounded-full border-t border-zinc-400/30 dark:border-gray-700 shadow-[0_4px_6px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.4)] dark:shadow-[0_4px_6px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.1)]">
+                   <button onClick={handlePrev} className="w-8 h-8 rounded-full bg-gradient-to-b from-zinc-100 to-zinc-300 dark:from-[#444] dark:to-[#222] shadow-[0_2px_2px_rgba(0,0,0,0.2)] dark:shadow-[0_2px_2px_rgba(0,0,0,0.5)] flex items-center justify-center text-zinc-600 dark:text-gray-400 active:scale-95 active:shadow-inner border border-zinc-400 dark:border-[#444]">
+                      <SkipBack size={14} fill="currentColor" />
+                   </button>
+                   <button onClick={togglePlay} className={`w-12 h-12 -my-2 rounded-full flex items-center justify-center text-white shadow-[0_3px_5px_rgba(0,0,0,0.3)] dark:shadow-[0_3px_5px_rgba(0,0,0,0.6)] active:scale-95 active:shadow-inner border-2 border-zinc-400 dark:border-[#555] transition-all ${isPlaying ? 'bg-gradient-to-b from-orange-500 to-orange-700' : 'bg-gradient-to-b from-blue-500 to-blue-700'}`}>
+                      {mainPlayerStatus === 'connecting' || mainPlayerStatus === 'reconnecting' ? (
+                        <RefreshCw size={18} className="animate-spin" />
+                      ) : isPlaying ? (
+                        <Pause size={18} fill="currentColor" />
+                      ) : (
+                        <Play size={18} fill="currentColor" className="ml-0.5" />
+                      )}
+                   </button>
+                   <button onClick={handleNext} className="w-8 h-8 rounded-full bg-gradient-to-b from-zinc-100 to-zinc-300 dark:from-[#444] dark:to-[#222] shadow-[0_2px_2px_rgba(0,0,0,0.2)] dark:shadow-[0_2px_2px_rgba(0,0,0,0.5)] flex items-center justify-center text-zinc-600 dark:text-gray-400 active:scale-95 active:shadow-inner border border-zinc-400 dark:border-[#444]">
+                      <SkipForward size={14} fill="currentColor" />
+                   </button>
+               </div>
+
+               <div className="flex flex-col items-center gap-1">
+                  <button onClick={() => setStabilityMode(m => m === 'standard' ? 'high' : 'standard')} className={`w-8 h-4 rounded-full border border-zinc-400 dark:border-gray-700 shadow-inner flex items-center px-0.5 transition-colors ${stabilityMode === 'high' ? 'bg-green-700 dark:bg-green-900 justify-end' : 'bg-zinc-300 dark:bg-gray-800 justify-start'}`}>
+                     <div className={`w-3 h-3 rounded-full shadow-md ${stabilityMode === 'high' ? 'bg-green-400' : 'bg-zinc-500 dark:bg-gray-500'}`}></div>
+                  </button>
+                  <span className="text-[8px] text-zinc-500 dark:text-gray-500 font-bold uppercase tracking-wider">{stabilityMode === 'high' ? 'Auto' : 'Std'}</span>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      {/* SCROLLABLE LIST */}
+      <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-[#0a0a0a] scroll-smooth">
+         {/* --- OFFLINE BANNER (Fixed to use isCheckingNet) --- */}
+         {!isOnline && (
+            <div className="bg-red-600 text-white text-xs font-bold p-2 text-center shadow-inner flex items-center justify-center gap-2 sticky top-0 z-10">
+               <WifiOff size={14} />
+               <span>CONNECTION LOST</span>
+               <button
+                  onClick={checkGlobalConnectivity}
+                  disabled={isCheckingNet}
+                  className={`bg-white/20 px-3 py-0.5 rounded ml-2 flex items-center gap-2 transition-all ${isCheckingNet ? 'opacity-70 cursor-wait' : 'hover:bg-white/30 active:scale-95'}`}
+               >
+                  {isCheckingNet && <RefreshCw size={10} className="animate-spin" />}
+                  {isCheckingNet ? 'TRYING...' : 'RETRY'}
+               </button>
+            </div>
+         )}
+
+         <div className="divide-y divide-gray-200 dark:divide-gray-800">
+          {radioStations.map((station, index) => {
+            const isCurrent = index === currentStationIndex;
+            const status = isCurrent && isPlaying ? 'online' : stationStatuses[station.id] || 'pending';
+            const visualStatus: StreamStatus = !isOnline ? 'offline' : (isCurrent ? mainPlayerStatus : status);
+
+            return (
+              <div
+                key={station.id}
+                onClick={() => {
+                   if (isCurrent && isPlaying) togglePlay();
+                   else {
+                     setCurrentStationIndex(index);
+                     if(isOnline) setIsPlaying(true);
+                   }
+                }}
+                className={`p-3 flex items-center gap-3 cursor-pointer hover:bg-zinc-200 dark:hover:bg-[#1a1a1a] transition active:bg-zinc-300 dark:active:bg-[#222] ${isCurrent ? 'bg-orange-50 dark:bg-[#151515]' : ''}`}
+              >
+                 <div className="relative w-3 h-3 shrink-0 flex items-center justify-center">
+                    <div className={`w-2 h-2 rounded-full shadow-sm ${getStatusColor(visualStatus)}`}></div>
+                    {['online','connecting','reconnecting'].includes(visualStatus) && <div className={`absolute inset-0 rounded-full animate-ping opacity-50 ${getStatusColor(visualStatus)}`}></div>}
+                 </div>
+
+                 <div className="flex-1 min-w-0">
+                    <div className={`text-sm font-bold truncate ${isCurrent ? 'text-orange-700 dark:text-orange-500' : 'text-zinc-800 dark:text-gray-300'}`}>{station.name}</div>
+                    <div className="text-[10px] text-zinc-500 dark:text-gray-500 uppercase font-semibold truncate tracking-wide">
+                       {visualStatus === 'offline' ? 'OFFLINE' :
+                        visualStatus === 'reconnecting' ? 'RETRYING...' :
+                        visualStatus === 'connecting' ? 'BUFFERING...' :
+                        station.author}
+                    </div>
+                 </div>
+
+                 {isCurrent && isPlaying && (
+                    <div className="flex gap-0.5 items-end h-3 ml-2 shrink-0">
+                       <div className="w-1 bg-orange-500 animate-[bounce_0.8s_infinite] h-2"></div>
+                       <div className="w-1 bg-orange-500 animate-[bounce_1.1s_infinite] h-full"></div>
+                       <div className="w-1 bg-orange-500 animate-[bounce_0.9s_infinite] h-1.5"></div>
+                    </div>
+                 )}
+              </div>
+            )
+          })}
+         </div>
+      </div>
+    </div>
+  );
 };
 
 export default RadioPage;
