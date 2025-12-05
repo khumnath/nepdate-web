@@ -68,7 +68,7 @@ export const DharmaPage: React.FC<DharmaPageProps> = ({
 
 		// Menu Page
 		return (
-			<div className="flex-1 flex flex-col w-full h-full">
+			<div className="flex-1 flex flex-col w-full max-h-[84vh] ">
 				<div className="bg-white dark:bg-gray-800 px-4 py-3 shadow-sm flex items-center gap-3 sticky top-0 z-10 border-b border-gray-100 dark:border-gray-700 rounded-t-lg">
 					<button onClick={onBack} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
 						<ChevronLeft className="w-6 h-6 text-gray-600 dark:text-gray-300" />

@@ -107,19 +107,16 @@ const App: React.FC = () => {
 		>
 			{/* Desktop TopNav */}
 			{desktopLayoutStyle === 'topbar' && (
-				<div className="w-full flex items-center justify-between px-4 py-2 bg-slate-200 dark:bg-gray-800 z-30 print:hidden">
+				<div className="w-full z-30 print:hidden hidden md:block border-b border-gray-200 dark:border-gray-700">
 					<DesktopTopNav
 						activeView={activeView}
 						onNavigate={(key) => {
 							if (key === 'about') setIsAboutOpen(true);
 							else setActiveView(key);
 						}}
+						showInstall={!isStandalone && canInstall}
+						onInstallClick={handleInstallClick}
 					/>
-					{!isStandalone && canInstall && (
-						<button onClick={handleInstallClick} className="hidden md:flex ml-4 p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 items-center gap-2 text-sm">
-							<Download className="w-4 h-4" /> <span>{NEPALI_LABELS.installApp}</span>
-						</button>
-					)}
 				</div>
 			)}
 
