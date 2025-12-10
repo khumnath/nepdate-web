@@ -1,7 +1,7 @@
 import React, { JSX, useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { NEPALI_BS_MONTHS } from '../../constants/constants';
-import { toBikramSambat, fromBikramSambat, getBikramMonthInfo, getEventsForDate, toDevanagari } from '../../lib/utils/lib';
+import { toBikramSambat, fromBikramSambat, getBikramMonthInfo, calculate, toDevanagari } from '../../lib/utils/lib';
 import MonthlyMuhurta from './Muhurtas';
 
 interface MonthlyEventsProps {
@@ -62,7 +62,9 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 
 			// Check events for this date
 			const bsDate = toBikramSambat(dateToCheck);
-			const dayEvents = getEventsForDate(dateToCheck, bsDate.year, bsDate.monthIndex, bsDate.day);
+			// Use calculate() to get scanned tithis for Kshaya detection
+			const calcData = calculate(dateToCheck);
+			const dayEvents = calcData.events || [];
 
 			if (dayEvents.length > 0) {
 				dayEvents.forEach(e => {
@@ -102,7 +104,8 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 
 			for (let day = 1; day <= monthInfo.totalDays; day++) {
 				const date = fromBikramSambat(currentYear, currentMonth, day);
-				const dayEvents = getEventsForDate(date, currentYear, currentMonth, day);
+				const calcData = calculate(date);
+				const dayEvents = calcData.events || [];
 				if (dayEvents.length > 0) {
 					eventsMap.set(day, dayEvents.map(e => ({ name: e.name, holiday: e.holiday || false })));
 				}
@@ -113,8 +116,9 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 
 			for (let day = 1; day <= lastDay.getUTCDate(); day++) {
 				const date = new Date(Date.UTC(currentYear, currentMonth, day));
-				const bsDate = toBikramSambat(date);
-				const dayEvents = getEventsForDate(date, bsDate.year, bsDate.monthIndex, bsDate.day);
+				// const bsDate = toBikramSambat(date);
+				const calcData = calculate(date);
+				const dayEvents = calcData.events || [];
 				if (dayEvents.length > 0) {
 					eventsMap.set(day, dayEvents.map(e => ({ name: e.name, holiday: e.holiday || false })));
 				}

@@ -5,7 +5,7 @@ import {
 	getSunriseSunset,
 	toDevanagari,
 	toJulianDay,
-	findPurnima,
+	findNewMoon,
 	trueLongitudeSun,
 	trueLongitudeMoon,
 	getTithi,
@@ -54,13 +54,27 @@ export function getPanchangaDetailsAtAhar(ahar: number): { [key: string]: any } 
 	const paksha = tithiNum <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
 	const tithiDay = tithiNum > 15 ? tithiNum - 15 : tithiNum;
 	const tithiName = resolveTithiName(tithiDay, paksha);
-	let purnimaEnd = findPurnima(ahar);
-	if (purnimaEnd < ahar) {
-		purnimaEnd = findPurnima(ahar + 29.53);
+	// Calculate Amanta Month
+	let lastNewMoon = findNewMoon(ahar);
+	if (lastNewMoon > ahar) {
+		lastNewMoon = findNewMoon(lastNewMoon - 29.53);
 	}
-	const sunAtPurnima = trueLongitudeSun(purnimaEnd);
-	const nameSign = Math.floor(sunAtPurnima / 30);
-	const purnimantaMonthName = lunar_MonthNames[nameSign % 12];
+	const clong = trueLongitudeSun(lastNewMoon);
+
+	let masaNum = Math.floor(sunLong / 30) % 12;
+	if ((Math.floor(clong / 30) % 12) === masaNum) {
+		masaNum = masaNum + 1;
+	}
+	masaNum = (masaNum + 12) % 12;
+	// Convert to Purnimanta Month
+	masaNum = (masaNum - 1 + 12) % 12;
+
+	// Adjust for Purnimanta (Nepal System)
+	if (paksha === "कृष्ण पक्ष") {
+		masaNum = (masaNum + 1) % 12;
+	}
+
+	const purnimantaMonthName = lunar_MonthNames[masaNum];
 
 	const adhikaStatus = calculateAdhikaMasa(ahar);
 	const isAdhika = adhikaStatus.startsWith("अधिक");
@@ -191,6 +205,9 @@ export function getEventsForDate(
 
 	const sunriseAhar = getAharFor(date, defaultLon, sunriseFraction);
 
+	// Calculate Next Sunrise Ahar
+	const nextSunriseAhar = getAharFor(nextDay, defaultLon, nextSunriseFraction);
+
 	// Pradosh Window (Sunset + 3 Ghatis)
 	const pradoshStartAhar = getAharFor(date, defaultLon, sunsetFraction);
 	const pradoshEndAhar = getAharFor(date, defaultLon, sunsetFraction + (3 * GHATI));
@@ -308,12 +325,13 @@ export function getEventsForDate(
 				const isAtSunrise = (infoUdaya.paksha === lunarEvent.paksha && infoUdaya.tithiName === lunarEvent.tithi);
 
 				// Condition B (Kshaya): It is NOT at sunrise, but starts and ends entirely within this day
-				// STRICT CHECK: Matches Name AND Matches Paksha
+				// STRICT CHECK: Matches Name AND Matches Paksha AND Ends before next sunrise
 				const isKshaya = !isAtSunrise && dailyTithis.some(t => {
 					return t.name === lunarEvent.tithi &&
 						t.paksha === lunarEvent.paksha &&
 						t.startTime !== null &&
-						t.endTime !== null;
+						t.endTime !== null &&
+						t.endTime < nextSunriseAhar;
 				});
 
 				isMatch = isAtSunrise || isKshaya;
