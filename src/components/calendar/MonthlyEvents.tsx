@@ -145,39 +145,54 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 
 		const eventItems: JSX.Element[] = [];
 		monthlyEventsMap.forEach((events, day) => {
-			events.forEach((event, index) => {
-				const dayNumber = activeSystem === 'bs' ? toDevanagari(day) : day.toString();
-
-				// Generate Link for Monthly Items
-				let href = '#';
-				if (currentYear !== null) {
-					if (activeSystem === 'bs') {
-						// currentMonth is 0-indexed index passed from parent
-						href = `/bs?${currentYear}-${pad(currentMonth + 1)}-${pad(day)}`;
-					} else {
-						href = `/ad?${currentYear}-${pad(currentMonth + 1)}-${pad(day)}`;
-					}
+			// Deduplicate events based on name
+			const uniqueEventsMap = new Map();
+			events.forEach(e => {
+				if (!uniqueEventsMap.has(e.name)) {
+					uniqueEventsMap.set(e.name, e);
 				}
-
-				eventItems.push(
-					<span key={`${day}-${index}`} className="inline-flex items-center">
-						<span
-							className="font-medium"
-							style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
-						>
-							{dayNumber}
-						</span>
-						<span className="mx-1">:</span>
-						<a
-							href={href}
-							className="hover:underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-							style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
-						>
-							{event.name}
-						</a>
-					</span>
-				);
 			});
+			const uniqueEvents = Array.from(uniqueEventsMap.values());
+
+			if (uniqueEvents.length === 0) return;
+
+			const dayNumber = activeSystem === 'bs' ? toDevanagari(day) : day.toString();
+
+			// Generate Link for Monthly Items
+			let href = '#';
+			if (currentYear !== null) {
+				if (activeSystem === 'bs') {
+					// currentMonth is 0-indexed index passed from parent
+					href = `/bs?${currentYear}-${pad(currentMonth + 1)}-${pad(day)}`;
+				} else {
+					href = `/ad?${currentYear}-${pad(currentMonth + 1)}-${pad(day)}`;
+				}
+			}
+
+			const dayLabel = activeSystem === 'bs' ? 'गते' : ':';
+
+			eventItems.push(
+				<span key={`${day}`} className="inline-flex items-center">
+					<span
+						className="font-medium"
+						style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
+					>
+						{dayNumber}
+					</span>
+					<span className="mx-1">{dayLabel}</span>
+					<a
+						href={href}
+						className="hover:underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+						style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
+					>
+						{uniqueEvents.map((event, i) => (
+							<span key={i} className={event.holiday ? "text-[#B91C1C] dark:text-red-400" : ""}>
+								{event.name}{i < uniqueEvents.length - 1 ? ' / ' : ''}
+							</span>
+						))}
+					</a>
+				</span>
+			);
 		});
 
 		return (
@@ -230,6 +245,7 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 						let timeText = '';
 						if (event.daysRemaining === 0) timeText = isBs ? 'आज' : 'Today';
 						else if (event.daysRemaining === 1) timeText = isBs ? 'भोलि' : 'Tomorrow';
+						else if (event.daysRemaining === 2) timeText = isBs ? 'पर्सि' : 'Day After Tomorrow';
 						else timeText = isBs ? `${toDevanagari(event.daysRemaining)} दिन बाँकी` : `${event.daysRemaining} days left`;
 
 						// Determine date text
@@ -267,8 +283,8 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 								{/* Left Side: Event Name */}
 								<span
 									className={`text-[15px] leading-snug font-normal max-w-[60%] ${event.holiday
-											? 'text-[#B91C1C] dark:text-red-400'
-											: 'text-[#1e293b] dark:text-slate-200'
+										? 'text-[#B91C1C] dark:text-red-400'
+										: 'text-[#1e293b] dark:text-slate-200'
 										}`}
 									style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
 								>

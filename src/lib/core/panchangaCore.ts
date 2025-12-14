@@ -231,6 +231,17 @@ export function getEventsForDate(
 	const infoMadhyannaStart = getPanchangaDetailsAtAhar(madhyannaStartAhar);
 	const infoMadhyannaEnd = getPanchangaDetailsAtAhar(madhyannaEndAhar);
 
+	// Previous Day Info for Udaya Deduplication
+	const prevDay = new Date(date);
+	prevDay.setDate(date.getDate() - 1);
+	const prevSunEvents = getSunriseSunset(prevDay, defaultLat, defaultLon, defaultTz);
+	let infoPrevUdaya: any = null;
+	if (prevSunEvents.sunrise !== "N/A") {
+		const prevSunriseFraction = timeStringToFraction(prevSunEvents.sunrise);
+		const prevSunriseAhar = getAharFor(prevDay, defaultLon, prevSunriseFraction);
+		infoPrevUdaya = getPanchangaDetailsAtAhar(prevSunriseAhar);
+	}
+
 	// Dynamic Weekday Events
 	const weekday = date.getUTCDay();
 
@@ -313,9 +324,29 @@ export function getEventsForDate(
 	if (EventsData.lunarEvents) {
 		if (infoUdaya.isAdhika) return events; // Skip lunar festivals in Adhika Masa
 
+		// Check for Kshaya Masa (Lost Month)
+		let secondaryMonthName: string | null = null;
+		if (infoUdaya.adhikaStatus && infoUdaya.adhikaStatus.startsWith("क्षय")) {
+			const parts = infoUdaya.adhikaStatus.split(" ");
+			if (parts.length > 1) {
+				const solarName = parts[1];
+				const SOLAR_TO_LUNAR_MAP: Record<string, string> = {
+					"बैशाख": "वैशाख", "जेठ": "ज्येष्ठ", "असार": "आषाढ", "साउन": "श्रावण",
+					"भदौ": "भाद्र", "असोज": "आश्विन", "कार्तिक": "कार्तिक", "मंसिर": "मार्गशीर्ष",
+					"पुस": "पौष", "माघ": "माघ", "फागुन": "फाल्गुन", "चैत": "चैत्र"
+				};
+				secondaryMonthName = SOLAR_TO_LUNAR_MAP[solarName] || null;
+			}
+		}
+
 		(EventsData.lunarEvents as any[])?.forEach(lunarEvent => {
 			if ((lunarEvent.startYear && bsYear < lunarEvent.startYear) || (lunarEvent.endYear && bsYear > lunarEvent.endYear)) return;
-			if (lunarEvent.lunarMonth !== infoUdaya.lunarMonthName) return;
+
+			// Allow if match Primary Month OR Secondary (Kshaya) Month
+			const isMonthMatch = (lunarEvent.lunarMonth === infoUdaya.lunarMonthName) ||
+				(secondaryMonthName && lunarEvent.lunarMonth === secondaryMonthName);
+
+			if (!isMonthMatch) return;
 
 			const rule = lunarEvent.rule || 'udaya';
 			let isMatch = false;
@@ -323,6 +354,9 @@ export function getEventsForDate(
 			if (rule === 'udaya') {
 				// Condition A: It exists at Sunrise
 				const isAtSunrise = (infoUdaya.paksha === lunarEvent.paksha && infoUdaya.tithiName === lunarEvent.tithi);
+
+				// DEDUPLICATION: If yesterday's Udaya Tithi was same, skip today (only show on first day)
+				const isDuplicate = isAtSunrise && infoPrevUdaya && (infoPrevUdaya.paksha === lunarEvent.paksha && infoPrevUdaya.tithiName === lunarEvent.tithi);
 
 				// Condition B (Kshaya): It is NOT at sunrise, but starts and ends entirely within this day
 				// STRICT CHECK: Matches Name AND Matches Paksha AND Ends before next sunrise
@@ -334,7 +368,7 @@ export function getEventsForDate(
 						t.endTime < nextSunriseAhar;
 				});
 
-				isMatch = isAtSunrise || isKshaya;
+				isMatch = (isAtSunrise && !isDuplicate) || isKshaya;
 
 			} else if (rule === 'nishitha') {
 				isMatch = isTithiInWindow(lunarEvent.tithi, lunarEvent.paksha, infoNishithaStart, infoNishithaEnd);
