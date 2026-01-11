@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MENU_ITEMS, MenuItem } from '../../constants/menu';
-import { MoreHorizontal, Download } from 'lucide-react';
+import { MoreHorizontal, Download, RefreshCcw } from 'lucide-react';
 import { NEPALI_LABELS } from '../../constants/constants';
+import { handleReloadApp } from '../../lib/utils/appUtils';
 
 interface DesktopTopNavProps {
 	activeView: string;
@@ -66,8 +67,17 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
 			const moreTextW = measureItemWidth('थप', '500 14px Inter');
 			const moreButtonWidth = moreTextW + PADDING_X + ICON_SIZE + INNER_GAP + GAP;
 
+			// Refresh Item
+			const REFRESH_ITEM: MenuItem = {
+				key: 'refresh',
+				label: 'Reload',
+				icon: <RefreshCcw className="w-5 h-5" />,
+				fixed: false
+			};
+			const allItems = [...MENU_ITEMS, REFRESH_ITEM];
+
 			// Measure All Menu Items
-			const itemWidths = MENU_ITEMS.map(menu => {
+			const itemWidths = allItems.map(menu => {
 				const textW = measureItemWidth(menu.label, '500 14px Inter');
 				return {
 					...menu,
@@ -83,7 +93,7 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
 
 			if (totalWidthNeeded <= maxAvailableWidth) {
 				// FITS PERFECTLY
-				setVisibleMenus(MENU_ITEMS);
+				setVisibleMenus(allItems);
 				setMoreMenus([]);
 			} else {
 				// DOES NOT FIT -> Use "More" button
@@ -135,11 +145,11 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
 				{NEPALI_LABELS.Nepdate_calendar}
 			</div>
 
-			<div className="flex items-center gap-1 overflow-hidden">
+			<div className="flex items-center gap-1">
 				{visibleMenus.map((menu) => (
 					<button
 						key={menu.key}
-						onClick={() => onNavigate(menu.key)}
+						onClick={() => menu.key === 'refresh' ? handleReloadApp() : onNavigate(menu.key)}
 						className={`flex-shrink-0 px-3 py-2 rounded-md flex items-center gap-2 whitespace-nowrap text-sm font-medium transition-colors ${activeView === menu.key
 							? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
 							: 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
@@ -152,20 +162,27 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
 				{moreMenus.length > 0 && (
 					<div ref={popoverRef} className="relative flex-shrink-0">
 						<button
-							onClick={() => setShowMore((v) => !v)}
+							onClick={(e) => {
+								e.stopPropagation();
+								setShowMore((v) => !v);
+							}}
 							className="flex-shrink-0 px-3 py-2 rounded-md flex items-center gap-1 whitespace-nowrap hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
 						>
 							<MoreHorizontal className="w-4 h-4" /> <span>थप</span>
 						</button>
 
 						{showMore && (
-							<div className="absolute left-0 top-full mt-1 w-48 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg flex flex-col z-50 py-1">
+							<div className="absolute left-0 top-full mt-1 w-48 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg flex flex-col z-[100] py-1">
 								{moreMenus.map((menu) => (
 									<button
 										key={menu.key}
 										onClick={(e) => {
 											e.stopPropagation();
-											onNavigate(menu.key);
+											if (menu.key === 'refresh') {
+												handleReloadApp();
+											} else {
+												onNavigate(menu.key);
+											}
 											setShowMore(false);
 										}}
 										className="px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2 whitespace-nowrap text-sm w-full"

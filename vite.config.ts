@@ -34,8 +34,8 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
-        scope: './',
-        start_url: './',
+        scope: '/',
+        start_url: '/',
         icons: [
           { src: 'icons/icon-72x72.png', sizes: '72x72', type: 'image/png' },
           { src: 'icons/icon-96x96.png', sizes: '96x96', type: 'image/png' },
@@ -68,7 +68,9 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
-        privacy: path.resolve(__dirname, 'privacy-policy.html')
+        privacy: path.resolve(__dirname, 'privacy-policy.html'),
+        bs: path.resolve(__dirname, 'bs.html'),
+        ad: path.resolve(__dirname, 'ad.html')
       },
       output: {
         manualChunks(id) {

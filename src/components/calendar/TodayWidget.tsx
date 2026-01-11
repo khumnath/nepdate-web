@@ -99,13 +99,13 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
     if (!timings || timings.length === 0) return null;
 
     return timings.map(t => {
-       const start = formatTimeNepali(t.startTime);
-       const end = formatTimeNepali(t.endTime);
+      const start = formatTimeNepali(t.startTime);
+      const end = formatTimeNepali(t.endTime);
 
-       if (start && end) return `${start}-${end}`;
-       if (start) return `${start} देखि`;
-       if (end) return `${end} सम्म`;
-       return null;
+      if (start && end) return `${start}-${end}`;
+      if (start) return `${start} देखि`;
+      if (end) return `${end} सम्म`;
+      return null;
     }).filter(Boolean).join(', ');
   };
 
@@ -161,12 +161,11 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
           </div>
 
           {/* BHADRA DISPLAY LOGIC */}
-          {bhadra && bhadra.isActive &&(
-            <div className={`mt-3 p-2 rounded-md text-sm border flex items-center justify-center gap-2 ${
-              bhadra.isHarmful
+          {bhadra && bhadra.isActive && (
+            <div className={`mt-3 p-2 rounded-md text-sm border flex items-center justify-center gap-2 ${bhadra.isHarmful
                 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 text-red-700 dark:text-red-300'
                 : 'bg-green-50 dark:bg-green-900/20 border-green-200 text-green-700 dark:text-green-300'
-            }`}>
+              }`}>
               {bhadra.isHarmful ? (
                 <AlertTriangle size={16} className="shrink-0" />
               ) : (

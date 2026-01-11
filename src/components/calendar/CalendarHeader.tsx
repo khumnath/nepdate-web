@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sun, Moon, X, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Sun, Moon, X, AlertTriangle, CheckCircle, Clock, Sunrise, Sunset } from 'lucide-react';
 import { toDevanagari, getNepaliPeriod } from '../../lib/utils/lib';
 import {
 	NEPALI_LABELS,
@@ -104,115 +104,113 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 	// TODAY LUNAR SUMMARY FORMATTER
 	const renderLunarSummary = () => {
 		if (!todayDetails) return "—";
-		const bhadra = todayDetails.bhadra;
 
 		// formatElements to return ReactNode array
-		const formatElements = (
-			arr: Array<{ name: string; startTime?: string | null; endTime?: string | null }> | undefined,
-			isKarana: boolean = false
-		) => {
-			if (!arr || arr.length === 0) return '—';
-
-			const elements: React.ReactNode[] = [];
-			const first = arr[0];
-			const firstEndIso = first.endTime || null;
-			const firstEnd = formatTimeNepali(firstEndIso);
-
-			const nextSunriseIso = (todayDetails as any).nextSunriseIso as string | null | undefined;
-			const nextSunriseDate = nextSunriseIso ? new Date(nextSunriseIso) : null;
-
-			// Helper to render a single item's content
-			const renderItemContent = (name: string, timeStr: string | null, prefix: string = "") => {
-				const isVishti = name.includes('विष्टि') || name.includes('Vishti');
-				const showBhadraBtn = isKarana && isVishti && bhadra && bhadra.isActive;
-
-				return (
-					<>
-						{prefix}
-						{name}
-						{showBhadraBtn && (
-							<button
-								onClick={(e) => {
-									e.stopPropagation();
-									setBhadraModalOpen(true);
-								}}
-								className={`inline-flex items-center mx-1 px-1 py-0 rounded text-[10px] font-bold cursor-pointer hover:opacity-80 align-baseline transition-colors ${bhadra.isHarmful
-										? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
-										: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'
-									}`}
-								title="भद्रा विवरण"
-							>
-								( भद्रा )
-							</button>
-						)}
-						{timeStr ? ` ${timeStr} सम्म` : ''}
-					</>
-				);
-			};
-
-			elements.push(
-				<span key="first">
-					{renderItemContent(first.name, firstEnd)}
-				</span>
-			);
-
-			if (arr.length > 1) {
-				for (let i = 1; i < arr.length; i++) {
-					const el = arr[i];
-					const isLast = i === arr.length - 1;
-					const endIso = el.endTime || null;
-					const endDate = endIso ? new Date(endIso) : null;
-
-					let showEnd = false;
-					if (endDate && nextSunriseDate) {
-						showEnd = endDate.getTime() < nextSunriseDate.getTime();
-					} else if (endDate) {
-						// Fallback if nextSunriseDate is missing
-						const firstRefIso = first.endTime || first.startTime || null;
-						const firstRefDate = firstRefIso ? new Date(firstRefIso) : null;
-						if (firstRefDate) {
-							showEnd = endDate.getUTCDate() === firstRefDate.getUTCDate();
-						} else {
-							showEnd = true;
-						}
-					}
-
-					const formattedEnd = formatTimeNepali(endIso);
-					const timeStr = showEnd ? formattedEnd : null;
-					const prefix = isLast ? "उपरान्त " : "";
-
-					elements.push(
-						<span key={i}>
-							, {renderItemContent(el.name, timeStr, prefix)}
-						</span>
-					);
-				}
-			}
-
-			return elements;
-		};
 
 		// Get BS month, day and weekday
 		const bsDay = todayDetails.bsDay ? toDevanagari(todayDetails.bsDay) : '';
 		const bsWeekday = todayDetails.weekday || '';
 		const bsMonthName = typeof todayDetails.bsMonthIndex === 'number' ? NEPALI_BS_MONTHS[todayDetails.bsMonthIndex] : '';
 
+		// Get AD Date for the card (Assuming today)
+		const todayAd = new Date();
+		const adDay = todayAd.getDate();
+		const adMonth = GREGORIAN_MONTHS[todayAd.getMonth()];
+		const adYear = todayAd.getFullYear();
+
+		const sunrise = todayDetails.sunrise;
+		const sunset = todayDetails.sunset;
+
 		return (
-			<div className="text-center">
-				<strong className="font-bold text-green-600 text-base">आज</strong>
-				<span className="text-gray-600 dark:text-gray-300 text-sm" style={{ textWrap: 'auto' }}>
-					,&nbsp;
-					<strong className="font-bold">{bsMonthName} {bsDay} गते {bsWeekday}, तिथि:</strong> {formatElements(todayDetails.tithis)}。
-					<strong className="font-bold">नक्षत्र:</strong> {formatElements(todayDetails.nakshatras)}。
-					<strong className="font-bold">योग:</strong> {formatElements(todayDetails.yogas)}。
-					<strong className="font-bold">करण:</strong> {formatElements(todayDetails.karanas, true)}
-				</span>
+			<div className="flex items-center text-left px-2 py-1.5">
+				{/* Left: Compact Orange Date Box (Fixed Size) */}
+				<div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex flex-col items-center justify-center text-white shadow-sm mr-3 relative overflow-hidden">
+					<div className="absolute top-0 right-0 w-full h-full bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+					<div className="text-xl font-bold leading-none mb-0.5 z-10 font-sans">
+						{bsDay}
+					</div>
+					<div className="text-[9px] font-medium opacity-95 z-10 leading-none">
+						{bsMonthName}
+					</div>
+				</div>
+
+				{/* Right: Compact Details */}
+				<div className="flex-grow min-w-0 flex flex-col justify-center">
+
+					{/* Header Row */}
+					<div className="flex items-center gap-2 mb-0.5">
+						<span className="text-sm font-bold text-red-600 dark:text-red-400 leading-none">
+							{bsWeekday}
+						</span>
+						<span className="bg-amber-400 text-white text-[9px] px-1.5 py-[1px] rounded-full font-bold shadow-sm leading-none">
+							आज
+						</span>
+						<span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 ml-auto leading-none">
+							{adMonth} {adDay}, {adYear}
+						</span>
+					</div>
+
+					{/* Grid Data: Compact Label: Value */}
+					<div className="grid grid-cols-2 gap-x-2 gap-y-0 text-[10px] leading-snug">
+						<div className="flex items-baseline gap-1 overflow-hidden">
+							<span className="text-gray-500 font-medium whitespace-nowrap">तिथि:</span>
+							<span className="font-bold text-gray-800 dark:text-gray-200 truncate">
+								{todayDetails.tithis?.[0]?.name.split(' ')[0] || '-'}
+							</span>
+						</div>
+						<div className="flex items-baseline gap-1 overflow-hidden">
+							<span className="text-gray-500 font-medium whitespace-nowrap">नक्षत्र:</span>
+							<span className="font-bold text-gray-800 dark:text-gray-200 truncate">
+								{todayDetails.nakshatras?.[0]?.name.split(' ')[0] || '-'}
+							</span>
+						</div>
+						<div className="flex items-baseline gap-1 overflow-hidden">
+							<span className="text-gray-500 font-medium whitespace-nowrap">योग:</span>
+							<span className="font-bold text-gray-800 dark:text-gray-200 truncate">
+								{todayDetails.yogas?.[0]?.name.split(' ')[0] || '-'}
+							</span>
+						</div>
+						<div className="flex items-baseline gap-1 overflow-hidden">
+							<span className="text-gray-500 font-medium whitespace-nowrap">करण:</span>
+							<span className="font-bold text-gray-800 dark:text-gray-200 truncate">
+								{todayDetails.karanas?.[0]?.name.split(' ')[0] || '-'}
+							</span>
+						</div>
+					</div>
+
+					{/* Sun Times (Ultra Compact) */}
+					<div className="flex items-center gap-3 mt-0.5 pt-0.5 border-t border-amber-100 dark:border-gray-700/50">
+						<div className="flex items-center gap-1">
+							<Sunrise className="w-2.5 h-2.5 text-orange-400" />
+							<span className="text-[9px] font-bold text-gray-600 dark:text-gray-300 leading-none">
+								{sunrise}
+							</span>
+						</div>
+						<div className="flex items-center gap-1">
+							<Sunset className="w-2.5 h-2.5 text-orange-400" />
+							<span className="text-[9px] font-bold text-gray-600 dark:text-gray-300 leading-none">
+								{sunset}
+							</span>
+						</div>
+					</div>
+				</div>
 			</div>
 		);
 	};
 
 	return (
 		<>
+			{/* TODAY LUNAR INFO STRIP (MOBILE TOP) */}
+			<div className="
+				w-full text-center py-0
+				bg-[#FEF7ED] dark:bg-gray-800
+				text-gray-800 dark:text-gray-200
+				border-b border-amber-100 dark:border-gray-700
+				block md:hidden
+			">
+				{renderLunarSummary()}
+			</div>
+
 			<header className="w-full mb-2 bg-gradient-to-r from-[#0968e7] via-[#5068c8] to-[#0589c6]
       dark:from-[#183051] dark:via-[#3a3d4a] dark:to-[#1f292e]
   backdrop-blur-sm border-b border-[#a5b4fc] dark:border-[#6d6e6f] rounded-lg">
@@ -274,20 +272,6 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 							{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
 						</button>
 					</div>
-				</div>
-
-				{/* TODAY LUNAR INFO STRIP */}
-				<div className="
-        w-full text-center py-2 text-[11px] sm:text-xs md:text-sm
-        bg-gray-50/85 dark:bg-gray-800/85
-        text-gray-800 dark:text-gray-200
-        border-t border-white/40 dark:border-gray-700
-        rounded-b-lg
-        px-2
-        overflow-x-auto
-        block md:hidden
-      ">
-					{renderLunarSummary()}
 				</div>
 			</header>
 

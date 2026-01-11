@@ -2,6 +2,7 @@ import React, { lazy } from "react";
 import { Home, SwitchCamera, RadioIcon, Info, Settings, FileText, BookOpen } from "lucide-react";
 import { NEPALI_LABELS } from "./constants";
 
+
 // Lazy-loaded pages
 
 const ConverterPage = lazy(() => import("../pages/ConverterPage"));
@@ -11,6 +12,9 @@ const AboutPage = lazy(() => import("../pages/AboutPopup"));
 const PrivacyPage = lazy(() => import("../pages/PrivacyPage"));
 const radioPage = lazy(() => import("../pages/radioPage"));
 const DharmaPage = lazy(() => import("../pages/DharmaPage"));
+// Menu page import template
+//const MenuPage = lazy(() => import("../pages/MenuPage"));
+
 export interface MenuItem {
   key: string;                                      // Unique identifier
   label: string;                                    // Nepali label
@@ -90,6 +94,7 @@ export const MENU_ITEMS: MenuItem[] = [
     page: radioPage,
     fixed: false,
   },
+
 	// Template
 	/*{
     key: "menu",

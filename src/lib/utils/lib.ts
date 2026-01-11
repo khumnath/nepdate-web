@@ -11,6 +11,7 @@ export {
     toJulianDay,
     fromJulianDay,
     findPurnima,
+    findNewMoon,
     trueLongitudeSun,
     trueLongitudeMoon,
     getTithi,

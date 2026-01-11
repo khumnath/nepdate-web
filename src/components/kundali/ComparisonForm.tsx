@@ -50,7 +50,7 @@ export const ComparisonForm: React.FC<ComparisonFormProps> = ({ onCalculate, isL
 
         if (groomDataPromise && brideDataPromise) {
             const [groomResult, brideResult] = await Promise.all([groomDataPromise, brideDataPromise]);
-            
+
             if (groomResult && brideResult) {
                 onCalculate(groomResult, brideResult);
             }
@@ -82,7 +82,7 @@ export const ComparisonForm: React.FC<ComparisonFormProps> = ({ onCalculate, isL
                 </div>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-4 pb-16">
                 <button
                     type="button"
                     onClick={handleSubmit}

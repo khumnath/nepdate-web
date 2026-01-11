@@ -5,7 +5,7 @@ import {
 	getSunriseSunset,
 	toDevanagari,
 	toJulianDay,
-	findPurnima,
+	findNewMoon,
 	trueLongitudeSun,
 	trueLongitudeMoon,
 	getTithi,
@@ -54,13 +54,27 @@ export function getPanchangaDetailsAtAhar(ahar: number): { [key: string]: any } 
 	const paksha = tithiNum <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
 	const tithiDay = tithiNum > 15 ? tithiNum - 15 : tithiNum;
 	const tithiName = resolveTithiName(tithiDay, paksha);
-	let purnimaEnd = findPurnima(ahar);
-	if (purnimaEnd < ahar) {
-		purnimaEnd = findPurnima(ahar + 29.53);
+	// Calculate Amanta Month
+	let lastNewMoon = findNewMoon(ahar);
+	if (lastNewMoon > ahar) {
+		lastNewMoon = findNewMoon(lastNewMoon - 29.53);
 	}
-	const sunAtPurnima = trueLongitudeSun(purnimaEnd);
-	const nameSign = Math.floor(sunAtPurnima / 30);
-	const purnimantaMonthName = lunar_MonthNames[nameSign % 12];
+	const clong = trueLongitudeSun(lastNewMoon);
+
+	let masaNum = Math.floor(sunLong / 30) % 12;
+	if ((Math.floor(clong / 30) % 12) === masaNum) {
+		masaNum = masaNum + 1;
+	}
+	masaNum = (masaNum + 12) % 12;
+	// Convert to Purnimanta Month
+	masaNum = (masaNum - 1 + 12) % 12;
+
+	// Adjust for Purnimanta (Nepal System)
+	if (paksha === "कृष्ण पक्ष") {
+		masaNum = (masaNum + 1) % 12;
+	}
+
+	const purnimantaMonthName = lunar_MonthNames[masaNum];
 
 	const adhikaStatus = calculateAdhikaMasa(ahar);
 	const isAdhika = adhikaStatus.startsWith("अधिक");
@@ -191,6 +205,9 @@ export function getEventsForDate(
 
 	const sunriseAhar = getAharFor(date, defaultLon, sunriseFraction);
 
+	// Calculate Next Sunrise Ahar
+	const nextSunriseAhar = getAharFor(nextDay, defaultLon, nextSunriseFraction);
+
 	// Pradosh Window (Sunset + 3 Ghatis)
 	const pradoshStartAhar = getAharFor(date, defaultLon, sunsetFraction);
 	const pradoshEndAhar = getAharFor(date, defaultLon, sunsetFraction + (3 * GHATI));
@@ -213,6 +230,17 @@ export function getEventsForDate(
 	const infoNishithaEnd = getPanchangaDetailsAtAhar(nishithaEndAhar);
 	const infoMadhyannaStart = getPanchangaDetailsAtAhar(madhyannaStartAhar);
 	const infoMadhyannaEnd = getPanchangaDetailsAtAhar(madhyannaEndAhar);
+
+	// Previous Day Info for Udaya Deduplication
+	const prevDay = new Date(date);
+	prevDay.setDate(date.getDate() - 1);
+	const prevSunEvents = getSunriseSunset(prevDay, defaultLat, defaultLon, defaultTz);
+	let infoPrevUdaya: any = null;
+	if (prevSunEvents.sunrise !== "N/A") {
+		const prevSunriseFraction = timeStringToFraction(prevSunEvents.sunrise);
+		const prevSunriseAhar = getAharFor(prevDay, defaultLon, prevSunriseFraction);
+		infoPrevUdaya = getPanchangaDetailsAtAhar(prevSunriseAhar);
+	}
 
 	// Dynamic Weekday Events
 	const weekday = date.getUTCDay();
@@ -296,9 +324,29 @@ export function getEventsForDate(
 	if (EventsData.lunarEvents) {
 		if (infoUdaya.isAdhika) return events; // Skip lunar festivals in Adhika Masa
 
+		// Check for Kshaya Masa (Lost Month)
+		let secondaryMonthName: string | null = null;
+		if (infoUdaya.adhikaStatus && infoUdaya.adhikaStatus.startsWith("क्षय")) {
+			const parts = infoUdaya.adhikaStatus.split(" ");
+			if (parts.length > 1) {
+				const solarName = parts[1];
+				const SOLAR_TO_LUNAR_MAP: Record<string, string> = {
+					"बैशाख": "वैशाख", "जेठ": "ज्येष्ठ", "असार": "आषाढ", "साउन": "श्रावण",
+					"भदौ": "भाद्र", "असोज": "आश्विन", "कार्तिक": "कार्तिक", "मंसिर": "मार्गशीर्ष",
+					"पुस": "पौष", "माघ": "माघ", "फागुन": "फाल्गुन", "चैत": "चैत्र"
+				};
+				secondaryMonthName = SOLAR_TO_LUNAR_MAP[solarName] || null;
+			}
+		}
+
 		(EventsData.lunarEvents as any[])?.forEach(lunarEvent => {
 			if ((lunarEvent.startYear && bsYear < lunarEvent.startYear) || (lunarEvent.endYear && bsYear > lunarEvent.endYear)) return;
-			if (lunarEvent.lunarMonth !== infoUdaya.lunarMonthName) return;
+
+			// Allow if match Primary Month OR Secondary (Kshaya) Month
+			const isMonthMatch = (lunarEvent.lunarMonth === infoUdaya.lunarMonthName) ||
+				(secondaryMonthName && lunarEvent.lunarMonth === secondaryMonthName);
+
+			if (!isMonthMatch) return;
 
 			const rule = lunarEvent.rule || 'udaya';
 			let isMatch = false;
@@ -307,16 +355,20 @@ export function getEventsForDate(
 				// Condition A: It exists at Sunrise
 				const isAtSunrise = (infoUdaya.paksha === lunarEvent.paksha && infoUdaya.tithiName === lunarEvent.tithi);
 
+				// DEDUPLICATION: If yesterday's Udaya Tithi was same, skip today (only show on first day)
+				const isDuplicate = isAtSunrise && infoPrevUdaya && (infoPrevUdaya.paksha === lunarEvent.paksha && infoPrevUdaya.tithiName === lunarEvent.tithi);
+
 				// Condition B (Kshaya): It is NOT at sunrise, but starts and ends entirely within this day
-				// STRICT CHECK: Matches Name AND Matches Paksha
+				// STRICT CHECK: Matches Name AND Matches Paksha AND Ends before next sunrise
 				const isKshaya = !isAtSunrise && dailyTithis.some(t => {
 					return t.name === lunarEvent.tithi &&
 						t.paksha === lunarEvent.paksha &&
 						t.startTime !== null &&
-						t.endTime !== null;
+						t.endTime !== null &&
+						t.endTime < nextSunriseAhar;
 				});
 
-				isMatch = isAtSunrise || isKshaya;
+				isMatch = (isAtSunrise && !isDuplicate) || isKshaya;
 
 			} else if (rule === 'nishitha') {
 				isMatch = isTithiInWindow(lunarEvent.tithi, lunarEvent.paksha, infoNishithaStart, infoNishithaEnd);
@@ -480,15 +532,20 @@ export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
 	const tzString = getTzString(timezone);
 
 	// Sunrise/Sunset Calculation (Today & Tomorrow)
-	const todaySunriseSunset = getSunriseSunset(date, latitude, longitude, timezone);
+	// We need to ensure we are calculating sunrise for the CIVIL DAY at the given location.
+	// If 'date' is close to midnight in local time, it might be the previous day in UTC.
+	// We construct a "safe" date that represents Noon on the local civil day.
+	const localDateStr = new Date(date.getTime() + timezone * 60 * 60 * 1000).toISOString().split('T')[0];
+	const safeDate = new Date(`${localDateStr}T12:00:00Z`);
+
+	const todaySunriseSunset = getSunriseSunset(safeDate, latitude, longitude, timezone);
 	if (!todaySunriseSunset || todaySunriseSunset.sunrise === "N/A") return { error: "Could not calculate sunrise/sunset." };
 
-	const localDateStr = new Date(date.getTime() + timezone * 60 * 60 * 1000).toISOString().split('T')[0];
 	const sunriseDate = new Date(`${localDateStr}T${todaySunriseSunset.sunrise}${tzString}`);
 	const [hr, min, sec] = todaySunriseSunset.sunrise.split(':').map(Number);
 	const sunriseFraction = (hr * 3600 + min * 60 + sec) / 86400.0;
 
-	const sunriseAhar = getAharFor(date, longitude, sunriseFraction);
+	const sunriseAhar = getAharFor(safeDate, longitude, sunriseFraction);
 
 	// Calculate Next Sunrise to determine the "Day End" Ahar
 	const tomorrowDate = new Date(date.getTime() + 86400000);
@@ -502,7 +559,9 @@ export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
 		if (nextSunriseDate && !isNaN(nextSunriseDate.getTime())) {
 			const [thr, tmin, tsec] = tomorrowSunriseSunset.sunrise.split(':').map(Number);
 			const nextSunriseFraction = (thr * 3600 + tmin * 60 + tsec) / 86400.0;
-			nextSunriseAhar = getAharFor(nextSunriseDate, longitude, nextSunriseFraction);
+
+			const safeTomorrowDate = new Date(`${tomorrowLocalStr}T12:00:00Z`);
+			nextSunriseAhar = getAharFor(safeTomorrowDate, longitude, nextSunriseFraction);
 		}
 	}
 
@@ -534,14 +593,31 @@ export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
 	});
 
 	// Calculate Nakshatra, Yoga, Karana
-	const nakshatraElements = findElementsForDay(sunriseAhar, dayEndAhar, absTrueLongitudeMoon, (360 / 27), NAKSHATRA_NAMES);
-	const yogaElements = findElementsForDay(sunriseAhar, dayEndAhar, (ah) => absTrueLongitudeSun(ah) + absTrueLongitudeMoon(ah), (360 / 27), YOGA_NAMES);
-	const karanaElements = findElementsForDay(sunriseAhar, dayEndAhar, absElongation, 6, KARANA_NAMES, (index) => {
+	let nakshatraElements = findElementsForDay(sunriseAhar, dayEndAhar, absTrueLongitudeMoon, (360 / 27), NAKSHATRA_NAMES);
+	let yogaElements = findElementsForDay(sunriseAhar, dayEndAhar, (ah) => absTrueLongitudeSun(ah) + absTrueLongitudeMoon(ah), (360 / 27), YOGA_NAMES);
+	let karanaElements = findElementsForDay(sunriseAhar, dayEndAhar, absElongation, 6, KARANA_NAMES, (index) => {
 		const karanaIdx = index % 60;
 		if (karanaIdx === 0) return KARANA_NAMES[0];
 		if (karanaIdx < 57) return KARANA_NAMES[(karanaIdx - 1) % 7 + 1];
 		return KARANA_NAMES[karanaIdx - 57 + 8];
 	});
+
+	// If previous element do not touches sunrise ... we no need to show in that day
+	const filterEarlyElements = (list: any[]) => {
+		return list.filter(item => {
+			if (item.endTime === null || item.endTime === undefined) return true;
+			return item.endTime > sunriseAhar;
+		});
+	};
+
+	// Remove any Tithi that ends before sunrise
+	if (rawTithiElements.length > 0 && rawTithiElements[0].endTime && rawTithiElements[0].endTime <= sunriseAhar) {
+		rawTithiElements.shift();
+	}
+
+	nakshatraElements = filterEarlyElements(nakshatraElements);
+	yogaElements = filterEarlyElements(yogaElements);
+	karanaElements = filterEarlyElements(karanaElements);
 
 	// Calculate Bhadra
 	const vishtiEpisodes = karanaElements.filter(k => k.name.includes("विष्टि") || k.name.includes("Vishti"));

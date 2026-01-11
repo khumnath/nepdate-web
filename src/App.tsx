@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BottomTabBar } from './components/calendar/BottomTabBar';
 import { DesktopTopNav } from './components/calendar/DesktopTopNav';
 import CalendarHeader from './components/calendar/CalendarHeader';
@@ -8,7 +8,8 @@ import DayDetailsModal from './components/calendar/DayDetailsModal';
 import MonthlyEvents from './components/calendar/MonthlyEvents';
 import Footer from './components/calendar/Footer';
 import AboutPopup from './pages/AboutPopup';
-import { Menu, X, Download, Info, Home, SwitchCamera, RadioIcon, Settings, RefreshCcw, Moon, Sun, BookOpen } from 'lucide-react';
+import { Menu, X, Download, RefreshCcw, Moon, Sun } from 'lucide-react';
+import { MENU_ITEMS } from './constants/menu';
 import { NEPALI_LABELS } from './constants/constants';
 import { toast, ToastContainer } from './components/shared/toast';
 import { TodayWidget } from './components/calendar/TodayWidget';
@@ -21,13 +22,9 @@ import { useAppNavigation } from './hooks/useAppNavigation';
 import { usePlatform } from './hooks/usePlatform';
 import { handleReloadApp } from './lib/utils/appUtils';
 
-// Lazy load pages
-const KundaliPage = lazy(() => import('./pages/KundaliPage'));
-const ConverterPage = lazy(() => import('./pages/ConverterPage'));
-const SettingsPage = lazy(() => import('./pages/SettingsPage'));
-const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
-const RadioPage = lazy(() => import('./pages/radioPage'));
-const DharmaPage = lazy(() => import('./pages/DharmaPage'));
+// Lazy load pages for menu items are handled in MENU_ITEMS
+// DayDetailPage only loaded here
+import DayDetailPage from './pages/DayDetailPage';
 
 const App: React.FC = () => {
 	const { theme, toggleTheme, resetTheme } = useTheme();
@@ -83,10 +80,17 @@ const App: React.FC = () => {
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
-		const viewParam = params.get('activeView');
+        const viewParam = params.get('activeView');
+
 		if (viewParam) {
 			setActiveView(viewParam as any);
 			window.history.replaceState({}, '', '/');
+		} else if (
+			(window.location.hash && (window.location.hash.startsWith('#bs?') || window.location.hash.startsWith('#ad?'))) ||
+			window.location.pathname.endsWith('/bs') || window.location.pathname.endsWith('/bs.html') ||
+			window.location.pathname.endsWith('/ad') || window.location.pathname.endsWith('/ad.html')
+		) {
+			setActiveView('day-detail' as any);
 		}
 	}, [setActiveView]);
 
@@ -157,14 +161,19 @@ const App: React.FC = () => {
 					</div>
 
 					<nav className="flex flex-col space-y-3 text-gray-800 dark:text-gray-200">
-						<button onClick={() => { setActiveView('calendar'); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"><Home className="w-4 h-4" /> {NEPALI_LABELS.home}</button>
-						<button onClick={() => { setActiveView('converter'); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"><SwitchCamera className="w-4 h-4" /> {NEPALI_LABELS.converter}</button>
-						<button onClick={() => { setActiveView('kundali'); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700">🔯 {NEPALI_LABELS.kundali}</button>
-						<button onClick={() => { setActiveView('radio'); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"><RadioIcon className="w-4 h-4" /> {NEPALI_LABELS.radio}</button>
-						<button onClick={() => { setActiveView('dharma'); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"><BookOpen className="w-4 h-4" /> {NEPALI_LABELS.dharma}</button>
-						<button onClick={() => { setActiveView('settings'); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"><Settings className="w-4 h-4" /> {NEPALI_LABELS.settings}</button>
-						<button onClick={() => { setActiveView('privacy'); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"><Info className="w-4 h-4" /> {NEPALI_LABELS.privacyPolicy}</button>
-						<button onClick={() => { setIsAboutOpen(true); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"><Info className="w-4 h-4" /> {NEPALI_LABELS.about}</button>
+						{MENU_ITEMS.map((item) => (
+							<button
+								key={item.key}
+								onClick={() => {
+									if (item.key === 'about') setIsAboutOpen(true);
+									else setActiveView(item.key as any);
+									setIsMenuOpen(false);
+								}}
+								className={`px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700 ${activeView === item.key ? 'bg-gray-300 dark:bg-gray-700 font-medium' : ''}`}
+							>
+								{item.icon} {item.label}
+							</button>
+						))}
 						{!isStandalone && canInstall && <button onClick={() => { handleInstallClick(); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded bg-blue-600 text-white hover:bg-blue-700"><Download className="w-4 h-4" /> {NEPALI_LABELS.installApp}</button>}
 						<button onClick={() => { toggleTheme(); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700">{theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />} {theme === 'light' ? NEPALI_LABELS.darkMode : NEPALI_LABELS.lightMode}</button>
 						<hr className="border-gray-300 dark:border-gray-600 my-2" />
@@ -180,13 +189,7 @@ const App: React.FC = () => {
 			{/* Main Content */}
 			<div className="flex-1 overflow-hidden">
 				<div className={`h-full overflow-auto px-4 md:px-6 max-w-7xl xl:max-w-6xl mx-auto w-full ${menuStyle === 'tabs' ? 'pb-2 md:pb-6' : 'pb-20 md:pb-6'}`}>
-					{activeView === 'kundali' && (
-						<Suspense fallback={<div className="flex justify-center items-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
-							<KundaliPage onBack={() => setActiveView('calendar')} setIsKundaliResultsVisible={setIsKundaliResultsVisible} setKundaliBackAction={setKundaliBackAction} />
-						</Suspense>
-					)}
-
-					{activeView === 'calendar' && (
+					{activeView === 'calendar' ? (
 						<>
 							<CalendarHeader activeSystem={activeSystem} bsYear={currentBsYear} bsMonth={currentBsMonth} adYear={currentAdYear} adMonth={currentAdMonth} onSystemChange={switchSystem} onTodayClick={goToToday} theme={theme} onThemeToggle={toggleTheme} todayDetails={todayDetails} />
 							<main className="min-h-[60vh] pb-20 md:grid md:grid-cols-12 md:gap-x-6">
@@ -200,36 +203,54 @@ const App: React.FC = () => {
 								</div>
 							</main>
 						</>
-					)}
+					) : activeView === 'day-detail' ? (
+						<DayDetailPage onBack={() => {
+							window.history.pushState({}, '', '/');
+							setActiveView('calendar');
+						}} />
+					) : (
+						(() => {
+							const activeItem = MENU_ITEMS.find(item => item.key === activeView);
+							if (activeItem && activeItem.page) {
+								const PageComponent = activeItem.page;
+								const commonProps = { onBack: () => setActiveView('calendar') };
+								let pageProps: any = { ...commonProps };
 
-					{activeView === 'dharma' && (
-						<Suspense fallback={<div className="flex justify-center items-center pb-20 min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
-							<DharmaPage onBack={() => setActiveView('calendar')} setIsDharmaResultsVisible={setIsDharmaResultsVisible} setDharmaBackAction={setDharmaBackAction} />
-						</Suspense>
-					)}
+								if (activeView === 'settings') {
+									pageProps = {
+										...commonProps,
+										currentTheme: theme,
+										onThemeChange: toggleTheme,
+										currentMenuStyle: menuStyle,
+										onMenuStyleChange: handleSetMenuStyle,
+										currentDesktopLayoutStyle: desktopLayoutStyle,
+										onDesktopLayoutStyleChange: handleSetDesktopLayoutStyle,
+										onResetSettings: handleResetSettings,
+										isAndroidApp,
+										onReloadApp: handleReloadApp
+									};
+								} else if (activeView === 'kundali') {
+									pageProps = {
+										...commonProps,
+										setIsKundaliResultsVisible,
+										setKundaliBackAction
+									};
+								} else if (activeView === 'dharma') {
+									pageProps = {
+										...commonProps,
+										setIsDharmaResultsVisible,
+										setDharmaBackAction
+									};
+								}
 
-					{activeView === 'converter' && (
-						<Suspense fallback={<div className="flex justify-center items-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
-							<ConverterPage onBack={() => setActiveView('calendar')} />
-						</Suspense>
-					)}
-
-					{activeView === 'settings' && (
-						<Suspense fallback={<div className="flex justify-center items-center pb-20 min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
-							<SettingsPage onBack={() => setActiveView('calendar')} currentTheme={theme} onThemeChange={toggleTheme} currentMenuStyle={menuStyle} onMenuStyleChange={handleSetMenuStyle} currentDesktopLayoutStyle={desktopLayoutStyle} onDesktopLayoutStyleChange={handleSetDesktopLayoutStyle} onResetSettings={handleResetSettings} isAndroidApp={isAndroidApp} onReloadApp={handleReloadApp} />
-						</Suspense>
-					)}
-
-					{activeView === 'privacy' && (
-						<Suspense fallback={<div className="flex justify-center items-center pb-20 min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
-							<PrivacyPage />
-						</Suspense>
-					)}
-
-					{activeView === 'radio' && (
-						<Suspense fallback={<div className="flex justify-center items-center pb-20 min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
-							<RadioPage />
-						</Suspense>
+								return (
+									<Suspense fallback={<div className="flex justify-center items-center pb-20 min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" /></div>}>
+										<PageComponent {...pageProps} />
+									</Suspense>
+								);
+							}
+							return null;
+						})()
 					)}
 				</div>
 			</div>
@@ -248,7 +269,7 @@ const App: React.FC = () => {
 				</div>
 			)}
 
-			<DayDetailsModal date={selectedDate} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+			<DayDetailsModal date={selectedDate} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} activeSystem={activeSystem} />
 			{isAboutOpen && <AboutPopup setIsAboutOpen={setIsAboutOpen} />}
 			<ToastContainer />
 		</div>

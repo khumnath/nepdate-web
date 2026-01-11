@@ -1,7 +1,7 @@
 import React, { JSX, useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { NEPALI_BS_MONTHS } from '../../constants/constants';
-import { toBikramSambat, fromBikramSambat, getBikramMonthInfo, getEventsForDate, toDevanagari } from '../../lib/utils/lib';
+import { toBikramSambat, fromBikramSambat, getBikramMonthInfo, calculate, toDevanagari } from '../../lib/utils/lib';
 import MonthlyMuhurta from './Muhurtas';
 
 interface MonthlyEventsProps {
@@ -43,7 +43,7 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 		loadMoreEvents(10);
 	}, []);
 
-	// --- SCANNING LOGIC ---
+	// SCANNING LOGIC
 	const loadMoreEvents = useCallback((limit: number) => {
 		if (!scanCursor.current || !hasMore) return;
 
@@ -62,7 +62,9 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 
 			// Check events for this date
 			const bsDate = toBikramSambat(dateToCheck);
-			const dayEvents = getEventsForDate(dateToCheck, bsDate.year, bsDate.monthIndex, bsDate.day);
+			// Use calculate() to get scanned tithis for Kshaya detection
+			const calcData = calculate(dateToCheck);
+			const dayEvents = calcData.events || [];
 
 			if (dayEvents.length > 0) {
 				dayEvents.forEach(e => {
@@ -102,7 +104,8 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 
 			for (let day = 1; day <= monthInfo.totalDays; day++) {
 				const date = fromBikramSambat(currentYear, currentMonth, day);
-				const dayEvents = getEventsForDate(date, currentYear, currentMonth, day);
+				const calcData = calculate(date);
+				const dayEvents = calcData.events || [];
 				if (dayEvents.length > 0) {
 					eventsMap.set(day, dayEvents.map(e => ({ name: e.name, holiday: e.holiday || false })));
 				}
@@ -113,8 +116,9 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 
 			for (let day = 1; day <= lastDay.getUTCDate(); day++) {
 				const date = new Date(Date.UTC(currentYear, currentMonth, day));
-				const bsDate = toBikramSambat(date);
-				const dayEvents = getEventsForDate(date, bsDate.year, bsDate.monthIndex, bsDate.day);
+				// const bsDate = toBikramSambat(date);
+				const calcData = calculate(date);
+				const dayEvents = calcData.events || [];
 				if (dayEvents.length > 0) {
 					eventsMap.set(day, dayEvents.map(e => ({ name: e.name, holiday: e.holiday || false })));
 				}
@@ -130,45 +134,81 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 		return null;
 	}
 
+	// Helper to format date parts with leading zero
+	const pad = (n: number) => n.toString().padStart(2, '0');
+
+	const cardStyle = "w-full bg-white dark:bg-slate-900 rounded-xl shadow-md shadow-blue-50/50 dark:shadow-slate-900/50 border border-gray-300 dark:border-slate-600 overflow-hidden";
+
 	// RENDERERS
 	const renderMonthlyList = () => {
 		if (monthlyEventsMap.size === 0) return null;
 
 		const eventItems: JSX.Element[] = [];
 		monthlyEventsMap.forEach((events, day) => {
-			events.forEach((event, index) => {
-				const dayNumber = activeSystem === 'bs' ? toDevanagari(day) : day.toString();
-				eventItems.push(
-					<span key={`${day}-${index}`} className="inline-flex items-center">
-						<span
-							className="font-medium"
-							style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
-						>
-							{dayNumber}
-						</span>
-						<span className="mx-1">:</span>
-						<span
-							style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
-						>
-							{event.name}
-						</span>
-					</span>
-				);
+			// Deduplicate events based on name
+			const uniqueEventsMap = new Map();
+			events.forEach(e => {
+				if (!uniqueEventsMap.has(e.name)) {
+					uniqueEventsMap.set(e.name, e);
+				}
 			});
+			const uniqueEvents = Array.from(uniqueEventsMap.values());
+
+			if (uniqueEvents.length === 0) return;
+
+			const dayNumber = activeSystem === 'bs' ? toDevanagari(day) : day.toString();
+
+			// Generate Link for Monthly Items
+			let href = '#';
+			if (currentYear !== null) {
+				if (activeSystem === 'bs') {
+					// currentMonth is 0-indexed index passed from parent
+					href = `/bs?${currentYear}-${pad(currentMonth + 1)}-${pad(day)}`;
+				} else {
+					href = `/ad?${currentYear}-${pad(currentMonth + 1)}-${pad(day)}`;
+				}
+			}
+
+			const dayLabel = activeSystem === 'bs' ? 'गते' : ':';
+
+			eventItems.push(
+				<span key={`${day}`} className="inline-flex items-center">
+					<span
+						className="font-medium"
+						style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
+					>
+						{dayNumber}
+					</span>
+					<span className="mx-1">{dayLabel}</span>
+					<a
+						href={href}
+						className="hover:underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+						style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
+					>
+						{uniqueEvents.map((event, i) => (
+							<span key={i} className={event.holiday ? "text-[#B91C1C] dark:text-red-400" : ""}>
+								{event.name}{i < uniqueEvents.length - 1 ? ' / ' : ''}
+							</span>
+						))}
+					</a>
+				</span>
+			);
 		});
 
 		return (
-			<div className="bg-alabaster dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-gray-700 px-3 py-2 flex-shrink-0 pb-3">
-				<div
-					className="text-xs text-blue-800 dark:text-gray-300 flex flex-wrap gap-x-3 gap-y-1"
-					style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
-				>
-					{eventItems.map((item, index) => (
-						<React.Fragment key={index}>
-							{item}
-							{index < eventItems.length - 1 && <span className="text-gray-400">•</span>}
-						</React.Fragment>
-					))}
+			<div className={cardStyle}>
+				<div className="px-5 py-4">
+					<div
+						className="text-xs text-blue-800 dark:text-gray-300 flex flex-wrap gap-x-3 gap-y-1"
+						style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
+					>
+						{eventItems.map((item, index) => (
+							<React.Fragment key={index}>
+								{item}
+								{index < eventItems.length - 1 && <span className="text-gray-400">•</span>}
+							</React.Fragment>
+						))}
+					</div>
 				</div>
 			</div>
 		);
@@ -178,7 +218,7 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 		if (upcomingEvents.length === 0 && !isLoading) return null;
 
 		const isBs = activeSystem === 'bs';
-		const title = isBs ? 'आगामी कार्यक्रम हरु' : 'Upcoming Events';
+		const title = isBs ? 'आगामी कार्यक्रमहरू' : 'Upcoming Events';
 
 		// Calculate current years for comparison
 		const today = new Date();
@@ -186,84 +226,127 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 		const currentBsYear = toBikramSambat(today).year;
 
 		return (
-			<div className="bg-alabaster dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-gray-700 px-3 py-2 flex-shrink-0">
-				<h4 className="text-xs font-bold text-blue-900 dark:text-gray-100 mb-2 border-b border-blue-100 dark:border-gray-700 pb-1" style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}>
-					{title}
-				</h4>
-				<div className="flex flex-col gap-1.5">
+			<div className={cardStyle}>
+				{/* Header */}
+				<div className="bg-blue-50 dark:bg-slate-800 px-5 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center">
+					<div className="w-2.5 h-2.5 rounded-full bg-blue-500 mr-3 shadow-sm shadow-blue-300 dark:shadow-blue-900"></div>
+					<h2
+						className="text-xl font-bold text-blue-900 dark:text-blue-100"
+						style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
+					>
+						{title}
+					</h2>
+				</div>
+
+				{/* Events List Body */}
+				<div className="flex flex-col px-5 pb-2">
 					{upcomingEvents.map((event, idx) => {
+						// Determine time remaining text
 						let timeText = '';
 						if (event.daysRemaining === 0) timeText = isBs ? 'आज' : 'Today';
 						else if (event.daysRemaining === 1) timeText = isBs ? 'भोलि' : 'Tomorrow';
+						else if (event.daysRemaining === 2) timeText = isBs ? 'पर्सि' : 'Day After Tomorrow';
 						else timeText = isBs ? `${toDevanagari(event.daysRemaining)} दिन बाँकी` : `${event.daysRemaining} days left`;
 
-						// Determine if we need to show the year
+						// Determine date text
 						const isDifferentYear = isBs
 							? event.bsDate.year !== currentBsYear
 							: event.adDate.getFullYear() !== currentAdYear;
 
 						let dateText = '';
+						let href = '#';
+
 						if (isBs) {
 							dateText = `${NEPALI_BS_MONTHS[event.bsDate.monthIndex]} ${toDevanagari(event.bsDate.day)}`;
-							if (isDifferentYear) {
-								dateText += `, ${toDevanagari(event.bsDate.year)}`;
-							}
+							if (isDifferentYear) dateText += `, ${toDevanagari(event.bsDate.year)}`;
+
+							// BS Link: host/bs?YYYY-MM-DD
+							// monthIndex is 0-11, so we add 1
+							href = `/bs?${event.bsDate.year}-${pad(event.bsDate.monthIndex + 1)}-${pad(event.bsDate.day)}`;
 						} else {
 							dateText = event.adDate.toLocaleDateString('en-US', {
 								month: 'short',
 								day: 'numeric',
 								year: isDifferentYear ? 'numeric' : undefined
 							});
+
+							// AD Link: host/ad?YYYY-MM-DD
+							href = `/ad?${event.adDate.getFullYear()}-${pad(event.adDate.getMonth() + 1)}-${pad(event.adDate.getDate())}`;
 						}
 
 						return (
-							<div key={idx} className="flex justify-between items-start text-xs">
+							<a
+								key={idx}
+								href={href}
+								className="flex justify-between items-start pt-3 pb-3 border-b border-gray-200 dark:border-slate-600 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors -mx-2 px-2 rounded-lg"
+							>
+								{/* Left Side: Event Name */}
 								<span
-									className={`${event.holiday ? 'text-red-600 dark:text-red-400' : 'text-blue-800 dark:text-gray-300'}`}
+									className={`text-[15px] leading-snug font-normal max-w-[60%] ${event.holiday
+										? 'text-[#B91C1C] dark:text-red-400'
+										: 'text-[#1e293b] dark:text-slate-200'
+										}`}
 									style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
 								>
 									{event.name}
 								</span>
-								<div className="flex flex-col items-end">
-									<span className="text-gray-700 dark:text-gray-300 font-medium text-[10px]" style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}>
+
+								{/* Right Side: Date Info */}
+								<div className="flex flex-col items-end pl-2">
+									<span
+										className="text-[#1e293b] dark:text-slate-100 font-bold text-[15px] leading-tight"
+										style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
+									>
 										{dateText}
 									</span>
-									<span className="text-gray-500 dark:text-gray-400 text-[10px] whitespace-nowrap" style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}>
+									<span
+										className="text-slate-500 dark:text-slate-400 text-xs mt-0.5 font-light"
+										style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
+									>
 										{timeText}
 									</span>
 								</div>
-							</div>
+							</a>
 						);
 					})}
 				</div>
 
 				{/* Load More Button */}
 				{hasMore && (
-					<button
-						onClick={() => loadMoreEvents(5)}
-						disabled={isLoading}
-						className="w-full mt-2 py-1 text-[10px] text-blue-600 dark:text-blue-400 hover:bg-blue-300 hover:text-black dark:hover:bg-gray-700 dark:hover:text-gray-400 rounded transition-colors flex items-center justify-center gap-1 font-medium disabled:opacity-50"
-					>
-						{isLoading
-							? (isBs ? 'लोड हुँदैछ...' : 'Loading...')
-							: (
-								<>
-									{isBs ? 'थप हेर्नुहोस्' : 'Load More'}
-									<ChevronDown className="w-3 h-3" />
-								</>
-							)
-						}
-					</button>
+					<div className="px-5 pb-5">
+						<button
+							onClick={() => loadMoreEvents(5)}
+							disabled={isLoading}
+							className="w-full flex items-center justify-center text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-2 bg-gray-50 dark:bg-slate-800/50 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800"
+							style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
+						>
+							{isLoading
+								? (isBs ? 'लोड हुँदैछ...' : 'Loading...')
+								: (
+									<div className="flex items-center text-blue-400 dark:text-blue-300 gap-1.5">
+										<span>{isBs ? 'थप हेर्नुहोस्' : 'Load More'}</span>
+										<ChevronDown className="w-4 h-4" />
+									</div>
+								)
+							}
+						</button>
+					</div>
 				)}
 			</div>
 		);
 	};
 
 	return (
-		<div className="flex flex-col gap-3 w-full">
+		<div className="flex flex-col gap-5 w-full">
+			{/* Monthly List Section */}
 			{renderMonthlyList()}
-			{/* Muhurats */}
-			<MonthlyMuhurta activeSystem={activeSystem} currentYear={currentYear} currentMonth={currentMonth} />
+
+			{/* Muhurta Section */}
+			<div className={cardStyle}>
+				<MonthlyMuhurta activeSystem={activeSystem} currentYear={currentYear} currentMonth={currentMonth} />
+			</div>
+
+			{/* Upcoming Events Section */}
 			{renderUpcomingList()}
 		</div>
 	);

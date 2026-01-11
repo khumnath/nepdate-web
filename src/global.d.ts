@@ -44,6 +44,7 @@ declare global {
 			printPage?: () => void;
 			triggerNativeAd?: () => void;
 			triggerFullScreenAd?: () => void;
+            share?: (title: string, message: string, url: string) => void;
 		};
 
 		controlPlayer?: (command: 'play' | 'pause' | 'stop') => void;

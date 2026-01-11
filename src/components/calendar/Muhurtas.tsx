@@ -114,7 +114,7 @@ const MonthlyMuhurta: React.FC<MonthlyMuhurtaProps> = ({
 
     if (muhurtaData.length === 0) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 text-center mt-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 text-center">
                  <h4 className="font-bold text-gray-400 text-xs mb-1">{headerTitle}</h4>
                 <p className="text-gray-500 dark:text-gray-400 text-xs" style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}>
                     {isBs ? `यो महिना (${currentMonthName}) कुनै विशेष मुहुर्त फेला परेन।` : `No specific muhurats found for ${currentMonthName}.`}
@@ -124,14 +124,14 @@ const MonthlyMuhurta: React.FC<MonthlyMuhurtaProps> = ({
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden mt-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="bg-blue-50 dark:bg-gray-700/50 px-4 py-2 border-b border-blue-100 dark:border-gray-700">
-                <h3
-                    className="font-bold text-blue-900 dark:text-blue-100 text-xs"
-                    style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
-                >
+                <h2
+													className="text-xl font-bold text-blue-900 dark:text-blue-100"
+													style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
+												>
                     {headerTitle}
-                </h3>
+                </h2>
             </div>
 
             <div className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -141,7 +141,7 @@ const MonthlyMuhurta: React.FC<MonthlyMuhurtaProps> = ({
                             <div className="flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                                 <span
-                                    className="font-bold text-gray-800 dark:text-gray-200 text-xs"
+                                    className="font-bold text-gray-800 dark:text-gray-200"
                                     style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
                                 >
                                     {isBs ? category.titleBs : category.titleAd}
@@ -152,12 +152,12 @@ const MonthlyMuhurta: React.FC<MonthlyMuhurtaProps> = ({
                                 {category.dates.map((day) => (
                                     <span
                                         key={day}
-                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800"
+                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[15px] font-medium bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800"
                                         style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
                                     >
                                         {isBs ? toDevanagari(day) : day}
-                                        <span className="ml-0.5 opacity-75 text-[9px]">
-                                            {isBs ? 'गते' : 'th'}
+                                        <span className="ml-0.5 opacity-75 text-[15px]">
+                                            {isBs ? 'गते' : ':'}
                                         </span>
                                     </span>
                                 ))}
