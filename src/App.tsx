@@ -80,7 +80,7 @@ const App: React.FC = () => {
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
-        const viewParam = params.get('activeView');
+		const viewParam = params.get('activeView');
 
 		if (viewParam) {
 			setActiveView(viewParam as any);

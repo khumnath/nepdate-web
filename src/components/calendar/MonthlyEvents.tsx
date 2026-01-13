@@ -137,7 +137,7 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 	// Helper to format date parts with leading zero
 	const pad = (n: number) => n.toString().padStart(2, '0');
 
-	const cardStyle = "w-full bg-white dark:bg-slate-900 rounded-xl shadow-md shadow-blue-50/50 dark:shadow-slate-900/50 border border-gray-300 dark:border-slate-600 overflow-hidden";
+	const cardStyle = "w-full bg-white dark:bg-slate-900 rounded-xl shadow-card-custom shadow-blue-50/50 dark:shadow-slate-900/50 border border-gray-300 dark:border-slate-600 overflow-hidden";
 
 	// RENDERERS
 	const renderMonthlyList = () => {
@@ -157,6 +157,7 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 			if (uniqueEvents.length === 0) return;
 
 			const dayNumber = activeSystem === 'bs' ? toDevanagari(day) : day.toString();
+			const dayLabel = activeSystem === 'bs' ? 'गते' : '';
 
 			// Generate Link for Monthly Items
 			let href = '#';
@@ -169,24 +170,21 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 				}
 			}
 
-			const dayLabel = activeSystem === 'bs' ? 'गते' : ':';
-
 			eventItems.push(
-				<span key={`${day}`} className="inline-flex items-center">
+				<span key={`${day}`} className="inline-flex items-baseline gap-1">
 					<span
-						className="font-medium"
+						className="font-bold text-blue-600 dark:text-blue-400"
 						style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
 					>
-						{dayNumber}
+						{dayNumber} {dayLabel}
 					</span>
-					<span className="mx-1">{dayLabel}</span>
 					<a
 						href={href}
-						className="hover:underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+						className="hover:underline transition-colors"
 						style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
 					>
 						{uniqueEvents.map((event, i) => (
-							<span key={i} className={event.holiday ? "text-[#B91C1C] dark:text-red-400" : ""}>
+							<span key={i} className={event.holiday ? "text-[#e11d48] dark:text-rose-400 font-medium" : "text-gray-700 dark:text-gray-300 font-medium"}>
 								{event.name}{i < uniqueEvents.length - 1 ? ' / ' : ''}
 							</span>
 						))}
@@ -199,13 +197,13 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 			<div className={cardStyle}>
 				<div className="px-5 py-4">
 					<div
-						className="text-xs text-blue-800 dark:text-gray-300 flex flex-wrap gap-x-3 gap-y-1"
+						className="text-[13px] leading-relaxed flex flex-wrap gap-x-3 gap-y-1.5"
 						style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
 					>
 						{eventItems.map((item, index) => (
 							<React.Fragment key={index}>
 								{item}
-								{index < eventItems.length - 1 && <span className="text-gray-400">•</span>}
+								{index < eventItems.length - 1 && <span className="text-gray-400 font-bold">•</span>}
 							</React.Fragment>
 						))}
 					</div>
@@ -239,7 +237,7 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 				</div>
 
 				{/* Events List Body */}
-				<div className="flex flex-col px-5 pb-2">
+				<div className="flex flex-col gap-3 pb-5">
 					{upcomingEvents.map((event, idx) => {
 						// Determine time remaining text
 						let timeText = '';
@@ -261,7 +259,6 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 							if (isDifferentYear) dateText += `, ${toDevanagari(event.bsDate.year)}`;
 
 							// BS Link: host/bs?YYYY-MM-DD
-							// monthIndex is 0-11, so we add 1
 							href = `/bs?${event.bsDate.year}-${pad(event.bsDate.monthIndex + 1)}-${pad(event.bsDate.day)}`;
 						} else {
 							dateText = event.adDate.toLocaleDateString('en-US', {
@@ -278,29 +275,32 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 							<a
 								key={idx}
 								href={href}
-								className="flex justify-between items-start pt-3 pb-3 border-b border-gray-200 dark:border-slate-600 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors -mx-2 px-2 rounded-lg"
+								className={`relative flex justify-between items-center p-3 bg-white dark:bg-slate-800 rounded-lg shadow-card-custom shadow-blue-50/50 border border-l-4 border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow ${event.holiday ? 'border-l-red-500' : 'border-l-green-500'
+									}`}
 							>
 								{/* Left Side: Event Name */}
-								<span
-									className={`text-[15px] leading-snug font-normal max-w-[60%] ${event.holiday
-										? 'text-[#B91C1C] dark:text-red-400'
-										: 'text-[#1e293b] dark:text-slate-200'
-										}`}
-									style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
-								>
-									{event.name}
-								</span>
+								<div className={`flex flex-col flex-1`}>
+									<span
+										className={`text-[15px] leading-snug font-medium ${event.holiday
+											? 'text-red-700 dark:text-red-400'
+											: 'text-slate-700 dark:text-slate-200'
+											}`}
+										style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
+									>
+										{event.name}
+									</span>
+								</div>
 
 								{/* Right Side: Date Info */}
-								<div className="flex flex-col items-end pl-2">
+								<div className="flex flex-col items-end pl-2 min-w-[80px] text-right">
 									<span
-										className="text-[#1e293b] dark:text-slate-100 font-bold text-[15px] leading-tight"
+										className="text-[#1e293b] dark:text-slate-100 font-bold text-sm leading-tight"
 										style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
 									>
 										{dateText}
 									</span>
 									<span
-										className="text-slate-500 dark:text-slate-400 text-xs mt-0.5 font-light"
+										className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5 font-light"
 										style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
 									>
 										{timeText}

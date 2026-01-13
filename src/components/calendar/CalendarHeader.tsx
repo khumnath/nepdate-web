@@ -104,9 +104,6 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 	// TODAY LUNAR SUMMARY FORMATTER
 	const renderLunarSummary = () => {
 		if (!todayDetails) return "—";
-
-		// formatElements to return ReactNode array
-
 		// Get BS month, day and weekday
 		const bsDay = todayDetails.bsDay ? toDevanagari(todayDetails.bsDay) : '';
 		const bsWeekday = todayDetails.weekday || '';
@@ -122,73 +119,116 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 		const sunset = todayDetails.sunset;
 
 		return (
-			<div className="flex items-center text-left px-2 py-1.5">
-				{/* Left: Compact Orange Date Box (Fixed Size) */}
-				<div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex flex-col items-center justify-center text-white shadow-sm mr-3 relative overflow-hidden">
+			<div className="flex items-stretch justify-between px-2 py-2 gap-2 bg-white dark:bg-gray-800 mt-2 rounded-xl border border-slate-100 dark:border-gray-700" style={{ boxShadow: '0 4px 12px -2px rgb(53 96 151 / 50%)', marginLeft: '-0.10rem', marginRight: '-0.1rem', marginBottom: '.5rem' }}>
+
+				{/* 1. LEFT: Date Box */}
+				<div className="flex-shrink-0 w-[68px] bg-gradient-to-br from-indigo-500 to-[#0cf568f5] rounded-xl flex flex-col items-center justify-center text-white shadow-sm relative overflow-hidden">
 					<div className="absolute top-0 right-0 w-full h-full bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
-					<div className="text-xl font-bold leading-none mb-0.5 z-10 font-sans">
+					<div className="text-4xl font-bold leading-none mb-0.5 z-10 font-sans tracking-tight">
 						{bsDay}
 					</div>
-					<div className="text-[9px] font-medium opacity-95 z-10 leading-none">
+					<div className="text-[13px] font-medium opacity-95 z-10 leading-none">
 						{bsMonthName}
 					</div>
 				</div>
 
-				{/* Right: Compact Details */}
-				<div className="flex-grow min-w-0 flex flex-col justify-center">
-
-					{/* Header Row */}
-					<div className="flex items-center gap-2 mb-0.5">
-						<span className="text-sm font-bold text-red-600 dark:text-red-400 leading-none">
+				{/* 2. MIDDLE: Details Grid */}
+				<div className="flex-grow flex flex-col justify-center min-w-0">
+					{/* Header: Weekday | Badge | AD Date */}
+					<div className="flex items-center flex-wrap gap-x-2 gap-y-0.5 mb-1.5 leading-none">
+						<span className="text-base font-bold text-indigo-600 dark:text-indigo-400">
 							{bsWeekday}
 						</span>
-						<span className="bg-amber-400 text-white text-[9px] px-1.5 py-[1px] rounded-full font-bold shadow-sm leading-none">
+						<span className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 text-[9px] px-1.5 py-0.5 rounded-md font-bold shadow-sm">
 							आज
 						</span>
-						<span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 ml-auto leading-none">
+						<span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 ml-auto pt-0.5">
 							{adMonth} {adDay}, {adYear}
 						</span>
 					</div>
 
-					{/* Grid Data: Compact Label: Value */}
-					<div className="grid grid-cols-2 gap-x-2 gap-y-0 text-[10px] leading-snug">
-						<div className="flex items-baseline gap-1 overflow-hidden">
-							<span className="text-gray-500 font-medium whitespace-nowrap">तिथि:</span>
-							<span className="font-bold text-gray-800 dark:text-gray-200 truncate">
-								{todayDetails.tithis?.[0]?.name.split(' ')[0] || '-'}
-							</span>
-						</div>
-						<div className="flex items-baseline gap-1 overflow-hidden">
-							<span className="text-gray-500 font-medium whitespace-nowrap">नक्षत्र:</span>
-							<span className="font-bold text-gray-800 dark:text-gray-200 truncate">
-								{todayDetails.nakshatras?.[0]?.name.split(' ')[0] || '-'}
-							</span>
-						</div>
-						<div className="flex items-baseline gap-1 overflow-hidden">
-							<span className="text-gray-500 font-medium whitespace-nowrap">योग:</span>
-							<span className="font-bold text-gray-800 dark:text-gray-200 truncate">
-								{todayDetails.yogas?.[0]?.name.split(' ')[0] || '-'}
-							</span>
-						</div>
-						<div className="flex items-baseline gap-1 overflow-hidden">
-							<span className="text-gray-500 font-medium whitespace-nowrap">करण:</span>
-							<span className="font-bold text-gray-800 dark:text-gray-200 truncate">
-								{todayDetails.karanas?.[0]?.name.split(' ')[0] || '-'}
-							</span>
-						</div>
+					{/* Grid Details */}
+					<div className="grid grid-cols-2 gap-x-2 gap-y-1.5 mt-0.5 text-[10px] leading-tight">
+						{(() => {
+							const getItemSummary = (items: any[]) => {
+								if (!items || items.length === 0) return { main: '-', sub: '' };
+
+								// Get Main Name
+								const mainItem = items[0];
+								const currentName = mainItem.name.trim();
+
+								// Build Chain of Events
+								if (items.length === 1) {
+									return { main: currentName, sub: '' };
+								}
+
+								const parts: string[] = [];
+
+								for (let i = 0; i < items.length - 1; i++) {
+									const item = items[i];
+									const timeStr = formatTimeNepali(item.endTime);
+									const name = item.name.trim();
+
+									if (i === 0) {
+										if (timeStr) parts.push(`${timeStr} सम्म`);
+									} else {
+										if (timeStr) parts.push(`${name} ${timeStr} सम्म`);
+									}
+								}
+
+								const lastItem = items[items.length - 1];
+								parts.push(`उपरान्त ${lastItem.name.trim()}`);
+
+								return { main: currentName, sub: parts.join(', ') };
+							};
+
+							const renderItem = (label: string, items: any[]) => {
+								const { main, sub } = getItemSummary(items);
+								return (
+									<div className="flex flex-col">
+										<div className="flex items-baseline">
+											<span className="text-gray-500 font-bold mr-1 text-[9px]">{label}:</span>
+											<span className="text-gray-900 dark:text-gray-100 font-bold">
+												{main}
+											</span>
+										</div>
+										{sub && (
+											<div className="text-[8px] text-gray-500 dark:text-gray-400 font-medium leading-tight">
+												{sub}
+											</div>
+										)}
+									</div>
+								);
+							};
+
+							return (
+								<>
+									{renderItem("तिथि", todayDetails.tithis)}
+									{renderItem("नक्षत्र", todayDetails.nakshatras)}
+									{renderItem("योग", todayDetails.yogas)}
+									{renderItem("करण", todayDetails.karanas)}
+								</>
+							);
+						})()}
+					</div>
+				</div>
+
+				{/* 3. RIGHT: Location & Sun (Vertical Box) */}
+				<div className="flex-shrink-0 flex flex-col justify-between bg-white dark:bg-gray-700/50 rounded-lg border border-slate-100 dark:border-gray-600 px-2 py-1.5 shadow-sm min-w-[60px] h-[72px]">
+					<div className="flex items-center justify-center gap-1 mb-1 border-b border-gray-100 dark:border-gray-600 pb-1">
+						<span className="text-[10px] font-bold text-gray-700 dark:text-gray-300">काठमाण्डौं</span>
 					</div>
 
-					{/* Sun Times (Ultra Compact) */}
-					<div className="flex items-center gap-3 mt-0.5 pt-0.5 border-t border-amber-100 dark:border-gray-700/50">
+					<div className="flex flex-col gap-1 items-center justify-center flex-grow">
 						<div className="flex items-center gap-1">
-							<Sunrise className="w-2.5 h-2.5 text-orange-400" />
-							<span className="text-[9px] font-bold text-gray-600 dark:text-gray-300 leading-none">
+							<Sunrise className="w-3 h-3 text-indigo-500" />
+							<span className="text-[10px] font-bold text-gray-600 dark:text-gray-300 leading-none">
 								{sunrise}
 							</span>
 						</div>
 						<div className="flex items-center gap-1">
-							<Sunset className="w-2.5 h-2.5 text-orange-400" />
-							<span className="text-[9px] font-bold text-gray-600 dark:text-gray-300 leading-none">
+							<Sunset className="w-3 h-3 text-indigo-500" />
+							<span className="text-[10px] font-bold text-gray-600 dark:text-gray-300 leading-none">
 								{sunset}
 							</span>
 						</div>
@@ -201,17 +241,11 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 	return (
 		<>
 			{/* TODAY LUNAR INFO STRIP (MOBILE TOP) */}
-			<div className="
-				w-full text-center py-0
-				bg-[#FEF7ED] dark:bg-gray-800
-				text-gray-800 dark:text-gray-200
-				border-b border-amber-100 dark:border-gray-700
-				block md:hidden
-			">
+			<div className="block md:hidden">
 				{renderLunarSummary()}
 			</div>
 
-			<header className="w-full mb-2 bg-gradient-to-r from-[#0968e7] via-[#5068c8] to-[#0589c6]
+			<header className="w-full mb-2 bg-gradient-to-r from-[#22b436] via-indigo-600 to-[#22b436]
       dark:from-[#183051] dark:via-[#3a3d4a] dark:to-[#1f292e]
   backdrop-blur-sm border-b border-[#a5b4fc] dark:border-[#6d6e6f] rounded-lg">
 				<div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -222,8 +256,8 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 						<div className="flex bg-slate-200 dark:bg-gray-700 rounded-lg p-1">
 							<button
 								className={`px-4 py-2 rounded-md transition-all duration-200 text-sm sm:text-base font-medium ${activeSystem === 'bs'
-									? 'bg-blue-600 dark:bg-slate-600 text-white shadow-sm'
-									: 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
+									? 'bg-[rgb(25_33_148)] dark:bg-slate-600 text-white shadow-sm'
+									: 'text-gray-600 dark:text-gray-400 hover:text-[rgb(25_33_148)] dark:hover:text-blue-400'
 									}`}
 								onClick={() => onSystemChange('bs')}
 							>
@@ -233,8 +267,8 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 
 							<button
 								className={`px-4 py-2 rounded-md transition-all duration-200 text-sm sm:text-base font-medium ${activeSystem === 'ad'
-									? 'bg-blue-600 dark:bg-slate-600 text-white shadow-sm'
-									: 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
+									? 'bg-[rgb(25_33_148)] dark:bg-slate-600 text-white shadow-sm'
+									: 'text-gray-600 dark:text-gray-400 hover:text-[rgb(25_33_148)] dark:hover:text-blue-400'
 									}`}
 								onClick={() => onSystemChange('ad')}
 							>
@@ -246,7 +280,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 						{/* TODAY BUTTON */}
 						<button
 							onClick={onTodayClick}
-							className="px-4 sm:px-5 py-2 bg-slate-200 text-blue-600 rounded-lg hover:bg-blue-200 hover:text-blue-700 dark:text-slate-200 dark:bg-slate-600 dark:hover:bg-blue-700 transition-colors duration-200 font-medium text-sm sm:text-base"
+							className="px-4 sm:px-5 py-2 bg-slate-200 text-[rgb(25_33_148)] rounded-lg hover:bg-blue-200 hover:text-[rgb(25_33_148)] dark:text-slate-200 dark:bg-slate-600 dark:hover:bg-blue-700 transition-colors duration-200 font-medium text-sm sm:text-base"
 							style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
 						>
 							आज
@@ -267,7 +301,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 						{/* THEME TOGGLE */}
 						<button
 							onClick={onThemeToggle}
-							className="p-2.5 rounded-lg bg-slate-200 dark:bg-gray-700 text-blue-600 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200"
+							className="p-2.5 rounded-lg bg-slate-200 dark:bg-gray-700 text-[rgb(25_33_148)] dark:text-gray-300 hover:text-[rgb(25_33_148)] dark:hover:text-blue-400 transition-colors duration-200"
 						>
 							{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
 						</button>

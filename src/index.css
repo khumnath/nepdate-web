@@ -23,6 +23,20 @@
 
 @layer components {
 
+  /* Custom Shadow Utilities */
+  .shadow-card-custom {
+    --tw-shadow: 0 4px 12px -2px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  }
+
+  .shadow-blue-50\/50 {
+    --tw-shadow-color: rgb(54 106 173 / 50%);
+  }
+
+  .bg-card-cream {
+    background-color: rgb(246 230 164);
+  }
+
   @keyframes spin-slow {
     from {
       transform: rotate(0deg);
@@ -418,6 +432,44 @@
     .event-dot {
       height: .35rem;
       width: .35rem;
+    }
+  }
+
+  /* Desktop Enhancements (md and up) */
+  @media (min-width: 768px) {
+    .calendar-day {
+      max-width: none;
+      /* Remove fixed width to fill grid */
+      min-height: 75px;
+      /* Reduced further to ~90% scale */
+      padding: 4px;
+    }
+
+    .main-number {
+      font-size: 1.5rem;
+      /* Scaled down */
+    }
+
+    .sub-number {
+      font-size: 0.8rem;
+      top: 2px;
+      right: 2px;
+    }
+
+    .tithi-display {
+      font-size: 0.75rem;
+      margin-top: auto;
+      /* Ensure it pushes to bottom */
+    }
+
+    .calendar-grid {
+      gap: 1px;
+      /* Minimal gap */
+    }
+
+    .event-dot {
+      width: 0.45rem;
+      height: 0.45rem;
     }
   }
 }

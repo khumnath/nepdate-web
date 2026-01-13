@@ -57,8 +57,8 @@ const CalendarControls: React.FC<CalendarControlsProps> = ({
                 <button
                     onClick={onPrevYear}
                     aria-label="Previous year"
-                    className="sm:flex-none h-9 sm:h-10 w-9 sm:w-8 rounded-lg bg-blue-500 dark:bg-gray-700 shadow-sm hover:shadow-md
-                     transition-all duration-200 text-white dark:text-gray-300 hover:bg-blue-600
+                    className="sm:flex-none h-9 sm:h-10 w-9 sm:w-8 rounded-lg bg-[rgb(25_33_148)] dark:bg-gray-700 shadow-sm hover:shadow-md
+                     transition-all duration-200 text-white dark:text-gray-300 hover:bg-[rgb(20_26_118)]
                      dark:hover:text-blue-400 flex items-center justify-center"
                 >
                     <ChevronsLeft size={16} />
@@ -68,8 +68,8 @@ const CalendarControls: React.FC<CalendarControlsProps> = ({
                 <button
                     onClick={onPrevMonth}
                     aria-label="Previous month"
-                    className="sm:flex-none h-9 sm:h-10 w-9 sm:w-8 rounded-lg bg-blue-500 dark:bg-gray-700 shadow-sm hover:shadow-md
-                     transition-all duration-200 text-white dark:text-gray-300 hover:bg-blue-600
+                    className="sm:flex-none h-9 sm:h-10 w-9 sm:w-8 rounded-lg bg-[rgb(25_33_148)] dark:bg-gray-700 shadow-sm hover:shadow-md
+                     transition-all duration-200 text-white dark:text-gray-300 hover:bg-[rgb(20_26_118)]
                      dark:hover:text-blue-400 flex items-center justify-center"
                 >
                     <ChevronLeft size={16} />
@@ -115,8 +115,8 @@ const CalendarControls: React.FC<CalendarControlsProps> = ({
                 <button
                     onClick={onNextMonth}
                     aria-label="Next month"
-                    className="sm:flex-none h-9 sm:h-10 w-9 sm:w-8 rounded-lg bg-blue-500 dark:bg-gray-700 shadow-sm hover:shadow-md
-                     transition-all duration-200 text-white dark:text-gray-300 hover:bg-blue-600
+                    className="sm:flex-none h-9 sm:h-10 w-9 sm:w-8 rounded-lg bg-[rgb(25_33_148)] dark:bg-gray-700 shadow-sm hover:shadow-md
+                     transition-all duration-200 text-white dark:text-gray-300 hover:bg-[rgb(20_26_118)]
                      dark:hover:text-blue-400 flex items-center justify-center"
                 >
                     <ChevronRight size={16} />
@@ -126,8 +126,8 @@ const CalendarControls: React.FC<CalendarControlsProps> = ({
                 <button
                     onClick={onNextYear}
                     aria-label="Next year"
-                    className="sm:flex-none h-9 sm:h-10 w-9 sm:w-8 rounded-lg bg-blue-500 dark:bg-gray-700 shadow-sm hover:shadow-md
-                     transition-all duration-200 text-white dark:text-gray-300 hover:bg-blue-600
+                    className="sm:flex-none h-9 sm:h-10 w-9 sm:w-8 rounded-lg bg-[rgb(25_33_148)] dark:bg-gray-700 shadow-sm hover:shadow-md
+                     transition-all duration-200 text-white dark:text-gray-300 hover:bg-[rgb(20_26_118)]
                      dark:hover:text-blue-400 flex items-center justify-center"
                 >
                     <ChevronsRight size={16} />
