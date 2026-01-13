@@ -142,6 +142,25 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 						<span className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 text-[9px] px-1.5 py-0.5 rounded-md font-bold shadow-sm">
 							आज
 						</span>
+						{todayDetails.bhadra && (
+							<button
+								onClick={() => setBhadraModalOpen(true)}
+								className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold shadow-sm flex items-center gap-0.5 transition-colors animate-pulse ${(() => {
+									const res = todayDetails.bhadra?.residence || '';
+									if (res.includes('स्वर्ग')) return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-900/60';
+									if (res.includes('पाताल')) return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60';
+									return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60';
+								})()}`}
+								title="भद्रा विवरण हेर्नुहोस्"
+							>
+								{todayDetails.bhadra?.residence.includes('पाताल') ? (
+									<CheckCircle size={10} className="stroke-2" />
+								) : (
+									<AlertTriangle size={10} className="stroke-2" />
+								)}
+								भद्रा
+							</button>
+						)}
 						<span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 ml-auto pt-0.5">
 							{adMonth} {adDay}, {adYear}
 						</span>

@@ -224,12 +224,12 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 		const currentBsYear = toBikramSambat(today).year;
 
 		return (
-			<div className={cardStyle}>
+			<div className="w-full bg-white dark:bg-slate-900 rounded-xl shadow-card-custom shadow-blue-50/50 dark:shadow-slate-900/50 border border-gray-300 dark:border-slate-600 overflow-hidden">
 				{/* Header */}
-				<div className="bg-blue-50 dark:bg-slate-800 px-5 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center">
-					<div className="w-2.5 h-2.5 rounded-full bg-blue-500 mr-3 shadow-sm shadow-blue-300 dark:shadow-blue-900"></div>
+				<div className="bg-[rgb(25_33_148)] dark:bg-slate-800 px-5 py-4 border-b border-blue-800 dark:border-slate-700 flex items-center">
+					<div className="w-2.5 h-2.5 rounded-full bg-blue-300 mr-3 shadow-sm shadow-blue-300/50 animate-pulse"></div>
 					<h2
-						className="text-xl font-bold text-blue-900 dark:text-blue-100"
+						className="text-lg sm:text-xl font-bold text-white dark:text-blue-100"
 						style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
 					>
 						{title}
@@ -237,7 +237,7 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 				</div>
 
 				{/* Events List Body */}
-				<div className="flex flex-col gap-3 pb-5">
+				<div className="flex flex-col gap-3 p-4">
 					{upcomingEvents.map((event, idx) => {
 						// Determine time remaining text
 						let timeText = '';
@@ -275,13 +275,13 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 							<a
 								key={idx}
 								href={href}
-								className={`relative flex justify-between items-center p-3 bg-white dark:bg-slate-800 rounded-lg shadow-card-custom shadow-blue-50/50 border border-l-4 border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow ${event.holiday ? 'border-l-red-500' : 'border-l-green-500'
-									}`}
+								className={`relative flex justify-between items-center p-3.5 bg-white dark:bg-slate-800 rounded-lg shadow-md hover:shadow-lg transition-all border border-gray-100 dark:border-slate-700 border-l-[5px] ${event.holiday ? 'border-l-red-500' : 'border-l-green-500'} group`}
 							>
-								{/* Left Side: Event Name */}
-								<div className={`flex flex-col flex-1`}>
+								{/* Left Side: Event Name with Blinking Dot */}
+								<div className={`flex items-center gap-3 flex-1`}>
+									<span className={`w-2 h-2 rounded-full animate-pulse flex-shrink-0 ${event.holiday ? 'bg-red-500 shadow-sm shadow-red-300' : 'bg-green-500 shadow-sm shadow-green-300'}`}></span>
 									<span
-										className={`text-[15px] leading-snug font-medium ${event.holiday
+										className={`text-[15px] leading-snug font-semibold ${event.holiday
 											? 'text-red-700 dark:text-red-400'
 											: 'text-slate-700 dark:text-slate-200'
 											}`}
@@ -292,15 +292,15 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 								</div>
 
 								{/* Right Side: Date Info */}
-								<div className="flex flex-col items-end pl-2 min-w-[80px] text-right">
+								<div className="flex flex-col items-end pl-2 min-w-[90px] text-right">
 									<span
-										className="text-[#1e293b] dark:text-slate-100 font-bold text-sm leading-tight"
+										className="text-gray-800 dark:text-gray-200 font-bold text-sm leading-tight"
 										style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
 									>
 										{dateText}
 									</span>
 									<span
-										className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5 font-light"
+										className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5 font-medium"
 										style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
 									>
 										{timeText}
@@ -313,17 +313,17 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 
 				{/* Load More Button */}
 				{hasMore && (
-					<div className="px-5 pb-5">
+					<div className="px-5 pb-5 pt-0">
 						<button
 							onClick={() => loadMoreEvents(5)}
 							disabled={isLoading}
-							className="w-full flex items-center justify-center text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-2 bg-gray-50 dark:bg-slate-800/50 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800"
+							className="w-full flex items-center justify-center text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-white transition-colors py-2.5 bg-gray-50 dark:bg-slate-800/50 rounded-lg hover:bg-[rgb(25_33_148)] dark:hover:bg-blue-700 group"
 							style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
 						>
 							{isLoading
 								? (isBs ? 'लोड हुँदैछ...' : 'Loading...')
 								: (
-									<div className="flex items-center text-blue-400 dark:text-blue-300 gap-1.5">
+									<div className="flex items-center gap-1.5 group-hover:text-white text-blue-600 dark:text-blue-400">
 										<span>{isBs ? 'थप हेर्नुहोस्' : 'Load More'}</span>
 										<ChevronDown className="w-4 h-4" />
 									</div>

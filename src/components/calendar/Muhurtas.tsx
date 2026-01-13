@@ -115,7 +115,7 @@ const MonthlyMuhurta: React.FC<MonthlyMuhurtaProps> = ({
     if (muhurtaData.length === 0) {
         return (
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 text-center">
-                 <h4 className="font-bold text-gray-400 text-xs mb-1">{headerTitle}</h4>
+                <h4 className="font-bold text-gray-400 text-xs mb-1">{headerTitle}</h4>
                 <p className="text-gray-500 dark:text-gray-400 text-xs" style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}>
                     {isBs ? `यो महिना (${currentMonthName}) कुनै विशेष मुहुर्त फेला परेन।` : `No specific muhurats found for ${currentMonthName}.`}
                 </p>
@@ -124,39 +124,39 @@ const MonthlyMuhurta: React.FC<MonthlyMuhurtaProps> = ({
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="bg-blue-50 dark:bg-gray-700/50 px-4 py-2 border-b border-blue-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-card-custom shadow-blue-50/50">
+            <div className="bg-[rgb(25_33_148)] dark:bg-gray-700/50 px-5 py-3 border-b border-blue-800 dark:border-gray-700">
                 <h2
-													className="text-xl font-bold text-blue-900 dark:text-blue-100"
-													style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
-												>
+                    className="text-lg sm:text-xl font-bold text-white dark:text-gray-100"
+                    style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
+                >
                     {headerTitle}
                 </h2>
             </div>
 
             <div className="divide-y divide-gray-100 dark:divide-gray-700">
                 {muhurtaData.map((category) => (
-                    <div key={category.id} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                        <div className="flex flex-col gap-1">
+                    <div key={category.id} className="p-4 hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
+                        <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                <span className="w-2 h-2 rounded-full bg-[rgb(25_33_148)] dark:bg-blue-400"></span>
                                 <span
-                                    className="font-bold text-gray-800 dark:text-gray-200"
+                                    className="font-bold text-[rgb(25_33_148)] dark:text-blue-200 text-base"
                                     style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
                                 >
                                     {isBs ? category.titleBs : category.titleAd}
                                 </span>
                             </div>
 
-                            <div className="flex flex-wrap gap-1.5 pl-3.5">
+                            <div className="flex flex-wrap gap-2 pl-4">
                                 {category.dates.map((day) => (
                                     <span
                                         key={day}
-                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[15px] font-medium bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800"
+                                        className="inline-flex items-center px-2.5 py-1 rounded-full text-[14px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100/50 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800 shadow-sm"
                                         style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
                                     >
                                         {isBs ? toDevanagari(day) : day}
-                                        <span className="ml-0.5 opacity-75 text-[15px]">
+                                        <span className="ml-1 opacity-70 text-[13px] font-normal">
                                             {isBs ? 'गते' : ':'}
                                         </span>
                                     </span>
