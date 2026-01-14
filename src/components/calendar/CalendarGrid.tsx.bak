@@ -84,10 +84,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
             if (date.getUTCDay() === 6) classes += ' saturday';
             if (isToday) classes += ' today';
             const isHoliday = panchanga.events?.some(event => event.holiday) ?? false;
-            const hasEvent = (panchanga.events?.length ?? 0) > 0 && !isHoliday;
-
             if (isHoliday) classes += ' holiday';
-            if (hasEvent) classes += ' has-event';
             let tithiClass = 'tithi-display';
             if (tithi?.name === "पूर्णिमा") {
                 tithiClass += ' special purnima';
@@ -200,10 +197,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
             if (isToday) classes += ' today';
 
             const isHoliday = panchanga.events?.some(event => event.holiday) ?? false;
-            const hasEvent = (panchanga.events?.length ?? 0) > 0 && !isHoliday;
-
             if (isHoliday) classes += ' holiday';
-            if (hasEvent) classes += ' has-event';
             let tithiClass = 'tithi-display';
 
             if (tithi?.name === "पूर्णिमा") {
