@@ -279,7 +279,7 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 							>
 								{/* Left Side: Event Name with Blinking Dot */}
 								<div className={`flex items-center gap-3 flex-1`}>
-									<span className={`w-2 h-2 rounded-full animate-pulse flex-shrink-0 ${event.holiday ? 'bg-red-500 shadow-sm shadow-red-300' : 'bg-green-500 shadow-sm shadow-green-300'}`}></span>
+									<span className={`w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0 ${event.holiday ? 'bg-red-500 shadow-sm shadow-red-300' : 'bg-green-500 shadow-sm shadow-green-300'}`}></span>
 									<span
 										className={`text-[15px] leading-snug font-semibold ${event.holiday
 											? 'text-red-700 dark:text-red-400'

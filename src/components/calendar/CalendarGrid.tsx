@@ -256,7 +256,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                 {weekdays.map((day, index) => (
                     <div
                         key={day}
-                        className={`weekday ${index === 6 ? 'bg-red-600 dark:bg-red-800' : 'bg-[#2c25eb] dark:bg-[#2c25eb]'
+                        className={`weekday ${index === 6 ? 'bg-red-600 dark:bg-red-800' : 'bg-[#2c25eb] dark:bg-indigo-900'
                             }`}
                         style={activeSystem === 'bs' ? { fontFamily: "'Noto Sans Devanagari', sans-serif" } : {}}
                     >

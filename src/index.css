@@ -266,25 +266,39 @@
   }
 
   /* Base mobile-first styles */
+
+  /* Base Calendar Day (Mobile & Global) */
   .calendar-day {
-    /* Base Sizing (Mobile) - UNTOUCHED */
+    /* Base Sizing (Mobile) */
     max-width: 90px;
     min-height: 50px;
     padding: 2px;
     font-size: 0.75rem;
 
-    /* Base Visuals (New Theme - Applies to Mobile & Desktop) */
+    background-color: #f0fdf4;
+    /* Green-50 Global Background */
+    /* Uniform Faint Border */
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+
     position: relative;
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;
-    /* White Background */
-    border: 1px solid rgb(25, 33, 148);
-    /* Default Blue Border */
-    border-radius: 6px;
-    /* Consistent radius */
+    justify-content: flex-start;
+
+    overflow: hidden;
+    margin: 0 auto;
+    width: 100%;
+
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .calendar-day:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    z-index: 10;
+    border-color: rgba(0, 0, 0, 0.15);
   }
 
   .dark .calendar-day {
@@ -293,65 +307,72 @@
   }
 
   /* Green Border for Non-Holiday Events (Global) */
-  .calendar-day.has-event:not(.holiday) {
-    border-color: #22c55e;
+  .calendar-day.has-event:not(.holiday):not(.saturday) {
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    /* Uniform Border */
+    background-color: #f0fdf4;
+    /* Uniform Green Background */
   }
 
-  .dark .calendar-day.has-event:not(.holiday) {
-    border-color: #4ade80;
+  .dark .calendar-day.has-event:not(.holiday):not(.saturday) {
+    background-color: rgba(6, 78, 59, 0.3) !important;
+    /* Dark Green Tint */
+    border-color: rgba(74, 222, 128, 0.5) !important;
   }
 
   /* Holiday Red Border (Global) */
   .calendar-day.holiday:not(.saturday) {
-    border-color: #ef4444;
+    background-color: #fef2f2;
+    /* Red-50 Background */
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    /* Uniform Border */
   }
 
   .dark .calendar-day.holiday:not(.saturday) {
-    border-color: #dc2626;
+    background-color: rgba(127, 29, 29, 0.3) !important;
+    /* Dark Red Tint */
+    border-color: rgba(220, 38, 38, 0.5) !important;
   }
 
   /* Saturday Special (Global) */
   .calendar-day.saturday {
-    border-color: #ef4444;
-    background-color: #fff1f2;
-    /* Light Red BG */
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    /* Uniform Border */
+    background-color: #fef2f2;
+    /* Red-50 Background */
   }
 
   .dark .calendar-day.saturday {
-    border-color: #ef4444;
-    background-color: rgba(69, 10, 10, 0.3);
+    border-color: rgba(239, 68, 68, 0.5) !important;
+    background-color: rgba(127, 29, 29, 0.3) !important;
+    /* Dark Red Tint */
   }
 
   /* Today Highlight (Global) */
   .calendar-day.today {
-    border-color: #7c3aed !important;
-    /* Violet-600 */
-    border-width: 2px !important;
-    /* Thicker */
+    border: 1px solid rgba(124, 58, 237, 0.3) !important;
+    /* Faint Violet */
     z-index: 30;
-    box-shadow: 0 0 8px rgba(124, 58, 237, 0.25);
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.15);
   }
 
   .dark .calendar-day.today {
-    border-color: #8b5cf6 !important;
+    border-color: rgba(139, 92, 246, 0.7) !important;
     box-shadow: 0 0 8px rgba(139, 92, 246, 0.25);
   }
 
   /* Typography (Global Visuals) */
   .main-number {
-    /* Sizing (Mobile) */
     margin-top: auto;
     margin-bottom: auto;
-    font-size: 1rem;
-    /* Slightly clearer base size */
-    line-height: 1;
     text-align: center;
 
-    /* Decoration (New Theme) */
+    font-size: 1.25rem;
     font-weight: 700;
-    color: #334155;
-    /* Dark Slate */
+    color: #1e293b;
+    /* Darker Slate for contrast */
     font-family: 'Poppins', 'Noto Sans Devanagari', sans-serif;
+    line-height: 1.1;
   }
 
   .dark .main-number {
@@ -407,7 +428,6 @@
     color: #a16207;
   }
 
-  /* yellow-700 */
   .dark .tithi-display.purnima {
     color: #facc15;
   }
@@ -416,7 +436,6 @@
     color: #7e22ce;
   }
 
-  /* purple-700 */
   .dark .tithi-display.amavasya {
     color: #c084fc;
   }
@@ -439,7 +458,6 @@
   .calendar-grid {
     grid-auto-rows: auto;
     gap: 2px;
-    /* Small gap for mobile */
   }
 
   .event-dot {
@@ -544,22 +562,18 @@
   @media (min-width: 768px) {
     .calendar-grid {
       gap: 1px;
-      /* Minimal gap (Final Branch) */
     }
 
     .calendar-day {
       max-width: none;
-      /* Fill grid */
       min-height: 75px;
-      /* Desktop Height */
       padding: 4px;
-      /* Desktop Padding */
-      /* No visual overrides needed, they inherit from global */
+      /* Inherit border from global or ensure consistent neutral styling */
+      border: 1px solid rgba(0, 0, 0, 0.08);
     }
 
     .main-number {
       font-size: 1.5rem;
-      /* Desktop Font Size */
     }
 
     .sub-number {
@@ -572,17 +586,17 @@
 
     .event-dot {
       width: 0.45rem;
-      /* ~7px */
       height: 0.45rem;
     }
 
-    /* Helper utility */
     .return-to-main {
       display: none;
-      /* or block */
     }
   }
+
 }
+
+/* End of @layer components */
 
 @media print {
   * {
