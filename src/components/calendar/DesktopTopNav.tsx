@@ -3,9 +3,11 @@ import { MENU_ITEMS, MenuItem } from '../../constants/menu';
 import { MoreHorizontal, Download, RefreshCcw } from 'lucide-react';
 import { NEPALI_LABELS } from '../../constants/constants';
 import { handleReloadApp } from '../../lib/utils/appUtils';
+import { HeaderLogo } from './HeaderLogo';
 
 interface DesktopTopNavProps {
 	activeView: string;
+	activeSystem: 'bs' | 'ad';
 	onNavigate: (key: string) => void;
 	showInstall?: boolean;
 	onInstallClick?: () => void;
@@ -13,6 +15,7 @@ interface DesktopTopNavProps {
 
 export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
 	activeView,
+	activeSystem,
 	onNavigate,
 	showInstall = false,
 	onInstallClick,
@@ -141,9 +144,7 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
 			ref={containerRef}
 			className="hidden md:flex w-full px-4 bg-slate-200 dark:bg-gray-800 h-16 items-center relative"
 		>
-			<div className="text-xl font-semibold whitespace-nowrap flex-shrink-0 mr-6">
-				{NEPALI_LABELS.Nepdate_calendar}
-			</div>
+			<HeaderLogo activeSystem={activeSystem} className="mr-6 flex-shrink-0" />
 
 			<div className="flex items-center gap-1">
 				{visibleMenus.map((menu) => (

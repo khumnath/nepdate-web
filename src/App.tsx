@@ -13,6 +13,7 @@ import { MENU_ITEMS } from './constants/menu';
 import { NEPALI_LABELS } from './constants/constants';
 import { toast, ToastContainer } from './components/shared/toast';
 import { TodayWidget } from './components/calendar/TodayWidget';
+import { HeaderLogo } from './components/calendar/HeaderLogo';
 
 import { useTheme } from './hooks/useTheme';
 import { useLayout } from './hooks/useLayout';
@@ -21,6 +22,8 @@ import { useCalendarLogic } from './hooks/useCalendarLogic';
 import { useAppNavigation } from './hooks/useAppNavigation';
 import { usePlatform } from './hooks/usePlatform';
 import { handleReloadApp } from './lib/utils/appUtils';
+import { toDevanagari } from './lib/utils/lib';
+import { RashifalWidget } from './components/calendar/RashifalWidget';
 
 // Lazy load pages for menu items are handled in MENU_ITEMS
 // DayDetailPage only loaded here
@@ -114,6 +117,7 @@ const App: React.FC = () => {
 				<div className="w-full z-30 print:hidden hidden md:block border-b border-gray-200 dark:border-gray-700">
 					<DesktopTopNav
 						activeView={activeView}
+						activeSystem={activeSystem}
 						onNavigate={(key) => {
 							if (key === 'about') setIsAboutOpen(true);
 							else setActiveView(key);
@@ -133,7 +137,7 @@ const App: React.FC = () => {
 								<Menu className="w-5 h-5" />
 							</button>
 						)}
-						<h1 className="text-lg sm:text-xl font-semibold">{NEPALI_LABELS.Nepdate_calendar}</h1>
+						<HeaderLogo activeSystem={activeSystem} />
 					</div>
 					{menuStyle === 'tabs' && !isStandalone && canInstall && (
 						<button onClick={handleInstallClick} className="px-3 py-2 text-left text-xs rounded bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2">
@@ -152,7 +156,7 @@ const App: React.FC = () => {
           ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}
           ${desktopLayoutStyle === 'sidebar' ? 'md:translate-x-0 md:sticky md:h-screen md:w-56' : 'md:hidden w-64'}`}
 			>
-				<div className="flex flex-col h-full p-4">
+				<div className="flex flex-col h-full p-4 overflow-y-auto">
 					<div className="flex justify-between items-center mb-4">
 						<h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Menu</h2>
 						<button onClick={() => setIsMenuOpen(false)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 md:hidden">
@@ -195,6 +199,13 @@ const App: React.FC = () => {
 							<main className="min-h-[60vh] pb-20 md:grid md:grid-cols-12 md:gap-x-6">
 								<aside className="hidden md:block md:col-span-4">
 									<TodayWidget todayAd={initialToday} todayBs={initialTodayBs} todayDetails={todayDetails} onShowDetailsClick={handleShowDetailsClick} />
+									<RashifalWidget
+										date={`${toDevanagari(initialTodayBs.year)} ${initialTodayBs.monthName} ${toDevanagari(initialTodayBs.day)}`}
+										dateKey={`${initialTodayBs.year}-${initialTodayBs.month}-${initialTodayBs.day}`}
+										tithi={todayDetails?.tithis?.[0]?.name}
+										nakshatra={todayDetails?.nakshatras?.[0]?.name}
+										moonRashi={todayDetails?.moonRashi}
+									/>
 								</aside>
 								<div className="md:col-span-8 flex flex-col">
 									<CalendarControls activeSystem={activeSystem} currentYear={currentYear} currentMonth={currentMonth} onYearChange={(y) => activeSystem === 'bs' ? setCurrentBsYear(y) : setCurrentAdYear(y)} onMonthChange={(m) => activeSystem === 'bs' ? setCurrentBsMonth(m) : setCurrentAdMonth(m)} onPrevMonth={() => changeMonth('prev')} onNextMonth={() => changeMonth('next')} onPrevYear={() => changeYear('prev')} onNextYear={() => changeYear('next')} />
@@ -240,6 +251,14 @@ const App: React.FC = () => {
 										...commonProps,
 										setIsDharmaResultsVisible,
 										setDharmaBackAction
+									};
+								} else if (activeView === 'rashifal') {
+									pageProps = {
+										...commonProps,
+										date: `${toDevanagari(initialTodayBs.year)} ${initialTodayBs.monthName} ${toDevanagari(initialTodayBs.day)}`,
+										dateKey: `${initialTodayBs.year}-${initialTodayBs.month}-${initialTodayBs.day}`,
+										tithi: todayDetails?.tithis?.[0]?.name,
+										nakshatra: todayDetails?.nakshatras?.[0]?.name
 									};
 								}
 

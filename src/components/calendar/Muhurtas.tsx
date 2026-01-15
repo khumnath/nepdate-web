@@ -124,8 +124,8 @@ const MonthlyMuhurta: React.FC<MonthlyMuhurtaProps> = ({
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-card-custom shadow-blue-50/50">
-            <div className="bg-[rgb(25_33_148)] dark:bg-gray-700/50 px-5 py-3 border-b border-blue-800 dark:border-gray-700">
+        <div className="bg-indigo-50/30 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-card-custom shadow-blue-50/50">
+            <div className="bg-[rgb(37_99_235)] dark:bg-gray-700/50 px-5 py-3 border-b border-blue-800 dark:border-gray-700">
                 <h2
                     className="text-lg sm:text-xl font-bold text-white dark:text-gray-100"
                     style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
@@ -134,14 +134,14 @@ const MonthlyMuhurta: React.FC<MonthlyMuhurtaProps> = ({
                 </h2>
             </div>
 
-            <div className="divide-y divide-gray-100 dark:divide-gray-700">
+            <div className="flex flex-col gap-2 p-4">
                 {muhurtaData.map((category) => (
-                    <div key={category.id} className="p-4 hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
+                    <div key={category.id} className="p-4 bg-indigo-50 dark:bg-gray-700/30 rounded-lg border border-blue-200 dark:border-gray-700 shadow-sm shadow-blue-100 dark:shadow-none hover:shadow-md transition-all">
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-[rgb(25_33_148)] dark:bg-blue-400"></span>
+                                <span className="w-2 h-2 rounded-full bg-red-500 dark:bg-red-400"></span>
                                 <span
-                                    className="font-bold text-[rgb(25_33_148)] dark:text-blue-200 text-base"
+                                    className="font-bold text-red-600 dark:text-red-400 text-base"
                                     style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
                                 >
                                     {isBs ? category.titleBs : category.titleAd}
@@ -152,7 +152,7 @@ const MonthlyMuhurta: React.FC<MonthlyMuhurtaProps> = ({
                                 {category.dates.map((day) => (
                                     <span
                                         key={day}
-                                        className="inline-flex items-center px-2.5 py-1 rounded-full text-[14px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100/50 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800 shadow-sm"
+                                        className="inline-flex items-center px-2.5 py-1 rounded-full text-[14px] font-semibold bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 shadow-sm"
                                         style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
                                     >
                                         {isBs ? toDevanagari(day) : day}
@@ -166,7 +166,7 @@ const MonthlyMuhurta: React.FC<MonthlyMuhurtaProps> = ({
                     </div>
                 ))}
             </div>
-        </div>
+        </div >
     );
 };
 

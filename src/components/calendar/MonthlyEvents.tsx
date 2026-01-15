@@ -137,7 +137,7 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 	// Helper to format date parts with leading zero
 	const pad = (n: number) => n.toString().padStart(2, '0');
 
-	const cardStyle = "w-full bg-white dark:bg-slate-900 rounded-xl shadow-card-custom shadow-blue-50/50 dark:shadow-slate-900/50 border border-gray-300 dark:border-slate-600 overflow-hidden";
+	const cardStyle = "w-full bg-indigo-50/30 dark:bg-slate-900 rounded-xl shadow-card-custom shadow-blue-50/50 dark:shadow-slate-900/50 border border-gray-300 dark:border-slate-600 overflow-hidden";
 
 	// RENDERERS
 	const renderMonthlyList = () => {
@@ -224,9 +224,9 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 		const currentBsYear = toBikramSambat(today).year;
 
 		return (
-			<div className="w-full bg-white dark:bg-slate-900 rounded-xl shadow-card-custom shadow-blue-50/50 dark:shadow-slate-900/50 border border-gray-300 dark:border-slate-600 overflow-hidden">
+			<div className="w-full bg-indigo-50/30 dark:bg-slate-900 rounded-xl shadow-card-custom shadow-blue-50/50 dark:shadow-slate-900/50 border border-gray-300 dark:border-slate-600 overflow-hidden">
 				{/* Header */}
-				<div className="bg-[rgb(25_33_148)] dark:bg-slate-800 px-5 py-4 border-b border-blue-800 dark:border-slate-700 flex items-center">
+				<div className="bg-[rgb(37_99_235)] dark:bg-slate-800 px-5 py-4 border-b border-blue-800 dark:border-slate-700 flex items-center">
 					<div className="w-2.5 h-2.5 rounded-full bg-blue-300 mr-3 shadow-sm shadow-blue-300/50 animate-pulse"></div>
 					<h2
 						className="text-lg sm:text-xl font-bold text-white dark:text-blue-100"
@@ -275,7 +275,7 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 							<a
 								key={idx}
 								href={href}
-								className={`relative flex justify-between items-center p-3.5 bg-white dark:bg-slate-800 rounded-lg shadow-md hover:shadow-lg transition-all border border-gray-100 dark:border-slate-700 border-l-[5px] ${event.holiday ? 'border-l-red-500' : 'border-l-green-500'} group`}
+								className={`relative flex justify-between items-center p-3.5 bg-indigo-50 dark:bg-slate-800 rounded-lg shadow-sm hover:shadow-md transition-all border border-gray-200 dark:border-slate-700 group`}
 							>
 								{/* Left Side: Event Name with Blinking Dot */}
 								<div className={`flex items-center gap-3 flex-1`}>
@@ -317,7 +317,7 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
 						<button
 							onClick={() => loadMoreEvents(5)}
 							disabled={isLoading}
-							className="w-full flex items-center justify-center text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-white transition-colors py-2.5 bg-gray-50 dark:bg-slate-800/50 rounded-lg hover:bg-[rgb(25_33_148)] dark:hover:bg-blue-700 group"
+							className="w-full flex items-center justify-center text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-white transition-colors py-2.5 bg-gray-50 dark:bg-slate-800/50 rounded-lg hover:bg-[rgb(37_99_235)] dark:hover:bg-blue-700 group"
 							style={{ fontFamily: isBs ? "'Noto Sans Devanagari', sans-serif" : 'inherit' }}
 						>
 							{isLoading

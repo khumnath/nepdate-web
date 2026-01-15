@@ -2,24 +2,24 @@ import { toast } from "../../components/shared/toast";
 
 // Timezone Helper to get current date in Nepal
 export function getNepalDate(): Date {
-    const utcNow = new Date();
+  const utcNow = new Date();
 
-    const nepalISOString = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Asia/Kathmandu',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-    }).format(utcNow).replace(', ', 'T');
+  const nepalISOString = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kathmandu',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).format(utcNow).replace(', ', 'T');
 
-    // Treat Nepal-local time as local, not UTC
-    const [datePart, timePart] = nepalISOString.split('T');
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hour, minute, second] = timePart.split(':').map(Number);
-    return new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+  // Treat Nepal-local time as local, not UTC
+  const [datePart, timePart] = nepalISOString.split('T');
+  const [year, month, day] = datePart.split('-').map(Number);
+  const [hour, minute, second] = timePart.split(':').map(Number);
+  return new Date(Date.UTC(year, month - 1, day, hour, minute, second));
 }
 
 const INFO_DELAY = 2000;
@@ -101,10 +101,10 @@ export const handleReloadApp = async () => {
 
 
 export const handlePrint = () => {
-	if (window.Android?.printPage) {
-			window.Android?.printPage();
-	} else {
-			const nativePrint = window.print;
-			nativePrint();
-	}
+  if (window.Android?.printPage) {
+    window.Android?.printPage();
+  } else {
+    const nativePrint = window.print;
+    nativePrint();
+  }
 };

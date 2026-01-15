@@ -1,4 +1,5 @@
 import React from 'react';
+import { SocialMedia } from './SocialMedia';
 import { NEPALI_LABELS, GREGORIAN_MONTHS, GREGORIAN_WEEKDAYS } from '../../constants/constants';
 import {
   toDevanagari,
@@ -26,7 +27,7 @@ const PanchangaRow: React.FC<{ label: string; value: string }> = ({
   label,
   value,
 }) => (
-  <li className="flex justify-around items-center text-sm py-1.5 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+  <li className="flex justify-between items-center text-sm py-1.5 border-b border-gray-200 dark:border-gray-600 last:border-b-0 px-2">
     <span className="text-gray-500 dark:text-gray-400">{label}:</span>
     <span className="font-medium text-gray-800 dark:text-gray-200 text-right">
       {value}
@@ -163,8 +164,8 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
           {/* BHADRA DISPLAY LOGIC */}
           {bhadra && bhadra.isActive && (
             <div className={`mt-3 p-2 rounded-md text-sm border flex items-center justify-center gap-2 ${bhadra.isHarmful
-                ? 'bg-red-50 dark:bg-red-900/20 border-red-200 text-red-700 dark:text-red-300'
-                : 'bg-green-50 dark:bg-green-900/20 border-green-200 text-green-700 dark:text-green-300'
+              ? 'bg-red-50 dark:bg-red-900/20 border-red-200 text-red-700 dark:text-red-300'
+              : 'bg-green-50 dark:bg-green-900/20 border-green-200 text-green-700 dark:text-green-300'
               }`}>
               {bhadra.isHarmful ? (
                 <AlertTriangle size={16} className="shrink-0" />
@@ -208,6 +209,7 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
         <ArrowRight size={18} />
       </button>
 
+      <SocialMedia />
     </div>
   );
 };

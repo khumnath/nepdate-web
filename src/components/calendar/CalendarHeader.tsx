@@ -138,7 +138,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 		const sunset = todayDetails.sunset;
 
 		return (
-			<div className="flex items-stretch justify-between px-2 py-2 gap-2 bg-white dark:bg-gray-800 mt-2 rounded-xl border border-slate-100 dark:border-gray-700" style={{ boxShadow: '0 4px 12px -2px rgb(53 96 151 / 50%)', marginLeft: '-0.10rem', marginRight: '-0.1rem', marginBottom: '.5rem' }}>
+			<div className="flex items-stretch justify-between px-2 py-2 gap-2 bg-slate-50 dark:bg-gray-800 mt-2 rounded-xl border border-slate-200 dark:border-gray-700" style={{ boxShadow: '0 4px 12px -2px rgb(53 96 151 / 20%)', marginLeft: '-0.10rem', marginRight: '-0.1rem', marginBottom: '.5rem' }}>
 
 				{/* 1. LEFT: Date Box (Day + Month + Year) */}
 				<div
@@ -312,8 +312,8 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 						<div className="flex bg-slate-200 dark:bg-gray-700 rounded-lg p-1">
 							<button
 								className={`px-4 py-2 rounded-md transition-all duration-200 text-sm sm:text-base font-medium ${activeSystem === 'bs'
-									? 'bg-[rgb(25_33_148)] dark:bg-slate-600 text-white shadow-sm'
-									: 'text-gray-600 dark:text-gray-400 hover:text-[rgb(25_33_148)] dark:hover:text-blue-400'
+									? 'bg-[rgb(37_99_235)] dark:bg-slate-600 text-white shadow-sm'
+									: 'text-gray-600 dark:text-gray-400 hover:text-[rgb(37_99_235)] dark:hover:text-blue-400'
 									}`}
 								onClick={() => onSystemChange('bs')}
 							>
@@ -323,8 +323,8 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 
 							<button
 								className={`px-4 py-2 rounded-md transition-all duration-200 text-sm sm:text-base font-medium ${activeSystem === 'ad'
-									? 'bg-[rgb(25_33_148)] dark:bg-slate-600 text-white shadow-sm'
-									: 'text-gray-600 dark:text-gray-400 hover:text-[rgb(25_33_148)] dark:hover:text-blue-400'
+									? 'bg-[rgb(37_99_235)] dark:bg-slate-600 text-white shadow-sm'
+									: 'text-gray-600 dark:text-gray-400 hover:text-[rgb(37_99_235)] dark:hover:text-blue-400'
 									}`}
 								onClick={() => onSystemChange('ad')}
 							>
