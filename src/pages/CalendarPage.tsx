@@ -36,7 +36,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onDayClick }) => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const handleThemeToggle = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
 
-  const handleDayClick = onDayClick ?? (() => {});
+  const handleDayClick = onDayClick ?? (() => { });
 
   const handleShowDetailsClick = () => {
     handleDayClick(initialToday);
@@ -54,9 +54,9 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onDayClick }) => {
           adMonth={currentAdMonth}
           onSystemChange={switchSystem}
           onTodayClick={goToToday}
-            theme={theme}
-            onThemeToggle={handleThemeToggle}
-            todayDetails={todayDetails}
+          theme={theme}
+          onThemeToggle={handleThemeToggle}
+          todayDetails={todayDetails}
         />
       </div>
 

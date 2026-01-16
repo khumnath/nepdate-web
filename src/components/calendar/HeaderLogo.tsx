@@ -1,4 +1,5 @@
 import React from 'react';
+import AppLogo from '../../assets/icons/android-chrome-192x192.png';
 
 interface HeaderLogoProps {
     activeSystem: 'bs' | 'ad';
@@ -12,7 +13,7 @@ export const HeaderLogo: React.FC<HeaderLogoProps> = ({ activeSystem, className 
     return (
         <div className={`flex items-center gap-2.5 ${className}`}>
             <img
-                src="/icons/android-chrome-192x192.png"
+                src={AppLogo}
                 alt="NepDate Logo"
                 className="w-8 h-8 rounded-lg shadow-sm object-cover"
             />

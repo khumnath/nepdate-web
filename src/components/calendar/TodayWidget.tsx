@@ -1,5 +1,6 @@
 import React from 'react';
 import { SocialMedia } from './SocialMedia';
+import { AdsBanner } from './AdsBanner';
 import { NEPALI_LABELS, GREGORIAN_MONTHS, GREGORIAN_WEEKDAYS } from '../../constants/constants';
 import {
   toDevanagari,
@@ -210,6 +211,7 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
       </button>
 
       <SocialMedia />
+      <AdsBanner square className="mt-4" />
     </div>
   );
 };

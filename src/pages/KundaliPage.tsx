@@ -173,8 +173,8 @@ export const KundaliPage: React.FC<KundaliPageProps> = ({ onBack, setIsKundaliRe
 			if (existingIndex !== -1) saved.splice(existingIndex, 1);
 			localStorage.setItem('savedKundalis', JSON.stringify([newEntry, ...saved].slice(0, 10)));
 		} catch (e: unknown) {
-  const msg = e instanceof Error ? e.message : String(e);
-  toast(`Failed to save data: ${msg}`, 'warning', 2000);
+			const msg = e instanceof Error ? e.message : String(e);
+			toast(`Failed to save data: ${msg}`, 'warning', 2000);
 		}
 	};
 

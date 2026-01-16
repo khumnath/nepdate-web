@@ -9,31 +9,33 @@ interface RashifalPageProps {
     tithi?: string;
     nakshatra?: string;
     moonRashi?: string;
+    param?: string; // e.g. 'mesh', 'brish'
 }
 
-const RashifalPage: React.FC<RashifalPageProps> = ({ onBack, date, dateKey, tithi, nakshatra, moonRashi }) => {
+const RashifalPage: React.FC<RashifalPageProps> = ({ onBack, date, dateKey, tithi, nakshatra, moonRashi, param }) => {
     return (
         <div className="min-h-screen bg-slate-100 dark:bg-gray-900 pb-20">
             {/* Header with Back Button */}
-            <div className="bg-white dark:bg-gray-800 sticky top-0 z-10 px-4 py-3 border-b border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-3">
+            <div className="bg-[rgb(37_99_235)] dark:bg-gray-800 sticky top-0 z-10 px-4 py-3 border-b border-blue-800 dark:border-gray-700 shadow-sm flex items-center gap-3">
                 <button
                     onClick={onBack}
-                    className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+                    className="p-2 -ml-2 rounded-full hover:bg-blue-700 dark:hover:bg-gray-700 text-white dark:text-gray-300 transition-colors"
                 >
                     <ArrowLeft className="w-6 h-6" />
                 </button>
-                <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">
+                <h1 className="text-xl font-bold text-white dark:text-gray-100">
                     राशिफल
                 </h1>
             </div>
 
             {/* Content */}
-            <div className="p-4 max-w-2xl mx-auto">
+            <div className="">
                 <RashifalWidget
                     date={date}
                     dateKey={dateKey}
                     tithi={tithi}
                     nakshatra={nakshatra}
+                    selectedRashi={param}
                 // moonRashi={moonRashi} // RashifalWidget might not accept moonRashi based on my read of it? 
                 // Let me check the file content of RashifalWidget in previous turns. 
                 // Step 26: interface RashifalWidgetProps { date: string; dateKey: string; tithi?: string; nakshatra?: string; }

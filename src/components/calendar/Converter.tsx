@@ -160,105 +160,100 @@ const Converter: React.FC<ConverterProps> = () => {
 	const months = isAdToBs ? adMonths : bsMonths;
 
 	return (
-		<div className="w-full flex flex-col bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
+		<div className="w-full flex flex-col items-center">
 
-			{/* Header */}
-			<header className="text-center py-4 sm:py-6 bg-gradient-to-r from-sky-500 to-indigo-500 dark:from-gray-800 dark:to-gray-950 text-white font-bold text-xl sm:text-3xl shadow">
-				नेपडेट मिति रूपान्तरण
-			</header>
 
-			<main className="flex justify-center px-3 py-4 sm:p-6">
-				<div className="w-full max-w-xl bg-gray-100/70 dark:bg-gray-800/50 rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-300 dark:border-gray-700">
 
-					{/* Today section */}
-					<div className="text-center mb-5 p-3 bg-white/50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
-						<p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">आजको मिति</p>
-						<p className="text-base sm:text-lg font-semibold text-indigo-700 dark:text-indigo-300">
-							ई.सं.: {todayAd.getUTCFullYear()}-{todayAd.getUTCMonth() + 1}-{todayAd.getUTCDate()}
-						</p>
-						<p className="text-base sm:text-lg font-semibold text-purple-700 dark:text-purple-300">
-							वि.सं.: {toDevanagari(todayBs.year)} {todayBs.monthName} {toDevanagari(todayBs.day)}
-						</p>
-					</div>
+			<div className="w-full max-w-xl bg-gray-100/70 dark:bg-gray-800/50 rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-300 dark:border-gray-700">
 
-					{/* Mode switch */}
-					<div className="flex justify-center gap-2 mb-5">
-						<button
-							onClick={() => handleSwitchMode(true)}
-							className={`px-3 py-2 text-xs sm:text-sm rounded-md ${isAdToBs ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700'
-								}`}
-						>
-							AD → BS
-						</button>
-
-						<button
-							onClick={() => handleSwitchMode(false)}
-							className={`px-3 py-2 text-xs sm:text-sm rounded-md ${!isAdToBs ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700'
-								}`}
-						>
-							BS → AD
-						</button>
-					</div>
-
-					{/* Inputs */}
-					<div className="space-y-3 sm:space-y-4">
-						<input
-							type="text"
-							value={yearText}
-							onChange={(e) => handleYearChange(e.target.value)}
-							onBlur={handleYearBlur}
-							placeholder={isAdToBs ? 'Year' : 'वर्ष'}
-							className="w-full p-2.5 sm:p-3 bg-white/60 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base"
-						/>
-
-						<select
-							value={monthIndex}
-							onChange={(e) => setMonthIndex(parseInt(e.target.value))}
-							className="w-full p-2.5 sm:p-3 bg-white/60 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base"
-						>
-							{months.map((m, i) => (
-								<option key={i} value={i}>{m}</option>
-							))}
-						</select>
-
-						<input
-							type="text"
-							value={dayText}
-							onChange={(e) => handleDayChange(e.target.value)}
-							placeholder={isAdToBs ? 'Day' : 'गते'}
-							className="w-full p-2.5 sm:p-3 bg-white/60 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base"
-						/>
-
-						<button
-							onClick={handleConvert}
-							className="w-full p-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-md text-sm sm:text-base font-semibold shadow"
-						>
-							{isAdToBs ? "Convert" : "रूपान्तरण गर्नुहोस्"}
-						</button>
-					</div>
-
-					{warningText && (
-						<div className="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900 rounded text-center">
-							<p className="text-xs sm:text-sm text-yellow-800 dark:text-yellow-200 font-semibold">
-								{warningText}
-							</p>
-						</div>
-					)}
-
-					{resultText && (
-						<div className="mt-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 rounded text-center shadow">
-							<p className="text-lg sm:text-xl font-semibold text-indigo-800 dark:text-indigo-200">
-								{resultText}
-							</p>
-							{infoText && (
-								<p className="text-xs sm:text-sm text-yellow-600 dark:text-yellow-400 mt-2">
-									{infoText}
-								</p>
-							)}
-						</div>
-					)}
+				{/* Today section */}
+				<div className="text-center mb-5 p-3 bg-white/50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+					<p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">आजको मिति</p>
+					<p className="text-base sm:text-lg font-semibold text-indigo-700 dark:text-indigo-300">
+						ई.सं.: {todayAd.getUTCFullYear()}-{todayAd.getUTCMonth() + 1}-{todayAd.getUTCDate()}
+					</p>
+					<p className="text-base sm:text-lg font-semibold text-purple-700 dark:text-purple-300">
+						वि.सं.: {toDevanagari(todayBs.year)} {todayBs.monthName} {toDevanagari(todayBs.day)}
+					</p>
 				</div>
-			</main>
+
+				{/* Mode switch */}
+				<div className="flex justify-center gap-2 mb-5">
+					<button
+						onClick={() => handleSwitchMode(true)}
+						className={`px-3 py-2 text-xs sm:text-sm rounded-md ${isAdToBs ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700'
+							}`}
+					>
+						AD → BS
+					</button>
+
+					<button
+						onClick={() => handleSwitchMode(false)}
+						className={`px-3 py-2 text-xs sm:text-sm rounded-md ${!isAdToBs ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700'
+							}`}
+					>
+						BS → AD
+					</button>
+				</div>
+
+				{/* Inputs */}
+				<div className="space-y-3 sm:space-y-4">
+					<input
+						type="text"
+						value={yearText}
+						onChange={(e) => handleYearChange(e.target.value)}
+						onBlur={handleYearBlur}
+						placeholder={isAdToBs ? 'Year' : 'वर्ष'}
+						className="w-full p-2.5 sm:p-3 bg-white/60 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base"
+					/>
+
+					<select
+						value={monthIndex}
+						onChange={(e) => setMonthIndex(parseInt(e.target.value))}
+						className="w-full p-2.5 sm:p-3 bg-white/60 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base"
+					>
+						{months.map((m, i) => (
+							<option key={i} value={i}>{m}</option>
+						))}
+					</select>
+
+					<input
+						type="text"
+						value={dayText}
+						onChange={(e) => handleDayChange(e.target.value)}
+						placeholder={isAdToBs ? 'Day' : 'गते'}
+						className="w-full p-2.5 sm:p-3 bg-white/60 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base"
+					/>
+
+					<button
+						onClick={handleConvert}
+						className="w-full p-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-md text-sm sm:text-base font-semibold shadow"
+					>
+						{isAdToBs ? "Convert" : "रूपान्तरण गर्नुहोस्"}
+					</button>
+				</div>
+
+				{warningText && (
+					<div className="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900 rounded text-center">
+						<p className="text-xs sm:text-sm text-yellow-800 dark:text-yellow-200 font-semibold">
+							{warningText}
+						</p>
+					</div>
+				)}
+
+				{resultText && (
+					<div className="mt-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 rounded text-center shadow">
+						<p className="text-lg sm:text-xl font-semibold text-indigo-800 dark:text-indigo-200">
+							{resultText}
+						</p>
+						{infoText && (
+							<p className="text-xs sm:text-sm text-yellow-600 dark:text-yellow-400 mt-2">
+								{infoText}
+							</p>
+						)}
+					</div>
+				)}
+			</div>
 		</div>
 	);
 };

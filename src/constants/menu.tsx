@@ -69,11 +69,18 @@ export const MENU_ITEMS: MenuItem[] = [
     fixed: true,
   },
   {
+    key: "rashifal",
+    label: "राशिफल",
+    icon: <Sparkles className="w-5 h-5" />,
+    page: RashifalPage,
+    fixed: true,
+  },
+  {
     key: "settings",
     label: NEPALI_LABELS.settings,
     icon: <Settings className="w-5 h-5" />,
     page: SettingsPage,
-    fixed: true,
+    fixed: false,
   },
   {
     key: "about",
@@ -89,13 +96,7 @@ export const MENU_ITEMS: MenuItem[] = [
     page: PrivacyPage,
     fixed: false,
   },
-  {
-    key: "rashifal",
-    label: "राशिफल",
-    icon: <Sparkles className="w-5 h-5" />,
-    page: RashifalPage,
-    fixed: false,
-  },
+
   {
     key: "facebook",
     label: "हाम्रो फेसबुक",

@@ -136,7 +136,7 @@ const MonthlyMuhurta: React.FC<MonthlyMuhurtaProps> = ({
 
             <div className="flex flex-col gap-2 p-4">
                 {muhurtaData.map((category) => (
-                    <div key={category.id} className="p-4 bg-indigo-50 dark:bg-gray-700/30 rounded-lg border border-blue-200 dark:border-gray-700 shadow-sm shadow-blue-100 dark:shadow-none hover:shadow-md transition-all">
+                    <div key={category.id} className="p-4 bg-indigo-50/30 dark:bg-gray-700/30 rounded-lg border border-blue-200 dark:border-gray-700 shadow-sm shadow-blue-100 dark:shadow-none hover:shadow-md transition-all">
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-red-500 dark:bg-red-400"></span>
@@ -152,7 +152,7 @@ const MonthlyMuhurta: React.FC<MonthlyMuhurtaProps> = ({
                                 {category.dates.map((day) => (
                                     <span
                                         key={day}
-                                        className="inline-flex items-center px-2.5 py-1 rounded-full text-[14px] font-semibold bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 shadow-sm"
+                                        className="inline-flex items-center px-2.5 py-1 rounded-full text-[14px] font-semibold bg-green-50 text-gray-900 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 shadow-sm"
                                         style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
                                     >
                                         {isBs ? toDevanagari(day) : day}

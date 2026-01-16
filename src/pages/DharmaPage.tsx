@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Sunrise, Sunset, BookOpen, Calendar, Flame, Music, ChevronLeft, Wind, Sparkles } from 'lucide-react';
+import { BlogWidget } from '../components/blog/BlogWidget';
+import { Blog } from '../data/blogs';
 import { getSunriseSunset } from '../lib/utils/lib';
 import { PujaSection } from '../components/dharma/PujaSection';
 import { MantraSection } from '../components/dharma/MantraSection';
@@ -12,12 +14,16 @@ type DharmaPageProps = {
 	onBack: () => void;
 	setIsDharmaResultsVisible: (isVisible: boolean) => void;
 	setDharmaBackAction: (action: () => void) => void;
+	onNavigate?: (view: string, params?: any) => void;
+	currentMonth?: number;
 };
 
 export const DharmaPage: React.FC<DharmaPageProps> = ({
 	onBack,
 	setIsDharmaResultsVisible,
-	setDharmaBackAction
+	setDharmaBackAction,
+	onNavigate,
+	currentMonth = 1
 }) => {
 	const [currentPage, setCurrentPage] = useState<PageType>('MENU');
 	const [sunrise, setSunrise] = useState<string | null>(null);
@@ -105,6 +111,19 @@ export const DharmaPage: React.FC<DharmaPageProps> = ({
 								<div className="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform"><Calendar size={28} /></div>
 								<h3 className="font-bold text-gray-800 dark:text-gray-100">चाडपर्व</h3>
 							</div>
+						</div>
+
+						{/* Blog Section */}
+						<div className="mt-8 mb-6">
+							<BlogWidget
+								currentBsMonth={currentMonth}
+								activeSystem="bs"
+								onBlogClick={(blog) => {
+									if (onNavigate) {
+										onNavigate('blog-detail', blog);
+									}
+								}}
+							/>
 						</div>
 					</div>
 				</div>

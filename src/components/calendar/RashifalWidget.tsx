@@ -4,16 +4,25 @@ import { Star } from 'lucide-react';
 import { generateDailyRashifal } from '../../lib/utils/rashifalLogic';
 
 interface RashifalWidgetProps {
-    date: string; // Display string e.g. "२०८२ पौष २७"
-    dateKey: string; // Unique key for seeding e.g. "2082-9-27"
+    date: string;
+    dateKey: string;
     tithi?: string;
     nakshatra?: string;
+    selectedRashi?: string;
 }
 
+const RASHI_KEY_MAP: Record<string, number> = {
+    'mesh': 0, 'brish': 1, 'mithun': 2, 'karkat': 3,
+    'simha': 4, 'kanya': 5, 'tula': 6, 'brishchik': 7,
+    'dhanu': 8, 'makar': 9, 'kumbha': 10, 'meen': 11
+};
 
-const RashiCard: React.FC<{ data: ReturnType<typeof generateDailyRashifal>[0] }> = ({ data }) => {
+const RashiCard: React.FC<{ data: ReturnType<typeof generateDailyRashifal>[0], index: number, isSelected?: boolean }> = ({ data, index, isSelected }) => {
     return (
-        <div className="bg-white dark:bg-gray-700/50 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-600 flex gap-4 items-start">
+        <div
+            id={`rashi-card-${index}`}
+            className={`bg-white dark:bg-gray-700/50 rounded-xl p-4 shadow-sm border flex gap-4 items-start transition-all duration-500 ${isSelected ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-gray-600'}`}
+        >
             {/* Left Side: Icon & Name */}
             <div className="flex flex-col items-center justify-center w-24 flex-shrink-0 border-r border-gray-100 dark:border-gray-600 pr-3">
                 <img
@@ -51,12 +60,30 @@ const RashiCard: React.FC<{ data: ReturnType<typeof generateDailyRashifal>[0] }>
     );
 };
 
-export const RashifalWidget: React.FC<RashifalWidgetProps> = ({ date, dateKey, tithi, nakshatra }) => {
+export const RashifalWidget: React.FC<RashifalWidgetProps> = ({ date, dateKey, tithi, nakshatra, selectedRashi }) => {
 
     // Generate data based on props
     const rashiData = useMemo(() => {
         return generateDailyRashifal(dateKey, tithi, nakshatra);
     }, [dateKey, tithi, nakshatra]);
+
+    React.useEffect(() => {
+        if (selectedRashi && RASHI_KEY_MAP[selectedRashi] !== undefined) {
+            const index = RASHI_KEY_MAP[selectedRashi];
+            const element = document.getElementById(`rashi-card-${index}`);
+            if (element) {
+                // Determine offset (e.g. sticky header height)
+                const headerOffset = 80;
+                const elementPosition = element.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                });
+            }
+        }
+    }, [selectedRashi]);
 
     return (
         <div className="w-full mt-6">
@@ -82,8 +109,13 @@ export const RashifalWidget: React.FC<RashifalWidgetProps> = ({ date, dateKey, t
 
             {/* List of Cards */}
             <div className="bg-[#fef8f6] dark:bg-gray-800 border-x border-b border-gray-200 dark:border-gray-700 rounded-b-xl p-4 space-y-3">
-                {rashiData.map((rashi) => (
-                    <RashiCard key={rashi.id} data={rashi} />
+                {rashiData.map((rashi, index) => (
+                    <RashiCard
+                        key={rashi.id}
+                        data={rashi}
+                        index={index}
+                        isSelected={selectedRashi ? RASHI_KEY_MAP[selectedRashi] === index : false}
+                    />
                 ))}
             </div>
         </div>

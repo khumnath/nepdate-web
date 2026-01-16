@@ -267,7 +267,7 @@
 
   /* Base mobile-first styles */
 
-  /* Base Calendar Day (Mobile & Global) */
+  /* Indigo-50 Base Background (V1) */
   .calendar-day {
     /* Base Sizing (Mobile) */
     max-width: 90px;
@@ -275,8 +275,8 @@
     padding: 2px;
     font-size: 0.75rem;
 
-    background-color: #f0fdf4;
-    /* Green-50 Global Background */
+    background-color: #eef2ff;
+    /* Indigo-50 Global Background */
     /* Uniform Faint Border */
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 6px;
@@ -306,18 +306,18 @@
     border-color: rgb(60, 70, 200);
   }
 
-  /* Green Border for Non-Holiday Events (Global) */
+  /* Indigo Border for Non-Holiday Events (Global) */
   .calendar-day.has-event:not(.holiday):not(.saturday) {
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     /* Uniform Border */
-    background-color: #f0fdf4;
-    /* Uniform Green Background */
+    background-color: #eef2ff;
+    /* Uniform Indigo Background */
   }
 
   .dark .calendar-day.has-event:not(.holiday):not(.saturday) {
-    background-color: rgba(6, 78, 59, 0.3) !important;
-    /* Dark Green Tint */
-    border-color: rgba(74, 222, 128, 0.5) !important;
+    background-color: rgba(49, 46, 129, 0.3) !important;
+    /* Dark Indigo Tint */
+    border-color: rgba(99, 102, 241, 0.5) !important;
   }
 
   /* Holiday Red Border (Global) */
@@ -350,10 +350,10 @@
 
   /* Today Highlight (Global) */
   .calendar-day.today {
-    border: 1px solid rgba(124, 58, 237, 0.3) !important;
-    /* Faint Violet */
+    border: 2px solid rgba(124, 58, 237, 0.6) !important;
+    /* Visible Violet */
     z-index: 30;
-    box-shadow: 0 0 10px rgba(124, 58, 237, 0.15);
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.25);
   }
 
   .dark .calendar-day.today {

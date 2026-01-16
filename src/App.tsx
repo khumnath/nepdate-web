@@ -7,6 +7,7 @@ import CalendarGrid from './components/calendar/CalendarGrid';
 import DayDetailsModal from './components/calendar/DayDetailsModal';
 import MonthlyEvents from './components/calendar/MonthlyEvents';
 import Footer from './components/calendar/Footer';
+import DesktopFooter from './components/layout/DesktopFooter';
 import AboutPopup from './pages/AboutPopup';
 import { Menu, X, Download, RefreshCcw, Moon, Sun } from 'lucide-react';
 import { MENU_ITEMS } from './constants/menu';
@@ -24,10 +25,15 @@ import { usePlatform } from './hooks/usePlatform';
 import { handleReloadApp } from './lib/utils/appUtils';
 import { toDevanagari } from './lib/utils/lib';
 import { RashifalWidget } from './components/calendar/RashifalWidget';
+import { SocialMedia } from './components/calendar/SocialMedia';
+import { AdsBanner } from './components/calendar/AdsBanner';
 
 // Lazy load pages for menu items are handled in MENU_ITEMS
 // DayDetailPage only loaded here
 import DayDetailPage from './pages/DayDetailPage';
+import { BlogWidget } from './components/blog/BlogWidget';
+import { BlogDetailPage } from './pages/BlogDetailPage';
+import { Blog } from './data/blogs';
 
 const App: React.FC = () => {
 	const { theme, toggleTheme, resetTheme } = useTheme();
@@ -75,6 +81,10 @@ const App: React.FC = () => {
 
 	const { isAndroidApp, handleTouchStart, handleTouchMove, handleTouchEnd } = usePlatform(isMenuOpen, setIsMenuOpen);
 
+	// State for view parameters (e.g. selected rashi for deep linking)
+	const [viewParams, setViewParams] = React.useState<any>(null);
+	const [activeBlog, setActiveBlog] = React.useState<Blog | null>(null);
+
 	const handleResetSettings = () => {
 		resetTheme();
 		resetLayoutSettings();
@@ -114,7 +124,7 @@ const App: React.FC = () => {
 		>
 			{/* Desktop TopNav */}
 			{desktopLayoutStyle === 'topbar' && (
-				<div className="w-full z-30 print:hidden hidden md:block border-b border-gray-200 dark:border-gray-700">
+				<div className="w-full sticky top-0 z-30 print:hidden hidden md:block border-b border-gray-200 dark:border-gray-700">
 					<DesktopTopNav
 						activeView={activeView}
 						activeSystem={activeSystem}
@@ -129,7 +139,7 @@ const App: React.FC = () => {
 			)}
 
 			{/* Mobile Header */}
-			<header className="px-4 py-2 dark:border-gray-700 bg-slate-200 dark:bg-gray-800 z-30 md:hidden">
+			<header className="sticky top-0 px-4 py-2 dark:border-gray-700 bg-slate-200 dark:bg-gray-800 z-30 md:hidden">
 				<div className="flex items-center justify-between mb-2">
 					<div className="flex items-center gap-2">
 						{menuStyle === 'slide' && (
@@ -201,16 +211,32 @@ const App: React.FC = () => {
 									<TodayWidget todayAd={initialToday} todayBs={initialTodayBs} todayDetails={todayDetails} onShowDetailsClick={handleShowDetailsClick} />
 									<RashifalWidget
 										date={`${toDevanagari(initialTodayBs.year)} ${initialTodayBs.monthName} ${toDevanagari(initialTodayBs.day)}`}
-										dateKey={`${initialTodayBs.year}-${initialTodayBs.month}-${initialTodayBs.day}`}
+										dateKey={`${initialTodayBs.year}-${initialTodayBs.monthIndex + 1}-${initialTodayBs.day}`}
 										tithi={todayDetails?.tithis?.[0]?.name}
 										nakshatra={todayDetails?.nakshatras?.[0]?.name}
-										moonRashi={todayDetails?.moonRashi}
 									/>
 								</aside>
 								<div className="md:col-span-8 flex flex-col">
 									<CalendarControls activeSystem={activeSystem} currentYear={currentYear} currentMonth={currentMonth} onYearChange={(y) => activeSystem === 'bs' ? setCurrentBsYear(y) : setCurrentAdYear(y)} onMonthChange={(m) => activeSystem === 'bs' ? setCurrentBsMonth(m) : setCurrentAdMonth(m)} onPrevMonth={() => changeMonth('prev')} onNextMonth={() => changeMonth('next')} onPrevYear={() => changeYear('prev')} onNextYear={() => changeYear('next')} />
 									<CalendarGrid activeSystem={activeSystem} currentYear={currentYear} currentMonth={currentMonth} onDayClick={handleDayClick} />
 									<MonthlyEvents activeSystem={activeSystem} currentYear={currentYear} currentMonth={currentMonth} />
+
+									{/* Mobile Only: Facebook (Side content made visible on mobile) */}
+									<div className="md:hidden flex flex-col gap-4 mt-2 mb-6">
+										<SocialMedia />
+									</div>
+
+									{/* Blog Section - Desktop & Mobile */}
+									<BlogWidget
+										currentBsMonth={currentBsMonth}
+										activeSystem={activeSystem}
+										onBlogClick={(blog) => {
+											setActiveBlog(blog);
+											setActiveView('blog-detail');
+										}}
+										onViewAll={() => setActiveView('dharma')}
+									/>
+
 								</div>
 							</main>
 						</>
@@ -219,13 +245,15 @@ const App: React.FC = () => {
 							window.history.pushState({}, '', '/');
 							setActiveView('calendar');
 						}} />
+					) : activeView === 'blog-detail' && activeBlog ? (
+						<BlogDetailPage blog={activeBlog} onBack={() => setActiveView('calendar')} />
 					) : (
 						(() => {
 							const activeItem = MENU_ITEMS.find(item => item.key === activeView);
 							if (activeItem && activeItem.page) {
 								const PageComponent = activeItem.page;
 								const commonProps = { onBack: () => setActiveView('calendar') };
-								let pageProps: any = { ...commonProps };
+								let pageProps: any = { ...commonProps, ...viewParams };
 
 								if (activeView === 'settings') {
 									pageProps = {
@@ -249,6 +277,13 @@ const App: React.FC = () => {
 								} else if (activeView === 'dharma') {
 									pageProps = {
 										...commonProps,
+										currentMonth: currentBsMonth,
+										onNavigate: (view: string, params?: any) => {
+											if (view === 'blog-detail') {
+												setActiveBlog(params);
+												setActiveView('blog-detail');
+											}
+										},
 										setIsDharmaResultsVisible,
 										setDharmaBackAction
 									};
@@ -256,7 +291,7 @@ const App: React.FC = () => {
 									pageProps = {
 										...commonProps,
 										date: `${toDevanagari(initialTodayBs.year)} ${initialTodayBs.monthName} ${toDevanagari(initialTodayBs.day)}`,
-										dateKey: `${initialTodayBs.year}-${initialTodayBs.month}-${initialTodayBs.day}`,
+										dateKey: `${initialTodayBs.year}-${initialTodayBs.monthIndex + 1}-${initialTodayBs.day}`,
 										tithi: todayDetails?.tithis?.[0]?.name,
 										nakshatra: todayDetails?.nakshatras?.[0]?.name
 									};
@@ -271,11 +306,22 @@ const App: React.FC = () => {
 							return null;
 						})()
 					)}
+					{/* Desktop Footer inside scrollable area to prevent layout breakage - Only on Home Page */}
+					{activeView === 'calendar' && (
+						<DesktopFooter onNavigate={(view, params) => {
+							setActiveView(view as any);
+							setViewParams(params || null);
+							if (view === 'calendar' && params && typeof params.month === 'number') {
+								setCurrentBsMonth(params.month);
+							}
+						}} />
+					)}
 				</div>
 			</div>
 
 			{/* Bottom menus */}
 			{menuStyle === 'slide' && <div className="fixed bottom-0 left-0 right-0 w-full bg-slate-200 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 print:hidden md:hidden"><Footer /></div>}
+
 			{menuStyle === 'tabs' && (
 				<div className="md:hidden print:hidden">
 					<BottomTabBar
