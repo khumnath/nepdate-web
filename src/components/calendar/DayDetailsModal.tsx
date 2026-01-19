@@ -1,6 +1,7 @@
 import { X, AlertTriangle, CheckCircle, Share2, Link as LinkIcon } from 'lucide-react';
 
-import { calculate, toDevanagari, getNepaliPeriod, toBikramSambat } from '../../lib/utils/lib';
+import { calculate, toDevanagari, toBikramSambat, getNepaliPeriod } from '../../lib/utils/lib';
+import { getAppBaseUrl } from '../../lib/utils/appUtils';
 import { NEPALI_LABELS } from '../../constants/constants';
 import { toast } from '../shared/toast';
 import React from 'react';
@@ -22,6 +23,7 @@ const formatPanchangaTime = (
 		// Parse the ISO string (UTC)
 		const eventDate = new Date(isoString);
 		// Shift the underlying time so that getUTCDay/Month matches Nepal's civil components.
+
 		const TZ_OFFSET_MS = 5.75 * 60 * 60 * 1000;
 		const eventDateNPT = new Date(eventDate.getTime() + TZ_OFFSET_MS);
 		const baseDateNPT = new Date(baseDate.getTime() + TZ_OFFSET_MS);
@@ -139,7 +141,7 @@ export const DayDetailsContent: React.FC<{ date: Date; onClose?: () => void; var
 
 	const handleShare = async () => {
 		try {
-			let url = window.location.origin;
+			let url = getAppBaseUrl();
 			let dateStr = '';
 
 			if (activeSystem === 'bs') {
@@ -150,7 +152,7 @@ export const DayDetailsContent: React.FC<{ date: Date; onClose?: () => void; var
 				const mStr = m < 10 ? `0${m}` : `${m}`;
 				const dStr = d < 10 ? `0${d}` : `${d}`;
 				dateStr = `${y}-${mStr}-${dStr}`;
-				url += `/bs?${dateStr}`;
+				url += `bs?${dateStr}`;
 			} else {
 				const y = date.getFullYear();
 				const m = date.getMonth() + 1;
@@ -158,7 +160,7 @@ export const DayDetailsContent: React.FC<{ date: Date; onClose?: () => void; var
 				const mStr = m < 10 ? `0${m}` : `${m}`;
 				const dStr = d < 10 ? `0${d}` : `${d}`;
 				dateStr = `${y}-${mStr}-${dStr}`;
-				url += `/ad?${dateStr}`;
+				url += `ad?${dateStr}`;
 			}
 
 			if (window.Android && typeof window.Android.share === 'function') {

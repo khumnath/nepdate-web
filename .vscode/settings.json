@@ -1,0 +1,64 @@
+{
+	// === Editor ===
+	"editor.tabSize": 2,
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": false,
+	"editor.formatOnSave": false,
+	"editor.minimap.enabled": false,
+	"editor.renderWhitespace": "selection",
+	"editor.wordWrap": "on",
+	"editor.colorDecorators": true,
+	// === Files ===
+	"files.autoSave": "onFocusChange",
+	"files.eol": "\n",
+	"files.trimTrailingWhitespace": true,
+	// === Terminal ===
+	"terminal.integrated.fontSize": 14,
+	"terminal.integrated.scrollback": 5000,
+	// === JSON ===
+	"json.schemaDownload.enable": true,
+	// === TypeScript/React ===
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"typescript.enablePromptUseWorkspaceTsdk": true,
+	"javascript.validate.enable": false,
+	"typescript.validate.enable": true,
+	// === Emmet for React/JSX ===
+	"emmet.includeLanguages": {
+		"javascript": "javascriptreact",
+		"typescript": "typescriptreact"
+	},
+	"emmet.triggerExpansionOnTab": true,
+	// === Prettier / Format ===
+	"prettier.requireConfig": true,
+	"prettier.endOfLine": "lf",
+	// === Files Associations ===
+	"files.associations": {
+		"*.tsx": "typescriptreact",
+		"*.ts": "typescript"
+	},
+	// === CSS / Tailwind ===
+	"tailwindCSS.includeLanguages": {
+		"typescript": "javascript",
+		"typescriptreact": "javascript"
+	},
+	"tailwindCSS.emmetCompletions": true,
+	"tailwindCSS.colorDecorators": true,
+	"css.lint.unknownAtRules": "ignore",
+	"tailwindCSS.experimental.classRegex": [
+		"tw`([^`]*)`",
+		"className=\"([^\"]*)\""
+	],
+	// === Suggestions ===
+	"editor.quickSuggestions": {
+		"other": true,
+		"comments": false,
+		"strings": true
+	},
+	"editor.suggestSelection": "first",
+	"editor.suggest.showIcons": true,
+	// === Explorer ===
+	"explorer.confirmDelete": false,
+	"explorer.openEditors.visible": 1,
+	// === Theme ===
+	"workbench.colorTheme": "Default Dark+"
+}

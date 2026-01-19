@@ -26,7 +26,7 @@ export const NEPALI_LABELS = {
   mainTitle: "जन्म कुण्डली",
   Nepdate_calendar: "नेपडेट क्यालेन्डर",
   Software_name: "नेपडेट ज्योतिष",
-  Software_version: `${__APP_VERSION__}`,
+  Software_version: `${typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'}`,
   subTitle: "वैदिक ज्योतिष सफ्टवेयर",
   tithiWarning: "⚠️पञ्चाङ्ग सुर्योदयकालीन समयको देखाईएको छ। बिस्तृत रुपमा हेर्न कुण्डली हेर्नुहोस।",
   tithiWarningEn: " ⚠️tithis are calculated at sunrise. If a tithi spans multiple days, it is always shown on the day it falls at sunrise.",
@@ -193,9 +193,9 @@ export const NEPALI_LABELS = {
   deleteConfirm: "के तपाईं यो कुण्डली हटाउन निश्चित हुनुहुन्छ?",
   savedOn: "सुरक्षित गरिएको:",
   view: "हेर्नुहोस्",
-	radio: "रेडियो",
-	privacyPolicy: "गोपनीयता नीति",
-	calendar: "पात्रो"
+  radio: "रेडियो",
+  privacyPolicy: "गोपनीयता नीति",
+  calendar: "पात्रो"
 };
 
 export const NEPALI_PLANETS: { [key: string]: string } = {
@@ -328,7 +328,7 @@ export const NEPALI_BS_MONTHS: string[] = [
 ];
 
 export const lunar_MonthNames: string[] = [
-   "वैशाख", "ज्येष्ठ", "आषाढ", "श्रावण", "भाद्र", "आश्विन", "कार्तिक", "मार्गशीर्ष", "पौष", "माघ", "फाल्गुन", "चैत्र"
+  "वैशाख", "ज्येष्ठ", "आषाढ", "श्रावण", "भाद्र", "आश्विन", "कार्तिक", "मार्गशीर्ष", "पौष", "माघ", "फाल्गुन", "चैत्र"
 ];
 
 export const NEPALI_BS_MONTHSShort = [
@@ -487,12 +487,12 @@ export const NEPALI_PAYA: Record<string, string> = {
 
 // Fix: Add GRAHA_MAITRI constant
 export const GRAHA_MAITRI: Record<string, Record<string, 'मित्र' | 'तटस्थ' | 'शत्रु'>> = {
-  SUN:    { SUN: 'मित्र', MOON: 'मित्र', MARS: 'मित्र', MERCURY: 'तटस्थ', JUPITER: 'मित्र', VENUS: 'शत्रु', SATURN: 'शत्रु' },
-  MOON:   { SUN: 'मित्र', MOON: 'मित्र', MARS: 'तटस्थ', MERCURY: 'मित्र', JUPITER: 'तटस्थ', VENUS: 'तटस्थ', SATURN: 'तटस्थ' },
-  MARS:   { SUN: 'मित्र', MOON: 'मित्र', MARS: 'मित्र', MERCURY: 'शत्रु', JUPITER: 'मित्र', VENUS: 'तटस्थ', SATURN: 'तटस्थ' },
-  MERCURY:{ SUN: 'मित्र', MOON: 'शत्रु', MARS: 'तटस्थ', MERCURY: 'मित्र', JUPITER: 'तटस्थ', VENUS: 'मित्र', SATURN: 'मित्र' },
-  JUPITER:{ SUN: 'मित्र', MOON: 'मित्र', MARS: 'मित्र', MERCURY: 'तटस्थ', JUPITER: 'मित्र', VENUS: 'शत्रु', SATURN: 'तटस्थ' },
-  VENUS:  { SUN: 'तटस्थ', MOON: 'शत्रु', MARS: 'तटस्थ', MERCURY: 'मित्र', JUPITER: 'तटस्थ', VENUS: 'मित्र', SATURN: 'मित्र' },
+  SUN: { SUN: 'मित्र', MOON: 'मित्र', MARS: 'मित्र', MERCURY: 'तटस्थ', JUPITER: 'मित्र', VENUS: 'शत्रु', SATURN: 'शत्रु' },
+  MOON: { SUN: 'मित्र', MOON: 'मित्र', MARS: 'तटस्थ', MERCURY: 'मित्र', JUPITER: 'तटस्थ', VENUS: 'तटस्थ', SATURN: 'तटस्थ' },
+  MARS: { SUN: 'मित्र', MOON: 'मित्र', MARS: 'मित्र', MERCURY: 'शत्रु', JUPITER: 'मित्र', VENUS: 'तटस्थ', SATURN: 'तटस्थ' },
+  MERCURY: { SUN: 'मित्र', MOON: 'शत्रु', MARS: 'तटस्थ', MERCURY: 'मित्र', JUPITER: 'तटस्थ', VENUS: 'मित्र', SATURN: 'मित्र' },
+  JUPITER: { SUN: 'मित्र', MOON: 'मित्र', MARS: 'मित्र', MERCURY: 'तटस्थ', JUPITER: 'मित्र', VENUS: 'शत्रु', SATURN: 'तटस्थ' },
+  VENUS: { SUN: 'तटस्थ', MOON: 'शत्रु', MARS: 'तटस्थ', MERCURY: 'मित्र', JUPITER: 'तटस्थ', VENUS: 'मित्र', SATURN: 'मित्र' },
   SATURN: { SUN: 'शत्रु', MOON: 'शत्रु', MARS: 'शत्रु', MERCURY: 'मित्र', JUPITER: 'तटस्थ', VENUS: 'मित्र', SATURN: 'मित्र' }
 };
 

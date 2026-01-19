@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'; // Import useEffect
+import { useState, useEffect } from 'react';
 import { Music, ChevronLeft, ChevronDown, BookOpen } from 'lucide-react';
 import { MANTRA_DATA, STOTRA_DATA } from '../../data/static/pageContents';
 import type { ContentBlock } from '../../types/types';

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 type Lang = "en" | "ne";
 
@@ -58,7 +58,7 @@ const content: Record<Lang, LanguageContent> = {
         ],
       },
     ],
-  kundaliTitle: "Kundali page — what data we use and why",
+    kundaliTitle: "Kundali page — what data we use and why",
     kundaliBullets: [
       "Fields used: If you provide a name, birth date, birth time, and location on the Kundali page, Nepdate uses those inputs only to generate the Kundali display for your device.",
       "Location sources: You may enter location manually or pick it via the app’s map service. The app’s MAO does not have location permission.",
@@ -123,7 +123,7 @@ const content: Record<Lang, LanguageContent> = {
         ],
       },
     ],
-  kundaliTitle: "कुण्डली पृष्ठ — हामी कुन डाटा प्रयोग गर्छौं र किन",
+    kundaliTitle: "कुण्डली पृष्ठ — हामी कुन डाटा प्रयोग गर्छौं र किन",
     kundaliBullets: [
       "प्रयोग गरिएका फिल्डहरू: यदि तपाईँले नाम, जन्म मिति, जन्म समय, र स्थान कुण्डली पृष्ठमा दिनुहुन्छ भने Nepdate ті इनपुटहरू मात्र तपाईँको उपकरणमा कुण्डली देखाउन प्रयोग गर्छ।",
       "स्थान स्रोतहरू: स्थान तपाईँले म्यानुअल रूपमा प्रविष्ट गर्न सक्नुहुन्छ वा एपको नक्सा सेवाबाट छान्न सक्नुहुन्छ। एपको MAO लाई स्थान अनुमति छैन।",
@@ -168,7 +168,7 @@ const content: Record<Lang, LanguageContent> = {
   },
 };
 
-export default function PrivacyPage(): JSX.Element {
+export default function PrivacyPage() {
   const [lang, setLang] = useState<Lang>("en");
   const isNe: boolean = lang === "ne";
   const currentContent: LanguageContent = content[lang];
@@ -177,8 +177,8 @@ export default function PrivacyPage(): JSX.Element {
   const linkClass = "text-blue-600 hover:underline hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold";
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <header className="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 dark:from-blue-900 dark:via-blue-800 dark:to-blue-700 py-6 px-4 shadow-md mb-8">
+    <div className="h-full bg-slate-50 dark:bg-slate-900 flex flex-col overflow-hidden">
+      <header className="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 dark:from-blue-900 dark:via-blue-800 dark:to-blue-700 py-6 px-4 shadow-md shrink-0">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight drop-shadow-sm text-center sm:text-left">
             {currentContent.title}
@@ -202,173 +202,175 @@ export default function PrivacyPage(): JSX.Element {
         </div>
       </header>
 
-      <div className="mx-auto max-w-4xl px-4 pb-12">
-        <div className="mb-8">
-          <p className="text-base sm:text-lg text-slate-700 dark:text-slate-200 text-center">
-            {currentContent.intro}
-            {/* GitHub and Website links */}
-            <br />
-            <a href="https://github.com/khumnath/nepdate-web" target="_blank" rel="noopener noreferrer" className={linkClass}>{currentContent.githubLabel || "GitHub"}</a>
-            {" | "}
-            <a href="https://nepdate.khumnath.com.np" target="_blank" rel="noopener noreferrer" className={linkClass}>{currentContent.siteLabel || "Website"}</a>
-          </p>
-        </div>
+      <div className="flex-1 overflow-y-auto w-full">
+        <div className="mx-auto max-w-4xl px-4 py-8 pb-20">
+          <div className="mb-8">
+            <p className="text-base sm:text-lg text-slate-700 dark:text-slate-200 text-center">
+              {currentContent.intro}
+              {/* GitHub and Website links */}
+              <br />
+              <a href="https://github.com/khumnath/nepdate-web" target="_blank" rel="noopener noreferrer" className={linkClass}>{currentContent.githubLabel || "GitHub"}</a>
+              {" | "}
+              <a href="https://nepdate.khumnath.com.np" target="_blank" rel="noopener noreferrer" className={linkClass}>{currentContent.siteLabel || "Website"}</a>
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <article className="lg:col-span-2 space-y-8">
-            {/* Summary Section */}
-            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                {currentContent.summaryTitle}
-              </h2>
-              <ul className="mt-2 space-y-2 list-disc list-inside text-base text-slate-700 dark:text-slate-300">
-                {currentContent.summaryBullets.map((b: string, i: number) => (
-                  <li key={i}>{b}</li>
-                ))}
-              </ul>
-            </section>
-
-            {/* Details Section */}
-            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                {currentContent.detailsTitle}
-              </h2>
-              {currentContent.sections.map((section, idx) => (
-                <div key={idx} className="mb-4">
-                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-1">{section.heading}</h3>
-                  {section.paragraphs.map((p, j) => (
-                    <p key={j} className="text-sm text-slate-700 dark:text-slate-300 mb-2">{p}</p>
-                  ))}
-                </div>
-              ))}
-            </section>
-
-            {/* Kundali Section */}
-            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                {currentContent.kundaliTitle}
-              </h2>
-              <ul className="mt-2 space-y-2 list-disc list-inside text-base text-slate-700 dark:text-slate-300">
-                {currentContent.kundaliBullets.map((b, i) => (
-                  <li key={i}>{b}</li>
-                ))}
-              </ul>
-            </section>
-
-            {/* Network Section */}
-            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                {currentContent.networkTitle}
-              </h2>
-              {currentContent.networkParagraphs.map((p, i) => (
-                <p key={i} className="text-sm text-slate-700 dark:text-slate-300 mb-2">{p}</p>
-              ))}
-            </section>
-
-            {/* Accuracy Section */}
-            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                {currentContent.accuracyTitle}
-              </h2>
-              {currentContent.accuracyParagraphs.map((p, i) => (
-                <p key={i} className="text-sm text-slate-700 dark:text-slate-300 mb-2">{p}</p>
-              ))}
-            </section>
-
-            {/* Security Section */}
-            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                {currentContent.securityTitle}
-              </h2>
-              {currentContent.securityParagraphs.map((p, i) => (
-                <p key={i} className="text-sm text-slate-700 dark:text-slate-300 mb-2">{p}</p>
-              ))}
-            </section>
-
-            {/* Choices Section */}
-            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                {currentContent.choicesTitle}
-              </h2>
-              <ul className="mt-2 space-y-2 list-disc list-inside text-base text-slate-700 dark:text-slate-300">
-                {currentContent.choicesBullets.map((b, i) => (
-                  <li key={i}>{b}</li>
-                ))}
-              </ul>
-            </section>
-
-            {/* Children Section */}
-            {currentContent.childrenTitle && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <article className="lg:col-span-2 space-y-8">
+              {/* Summary Section */}
               <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
                 <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                  {currentContent.childrenTitle}
+                  {currentContent.summaryTitle}
+                </h2>
+                <ul className="mt-2 space-y-2 list-disc list-inside text-base text-slate-700 dark:text-slate-300">
+                  {currentContent.summaryBullets.map((b: string, i: number) => (
+                    <li key={i}>{b}</li>
+                  ))}
+                </ul>
+              </section>
+
+              {/* Details Section */}
+              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                  {currentContent.detailsTitle}
+                </h2>
+                {currentContent.sections.map((section, idx) => (
+                  <div key={idx} className="mb-4">
+                    <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-1">{section.heading}</h3>
+                    {section.paragraphs.map((p, j) => (
+                      <p key={j} className="text-sm text-slate-700 dark:text-slate-300 mb-2">{p}</p>
+                    ))}
+                  </div>
+                ))}
+              </section>
+
+              {/* Kundali Section */}
+              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                  {currentContent.kundaliTitle}
+                </h2>
+                <ul className="mt-2 space-y-2 list-disc list-inside text-base text-slate-700 dark:text-slate-300">
+                  {currentContent.kundaliBullets.map((b, i) => (
+                    <li key={i}>{b}</li>
+                  ))}
+                </ul>
+              </section>
+
+              {/* Network Section */}
+              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                  {currentContent.networkTitle}
+                </h2>
+                {currentContent.networkParagraphs.map((p, i) => (
+                  <p key={i} className="text-sm text-slate-700 dark:text-slate-300 mb-2">{p}</p>
+                ))}
+              </section>
+
+              {/* Accuracy Section */}
+              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                  {currentContent.accuracyTitle}
+                </h2>
+                {currentContent.accuracyParagraphs.map((p, i) => (
+                  <p key={i} className="text-sm text-slate-700 dark:text-slate-300 mb-2">{p}</p>
+                ))}
+              </section>
+
+              {/* Security Section */}
+              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                  {currentContent.securityTitle}
+                </h2>
+                {currentContent.securityParagraphs.map((p, i) => (
+                  <p key={i} className="text-sm text-slate-700 dark:text-slate-300 mb-2">{p}</p>
+                ))}
+              </section>
+
+              {/* Choices Section */}
+              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                  {currentContent.choicesTitle}
+                </h2>
+                <ul className="mt-2 space-y-2 list-disc list-inside text-base text-slate-700 dark:text-slate-300">
+                  {currentContent.choicesBullets.map((b, i) => (
+                    <li key={i}>{b}</li>
+                  ))}
+                </ul>
+              </section>
+
+              {/* Children Section */}
+              {currentContent.childrenTitle && (
+                <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
+                  <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                    {currentContent.childrenTitle}
+                  </h2>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
+                    {lang === 'en'
+                      ? "Nepdate is not designed for use by children under 13. We do not knowingly collect or store any personal information from children. If you believe a child has provided personal data, please contact us so we can remove it."
+                      : "Nepdate १३ वर्षभन्दा कम उमेरका बालबालिकाद्वारा प्रयोग गर्नका लागि डिजाइन गरिएको होइन। हामीले जानाजानी बालबालिकाबाट व्यक्तिगत जानकारी सङ्कलन गर्दैनौं। यदि कुनै बालबालिकाले व्यक्तिगत डाटा दिएको छ भन्ने लागेमा कृपया हामीलाई सम्पर्क गर्नुहोस् ताकि हामी त्यसलाई हटाउन सकौं।"
+                    }
+                  </p>
+                </section>
+              )}
+
+              {/* Open Source Section */}
+              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                  {currentContent.openSourceTitle}
                 </h2>
                 <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
-                  {lang === 'en'
-                    ? "Nepdate is not designed for use by children under 13. We do not knowingly collect or store any personal information from children. If you believe a child has provided personal data, please contact us so we can remove it."
-                    : "Nepdate १३ वर्षभन्दा कम उमेरका बालबालिकाद्वारा प्रयोग गर्नका लागि डिजाइन गरिएको होइन। हामीले जानाजानी बालबालिकाबाट व्यक्तिगत जानकारी सङ्कलन गर्दैनौं। यदि कुनै बालबालिकाले व्यक्तिगत डाटा दिएको छ भन्ने लागेमा कृपया हामीलाई सम्पर्क गर्नुहोस् ताकि हामी त्यसलाई हटाउन सकौं।"
-                  }
+                  {currentContent.openSourceParagraph}
+                  <br />
+                  <a href="https://github.com/khumnath/nepdate-web" target="_blank" rel="noopener noreferrer" className={linkClass}>{currentContent.githubLabel || "GitHub"}</a>
+                  {" | "}
+                  <a href="https://nepdate.khumnath.com.np" target="_blank" rel="noopener noreferrer" className={linkClass}>{currentContent.siteLabel || "Website"}</a>
                 </p>
               </section>
-            )}
 
-            {/* Open Source Section */}
-            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                {currentContent.openSourceTitle}
-              </h2>
-              <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
-                {currentContent.openSourceParagraph}
-                <br />
-                <a href="https://github.com/khumnath/nepdate-web" target="_blank" rel="noopener noreferrer" className={linkClass}>{currentContent.githubLabel || "GitHub"}</a>
-                {" | "}
-                <a href="https://nepdate.khumnath.com.np" target="_blank" rel="noopener noreferrer" className={linkClass}>{currentContent.siteLabel || "Website"}</a>
-              </p>
-            </section>
+              {/* Changes Section */}
+              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                  {currentContent.changesTitle}
+                </h2>
+                <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
+                  {currentContent.changesParagraph}
+                </p>
+              </section>
+            </article>
 
-            {/* Changes Section */}
-            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                {currentContent.changesTitle}
-              </h2>
-              <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
-                {currentContent.changesParagraph}
-              </p>
-            </section>
-          </article>
-
-          <aside className="space-y-6">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
-              <h4 className="text-base font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                {currentContent.contactTitle}
-              </h4>
-              <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
-                {currentContent.contactParagraph}
-              </p>
-              <div className="mt-4 flex gap-4">
-                <a href="https://github.com/khumnath/nepdate-web" target="_blank" rel="noopener noreferrer" className={linkClass}>
-                  <svg className="inline-block mr-1" width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.415-4.042-1.415-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.084-.729.084-.729 1.205.084 1.84 1.236 1.84 1.236 1.07 1.834 2.809 1.304 3.495.997.108-.775.418-1.305.762-1.605-2.665-.305-5.466-1.334-5.466-5.931 0-1.31.469-2.381 1.236-3.221-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.553 3.297-1.23 3.297-1.23.653 1.653.242 2.873.119 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.803 5.624-5.475 5.921.43.372.823 1.102.823 2.222 0 1.606-.014 2.898-.014 3.293 0 .322.216.694.825.576C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-                  {currentContent.githubLabel || "GitHub"}
-                </a>
-                <a href="https://nepdate.khumnath.com.np" target="_blank" rel="noopener noreferrer" className={linkClass}>
-                  <svg className="inline-block mr-1" width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 5.523 4.477 10 10 10s10-4.477 10-10c0-5.523-4.477-10-10-10zm0 18c-4.411 0-8-3.589-8-8 0-1.657.672-3.156 1.757-4.243l10.486 10.486A7.963 7.963 0 0 1 12 20zm6.243-3.757L7.757 5.757A7.963 7.963 0 0 1 12 4c4.411 0 8 3.589 8 8 0 1.657-.672 3.156-1.757 4.243z"/></svg>
-                  {currentContent.siteLabel || "Website"}
-                </a>
+            <aside className="space-y-6">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm">
+                <h4 className="text-base font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                  {currentContent.contactTitle}
+                </h4>
+                <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
+                  {currentContent.contactParagraph}
+                </p>
+                <div className="mt-4 flex gap-4">
+                  <a href="https://github.com/khumnath/nepdate-web" target="_blank" rel="noopener noreferrer" className={linkClass}>
+                    <svg className="inline-block mr-1" width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.415-4.042-1.415-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.084-.729.084-.729 1.205.084 1.84 1.236 1.84 1.236 1.07 1.834 2.809 1.304 3.495.997.108-.775.418-1.305.762-1.605-2.665-.305-5.466-1.334-5.466-5.931 0-1.31.469-2.381 1.236-3.221-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.553 3.297-1.23 3.297-1.23.653 1.653.242 2.873.119 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.803 5.624-5.475 5.921.43.372.823 1.102.823 2.222 0 1.606-.014 2.898-.014 3.293 0 .322.216.694.825.576C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" /></svg>
+                    {currentContent.githubLabel || "GitHub"}
+                  </a>
+                  <a href="https://nepdate.khumnath.com.np" target="_blank" rel="noopener noreferrer" className={linkClass}>
+                    <svg className="inline-block mr-1" width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 5.523 4.477 10 10 10s10-4.477 10-10c0-5.523-4.477-10-10-10zm0 18c-4.411 0-8-3.589-8-8 0-1.657.672-3.156 1.757-4.243l10.486 10.486A7.963 7.963 0 0 1 12 20zm6.243-3.757L7.757 5.757A7.963 7.963 0 0 1 12 4c4.411 0 8 3.589 8 8 0 1.657-.672 3.156-1.757 4.243z" /></svg>
+                    {currentContent.siteLabel || "Website"}
+                  </a>
+                </div>
               </div>
-            </div>
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 text-sm text-slate-600 dark:text-slate-400 shadow-sm">
-              <p>
-                {isNe
-                  ? "नीति अन्तर्गत कुनै पनि शंका वा सुझावको लागि माथिको सम्पर्क प्रयोग गर्नुहोस्।"
-                  : "For any questions or suggestions about this policy, use the contact methods above."}
-              </p>
-            </div>
-          </aside>
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 text-sm text-slate-600 dark:text-slate-400 shadow-sm">
+                <p>
+                  {isNe
+                    ? "नीति अन्तर्गत कुनै पनि शंका वा सुझावको लागि माथिको सम्पर्क प्रयोग गर्नुहोस्।"
+                    : "For any questions or suggestions about this policy, use the contact methods above."}
+                </p>
+              </div>
+            </aside>
+          </div>
         </div>
-      </div>
-      {/* Last edited date at bottom */}
-      <div className="text-center text-xs text-slate-500 dark:text-slate-400 mt-12 mb-2">
-        {lang === 'en' ? lastEdited : 'अन्तिम अद्यावधिक: २२ नोभेम्बर २०२५'}
+        {/* Last edited date at bottom */}
+        <div className="text-center text-xs text-slate-500 dark:text-slate-400 mt-12 mb-2 pb-8">
+          {lang === 'en' ? lastEdited : 'अन्तिम अद्यावधिक: २२ नोभेम्बर २०२५'}
+        </div>
       </div>
     </div>
   );

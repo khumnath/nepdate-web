@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { toDevanagari, fromDevanagari, getMonthWarning } from '../../lib/utils/lib';
 import { NEPALI_BS_MONTHS, GREGORIAN_MONTHS } from '../../constants/constants';
+import { TimezoneWarning } from '../common/TimezoneWarning';
 
 interface CalendarControlsProps {
     activeSystem: 'bs' | 'ad';
@@ -48,7 +49,7 @@ const CalendarControls: React.FC<CalendarControlsProps> = ({
     };
 
     return (
-        <div className="flex flex-col items-center justify-between p-2 bg-slate-100 dark:bg-gray-700/50 flex-shrink-0 w-full">
+        <div className="flex flex-col items-center justify-between px-2 pt-2  bg-slate-100 dark:bg-gray-700/50 flex-shrink-0 w-full">
             {/* Navigation row with equal distributed spacing */}
             <div
                 className="flex w-full items-center justify-between flex-nowrap"
@@ -101,8 +102,8 @@ const CalendarControls: React.FC<CalendarControlsProps> = ({
                                 : String(currentYear)
                     }
                     onChange={handleYearInputChange}
-                    className="sm:flex-none h-9 sm:h-10 w-16 sm:w-20 px-2 text-center bg-slate-200 dark:bg-gray-700 border border-blue-300 
-                     dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+                    className="sm:flex-none h-9 sm:h-10 w-16 sm:w-20 px-2 text-center bg-slate-200 dark:bg-gray-700 border border-blue-300
+                     dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent
                      text-sm sm:text-base text-blue-900 dark:text-gray-100"
                     style={
                         activeSystem === 'bs'
@@ -147,6 +148,7 @@ const CalendarControls: React.FC<CalendarControlsProps> = ({
                     {warning.message}
                 </div>
             )}
+                <TimezoneWarning activeSystem={activeSystem} closable={false} compact={true} className="mt-2" />
         </div>
     );
 };

@@ -93,9 +93,9 @@ export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnTo
           {NEPALI_LABELS.printedDate}: {formattedDate} {timeFormatted}
         </div>
         <div className="mt-2 text-xs text-orange-600 dark:text-orange-400 text-center px-2"
-                >
-                    {NEPALI_LABELS.kundaliDisclaimer}
-                </div>
+        >
+          {NEPALI_LABELS.kundaliDisclaimer}
+        </div>
       </header>
 
       {/* Birth details + planets */}
@@ -174,7 +174,7 @@ export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnTo
       </div>
 
       {/* Fixed return & print buttons */}
-      <div className="fixed bottom-16 left-1/2 transform -translate-x-1/2 z-[40] print:hidden print:h-0 w-full px-4 text-center">
+      <div className="mt-8 mb-8 w-full px-4 text-center print:hidden">
         <div className="flex gap-4 justify-center">
           <button
             className="bg-blue-600 dark:bg-blue-600 text-white px-6 py-2 rounded shadow-md hover:bg-blue-700 transition flex items-center gap-2"
@@ -184,7 +184,7 @@ export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnTo
           </button>
           <button
             className="bg-gray-600 dark:bg-gray-500 text-white px-6 py-2 rounded shadow-md hover:bg-gray-700 transition flex items-center gap-2"
-             onClick={handlePrint}
+            onClick={handlePrint}
           >
             <PrintIcon className="w-4 h-4" /> {NEPALI_LABELS.print}
           </button>

@@ -23,18 +23,33 @@
 
 @layer components {
 
-@keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
+  /* Custom Shadow Utilities */
+  .shadow-card-custom {
+    --tw-shadow: 0 4px 12px -2px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
   }
-  to {
-    transform: rotate(360deg);
-  }
-}
 
-.rotate-slow {
-  animation: spin-slow 10s linear infinite;
-}
+  .shadow-blue-50\/50 {
+    --tw-shadow-color: rgb(54 106 173 / 50%);
+  }
+
+  .bg-card-cream {
+    background-color: rgb(246 230 164);
+  }
+
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .rotate-slow {
+    animation: spin-slow 10s linear infinite;
+  }
 
   /* Kundali Chart Styles */
   .birth-chart-wrapper {
@@ -251,76 +266,211 @@
   }
 
   /* Base mobile-first styles */
+
+  /* Indigo-50 Base Background (V1) */
   .calendar-day {
-    @apply relative bg-indigo-200/25 dark:bg-gray-700 border border-blue-200 dark:border-gray-600 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 flex flex-col;
+    /* Base Sizing (Mobile) */
     max-width: 90px;
     min-height: 50px;
-    font-size: 0.75rem;
     padding: 2px;
+    font-size: 0.75rem;
+
+    background-color: #eef2ff;
+    /* Indigo-50 Global Background */
+    /* Uniform Faint Border */
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    overflow: hidden;
+    margin: 0 auto;
+    width: 100%;
+
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Today highlight */
-  .calendar-day.today {
-    @apply ring-[1.5px] ring-blue-600 dark:ring-blue-400;
+  .calendar-day:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    z-index: 10;
+    border-color: rgba(0, 0, 0, 0.15);
   }
 
-  /* Saturday styling */
+  .dark .calendar-day {
+    background-color: #1e293b;
+    border-color: rgb(60, 70, 200);
+  }
+
+  /* Indigo Border for Non-Holiday Events (Global) */
+  .calendar-day.has-event:not(.holiday):not(.saturday) {
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    /* Uniform Border */
+    background-color: #eef2ff;
+    /* Uniform Indigo Background */
+  }
+
+  .dark .calendar-day.has-event:not(.holiday):not(.saturday) {
+    background-color: rgba(49, 46, 129, 0.3) !important;
+    /* Dark Indigo Tint */
+    border-color: rgba(99, 102, 241, 0.5) !important;
+  }
+
+  /* Holiday Red Border (Global) */
+  .calendar-day.holiday:not(.saturday) {
+    background-color: #fef2f2;
+    /* Red-50 Background */
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    /* Uniform Border */
+  }
+
+  .dark .calendar-day.holiday:not(.saturday) {
+    background-color: rgba(127, 29, 29, 0.3) !important;
+    /* Dark Red Tint */
+    border-color: rgba(220, 38, 38, 0.5) !important;
+  }
+
+  /* Saturday Special (Global) */
   .calendar-day.saturday {
-    @apply bg-red-500/25 dark:bg-brown-red border-red-300 dark:border-light-gray;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    /* Uniform Border */
+    background-color: #fef2f2;
+    /* Red-50 Background */
   }
 
-  .calendar-day.saturday .main-number {
-    @apply text-red-600 dark:text-rose-400;
+  .dark .calendar-day.saturday {
+    border-color: rgba(239, 68, 68, 0.5) !important;
+    background-color: rgba(127, 29, 29, 0.3) !important;
+    /* Dark Red Tint */
   }
 
-  /* Holiday border */
-  .calendar-day.holiday {
-    @apply border-orange-300 dark:border-yellow-800;
+  /* Today Highlight (Global) */
+  .calendar-day.today {
+    border: 2px solid rgba(124, 58, 237, 0.6) !important;
+    /* Visible Violet */
+    z-index: 30;
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.25);
   }
 
-  /* Main number */
+  .dark .calendar-day.today {
+    border-color: rgba(139, 92, 246, 0.7) !important;
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.25);
+  }
+
+  /* Typography (Global Visuals) */
   .main-number {
-    @apply text-base mt-auto font-bold leading-none text-blue-900 dark:text-gray-300 text-center mb-auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    text-align: center;
+
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    /* Darker Slate for contrast */
+    font-family: 'Poppins', 'Noto Sans Devanagari', sans-serif;
+    line-height: 1.1;
   }
 
-  /* Sub-number */
+  .dark .main-number {
+    color: #e2e8f0;
+  }
+
+  /* Holiday/Saturday Text Color (Global) */
+  .calendar-day.holiday .main-number,
+  .calendar-day.saturday .main-number {
+    color: #ef4444;
+  }
+
+  .dark .calendar-day.holiday .main-number,
+  .dark .calendar-day.saturday .main-number {
+    color: #f87171;
+  }
+
+  /* Sub-number (Global) */
   .sub-number {
-    @apply absolute top-0.5 right-0.5 text-[10px] text-gray-500 dark:text-gray-400 font-medium;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 10px;
+    font-weight: 500;
+    color: #64748b;
   }
 
-  /* Tithi display */
+  .dark .sub-number {
+    color: #94a3b8;
+  }
+
+  /* Tithi Display (Global) */
   .tithi-display {
-    @apply text-[9px] text-gray-600 dark:text-stone-400 mt-auto text-left font-medium leading-3;
+    margin-top: auto;
+    font-size: 9px;
+    font-weight: 500;
+    text-align: left;
+    color: #475569;
     display: flex;
     align-items: center;
-    /* Vertically centers icon with text */
     gap: 2px;
   }
 
+  .dark .tithi-display {
+    color: #cbd5e1;
+  }
+
   .tithi-display.special {
-    @apply font-semibold;
+    font-weight: 600;
   }
 
   .tithi-display.purnima {
-    @apply text-yellow-700 dark:text-yellow-400;
+    color: #a16207;
+  }
+
+  .dark .tithi-display.purnima {
+    color: #facc15;
   }
 
   .tithi-display.amavasya {
-    @apply text-purple-700 dark:text-purple-400;
+    color: #7e22ce;
   }
 
+  .dark .tithi-display.amavasya {
+    color: #c084fc;
+  }
 
   /* Weekday header */
   .weekday {
-    @apply text-center font-semibold text-xs uppercase py-1 text-white dark:text-gray-300 rounded-sm;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 4px 0;
+    color: white;
+    border-radius: 4px;
   }
 
-  /* Grid layout for mobile */
+  .dark .weekday {
+    color: #d1d5db;
+  }
+
+  /* Grid layout default */
   .calendar-grid {
     grid-auto-rows: auto;
+    gap: 2px;
   }
 
-  /* Responsive overrides */
+  .event-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #22c55e;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+  }
+
+  /* Responsive Mobile Overrides */
   @media (max-width: 499px) {
     .icon {
       width: 11px;
@@ -336,18 +486,16 @@
     }
 
     .main-number {
-      font-size: 0.75rem;
+      font-size: 0.9rem;
     }
 
     .sub-number {
       font-size: 8px;
     }
 
-
     .tithi-display {
       font-size: 8px;
     }
-
 
     .special.purnima,
     .special.amavasya {
@@ -359,13 +507,9 @@
       height: 10px;
     }
 
-    .calendar-grid {
-      grid-auto-rows: auto;
-    }
-
     .event-dot {
-      height: .4rem;
-      width: .4rem;
+      height: 5px;
+      width: 5px;
     }
   }
 
@@ -380,13 +524,12 @@
     }
 
     .main-number {
-      font-size: 0.7rem;
+      font-size: 0.8rem;
     }
 
     .sub-number {
       font-size: 6px;
     }
-
 
     .special.purnima,
     .special.amavasya {
@@ -394,8 +537,8 @@
     }
 
     .event-dot {
-      height: .38rem;
-      width: .38rem;
+      height: 5px;
+      width: 5px;
     }
   }
 
@@ -406,20 +549,54 @@
     }
 
     .text-xs {
-      font-size: 9px;
+      font-size: 0.98rem;
       line-height: 0.8rem;
     }
 
     .footer {
       font-size: 8px;
     }
+  }
+
+  /* Desktop Sizing Overrides (md and up) */
+  @media (min-width: 768px) {
+    .calendar-grid {
+      gap: 1px;
+    }
+
+    .calendar-day {
+      max-width: none;
+      min-height: 75px;
+      padding: 4px;
+      /* Inherit border from global or ensure consistent neutral styling */
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .main-number {
+      font-size: 1.5rem;
+    }
+
+    .sub-number {
+      font-size: 0.8rem;
+    }
+
+    .tithi-display {
+      font-size: 0.75rem;
+    }
 
     .event-dot {
-      height: .35rem;
-      width: .35rem;
+      width: 0.45rem;
+      height: 0.45rem;
+    }
+
+    .return-to-main {
+      display: none;
     }
   }
+
 }
+
+/* End of @layer components */
 
 @media print {
   * {

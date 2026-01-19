@@ -2,6 +2,20 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { ActiveView } from '../types/types';
 
 export const useAppNavigation = () => {
+  // State for Post Params (Source + Slug)
+  const [postParams, setPostParams] = useState<{ source: string, slug: string } | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const hash = window.location.hash.replace('#', '');
+    if (hash.startsWith('post/')) {
+        const parts = hash.split('/');
+        // #post/source/slug
+        if (parts.length >= 3) {
+            return { source: parts[1], slug: decodeURIComponent(parts.slice(2).join('/')) };
+        }
+    }
+    return null;
+  });
+
   // Initialize Active View from URL Hash or Path
   const [activeView, setActiveView] = useState<ActiveView>(() => {
     if (typeof window === 'undefined') return 'calendar';
@@ -29,11 +43,17 @@ export const useAppNavigation = () => {
         return 'day-detail' as ActiveView;
     }
 
+    // Smart Blog URL: #post/source/slug
+    if (hash.startsWith('post/')) {
+       return 'blog-detail' as ActiveView;
+    }
+
     // Handle standard view hashes (e.g. #converter)
-    // Basic validation: split by / for sub-routes
+    // Basic validation: split by / for sub-routes (e.g. #dharma/section)
     const baseView = hash.split('/')[0];
     return (baseView || 'calendar') as ActiveView;
   });
+
   const previousViewRef = useRef<ActiveView>('calendar');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,7 +83,7 @@ export const useAppNavigation = () => {
 
     const checkIfAndroidApp = () => {
       attempts++;
-      if (typeof window.Android !== 'undefined' && typeof window.Android.isAndroidApp === 'function') {
+      if (typeof window.Android !== 'undefined') {
         setIsAndroidWebView(true);
         if (intervalId) clearInterval(intervalId);
       } else if (attempts >= MAX_ATTEMPTS) {
@@ -78,6 +98,20 @@ export const useAppNavigation = () => {
     return () => { if (intervalId) clearInterval(intervalId); };
   }, []);
 
+  // Parse Initial/Current Hash for Post Params
+  useEffect(() => {
+     const hash = window.location.hash.replace('#', '');
+     if (activeView === 'blog-detail') {
+        if (hash.startsWith('post/')) {
+           const parts = hash.split('/');
+           // #post/source/slug
+           if (parts.length >= 3) {
+             setPostParams({ source: parts[1], slug: decodeURIComponent(parts.slice(2).join('/')) });
+           }
+        }
+     }
+  }, [activeView]);
+
   // Browser History Sync (PWA/Desktop)
   useEffect(() => {
     if (isAndroidWebView) return; // Android handles its own back stack
@@ -90,11 +124,17 @@ export const useAppNavigation = () => {
           // Do not update URL for deep link view, to preserve the ?query
           return;
       }
-      targetHash = activeView;
-      if (activeView === 'kundali' && isKundaliResultsVisible) {
-        targetHash += '/result';
-      } else if (activeView === 'dharma' && isDharmaResultsVisible) {
-        targetHash += '/section';
+
+      // Special Construction for Blog Detail
+      if (activeView === 'blog-detail' && postParams) {
+          targetHash = `post/${postParams.source}/${postParams.slug}`;
+      } else {
+          targetHash = activeView;
+          if (activeView === 'kundali' && isKundaliResultsVisible) {
+            targetHash += '/result';
+          } else if (activeView === 'dharma' && isDharmaResultsVisible) {
+            targetHash += '/section';
+          }
       }
     }
 
@@ -116,7 +156,9 @@ export const useAppNavigation = () => {
 
       // History Logic
       const isViewChange = previousViewRef.current !== activeView;
-      const isSibling = previousViewRef.current !== 'calendar' && activeView !== 'calendar';
+      // Treat blog-detail as a child view, not a sibling (always PUSH)
+      const isDetailsView = activeView === 'blog-detail';
+      const isSibling = previousViewRef.current !== 'calendar' && activeView !== 'calendar' && !isDetailsView;
       const isDeepening = currentHash === '' || (targetHash.startsWith(currentHash) && targetHash !== currentHash);
 
       if (isViewChange && isSibling) {
@@ -132,7 +174,7 @@ export const useAppNavigation = () => {
       }
     }
     previousViewRef.current = activeView;
-  }, [activeView, isKundaliResultsVisible, isDharmaResultsVisible, isAndroidWebView]);
+  }, [activeView, isKundaliResultsVisible, isDharmaResultsVisible, isAndroidWebView, postParams]);
 
   // Handle Backspace for Menu
   useEffect(() => {
@@ -166,6 +208,13 @@ export const useAppNavigation = () => {
     }
 
     if (isAndroidWebView) {
+      // Smart Back for Blog Detail (Android)
+      if (activeView === 'blog-detail' && postParams?.source) {
+          setActiveView(postParams.source as ActiveView);
+          setPostParams(null);
+          return true;
+      }
+
       // Android explicit navigation - Always go back to calendar if not there
       if (activeView !== 'calendar') {
         setActiveView('calendar');
@@ -176,7 +225,8 @@ export const useAppNavigation = () => {
     return false;
   }, [
     isModalOpen, isAboutOpen, isMenuOpen, activeView,
-    isKundaliResultsVisible, isDharmaResultsVisible, isAndroidWebView
+    isKundaliResultsVisible, isDharmaResultsVisible, isAndroidWebView,
+    postParams
   ]);
 
   // Ref to always hold latest handler
@@ -241,6 +291,18 @@ export const useAppNavigation = () => {
         }
 
         const hash = window.location.hash.replace('#', '');
+
+        // Handle Blog Detail PopState
+        if (hash.startsWith('post/')) {
+           const parts = hash.split('/');
+           // #post/source/slug
+           if (parts.length >= 3) {
+             setPostParams({ source: parts[1], slug: parts.slice(2).join('/') });
+             setActiveView('blog-detail');
+           }
+           return;
+        }
+
         const baseView = hash.split('/')[0];
         const newView = (baseView === '' ? 'calendar' : baseView) as ActiveView;
 
@@ -265,5 +327,6 @@ export const useAppNavigation = () => {
     isKundaliResultsVisible, setIsKundaliResultsVisible, setKundaliBackAction,
     isDharmaResultsVisible, setIsDharmaResultsVisible, setDharmaBackAction,
     showExitToast, handleDayClick, isAndroidWebView,
+    postParams, setPostParams
   };
 };

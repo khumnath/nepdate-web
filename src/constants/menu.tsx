@@ -1,5 +1,5 @@
 import React, { lazy } from "react";
-import { Home, SwitchCamera, RadioIcon, Info, Settings, FileText, BookOpen } from "lucide-react";
+import { Home, SwitchCamera, RadioIcon, Info, Settings, FileText, BookOpen, Sparkles, Facebook } from "lucide-react";
 import { NEPALI_LABELS } from "./constants";
 
 
@@ -12,6 +12,8 @@ const AboutPage = lazy(() => import("../pages/AboutPopup"));
 const PrivacyPage = lazy(() => import("../pages/PrivacyPage"));
 const radioPage = lazy(() => import("../pages/radioPage"));
 const DharmaPage = lazy(() => import("../pages/DharmaPage"));
+const RashifalPage = lazy(() => import("../pages/RashifalPage"));
+const FacebookPage = lazy(() => import("../pages/FacebookPage"));
 // Menu page import template
 //const MenuPage = lazy(() => import("../pages/MenuPage"));
 
@@ -67,11 +69,18 @@ export const MENU_ITEMS: MenuItem[] = [
     fixed: true,
   },
   {
+    key: "rashifal",
+    label: "राशिफल",
+    icon: <Sparkles className="w-5 h-5" />,
+    page: RashifalPage,
+    fixed: true,
+  },
+  {
     key: "settings",
     label: NEPALI_LABELS.settings,
     icon: <Settings className="w-5 h-5" />,
     page: SettingsPage,
-    fixed: true,
+    fixed: false,
   },
   {
     key: "about",
@@ -87,7 +96,15 @@ export const MENU_ITEMS: MenuItem[] = [
     page: PrivacyPage,
     fixed: false,
   },
-	{
+
+  {
+    key: "facebook",
+    label: "हाम्रो फेसबुक",
+    icon: <Facebook className="w-5 h-5" />,
+    page: FacebookPage,
+    fixed: false,
+  },
+  {
     key: "radio",
     label: NEPALI_LABELS.radio,
     icon: <RadioIcon className="w-5 h-5" />,
@@ -95,8 +112,8 @@ export const MENU_ITEMS: MenuItem[] = [
     fixed: false,
   },
 
-	// Template
-	/*{
+  // Template
+  /*{
     key: "menu",
     label: "मेनु",
     icon: <MenuIcon className="w-5 h-5" />,

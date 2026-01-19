@@ -3,8 +3,36 @@ import { Calendar, ChevronLeft, ChevronDown } from 'lucide-react';
 import { CHADPARBA_DATA } from '../../data/static/pageContents';
 import type { ContentBlock } from '../../types/types';
 
+import { toBikramSambat } from '../../lib/utils/lib';
+import { getNepalDate } from '../../lib/utils/appUtils';
+
 export const ChadparbaSection = ({ onBack }: { onBack: () => void }) => {
 	const [expandedId, setExpandedId] = useState<string | null>(null);
+	// Sort Data: Near to Far
+	const today = getNepalDate();
+	const bsDate = toBikramSambat(today);
+	const currentMonth = bsDate.monthIndex + 1; // 1-12
+	const currentDay = bsDate.day;
+	const currentVal = currentMonth * 100 + currentDay;
+
+	const sortedData = [...CHADPARBA_DATA].sort((a, b) => {
+		const getVal = (item: typeof CHADPARBA_DATA[0]) => {
+			const m = item.eventDate?.month || 12; // Push to end if unknown
+			const d = item.eventDate?.approxBsDay || 30;
+			return m * 100 + d;
+		};
+
+		const valA = getVal(a);
+		const valB = getVal(b);
+
+		// Calculate "effective distance" considering wrap-around year
+		// If val >= current, diff is simple.
+		// If val < current, it's next year, so add 1200 (12 months * 100) to push it back.
+		const distA = valA >= currentVal ? valA : valA + 1300; // 1300 to be safe
+		const distB = valB >= currentVal ? valB : valB + 1300;
+
+		return distA - distB;
+	});
 
 	// Scroll Handling
 	useEffect(() => {
@@ -54,11 +82,11 @@ export const ChadparbaSection = ({ onBack }: { onBack: () => void }) => {
 				<button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-700 transition-colors">
 					<ChevronLeft className="w-6 h-6 text-gray-700 dark:text-gray-200" />
 				</button>
-				<h1 className="font-semibold text-xl text-gray-800 dark:text-gray-100">चाडपर्व</h1>
+				<h1 className="font-semibold text-xl text-gray-800 dark:text-gray-100">चाडपर्व (आगामी क्रमशः)</h1>
 			</div>
 
 			<div className="flex-1 overflow-y-auto p-4 space-y-3">
-				{CHADPARBA_DATA.map((item) => (
+				{sortedData.map((item) => (
 					<div
 						key={item.id}
 						id={`chadparba-${item.id}`}

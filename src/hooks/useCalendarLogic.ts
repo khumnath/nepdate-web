@@ -24,7 +24,12 @@ export const useCalendarLogic = () => {
     const tz = 5.75;
 
     try {
-      const details = calculate(initialToday, lat, lon, tz);
+      // Normalize to midnight to get "Day" values (Udaya Tithi etc) consistently
+      // instead of time-specific values that might change mid-day.
+      const calcDate = new Date(initialToday);
+      calcDate.setUTCHours(0, 0, 0, 0);
+
+      const details = calculate(calcDate, lat, lon, tz);
 
       if ('error' in details) {
         toast(`Error from calculate:'${details.error}`, "error", 2000 );
@@ -59,7 +64,7 @@ export const useCalendarLogic = () => {
     [activeSystem, currentBsMonth, currentAdMonth]
   );
 
-  // --- Memoized Callbacks for Navigation ---
+  // Memoized Callbacks for Navigation
   const goToToday = useCallback(() => {
     setCurrentBsYear(initialTodayBs.year);
     setCurrentBsMonth(initialTodayBs.monthIndex);

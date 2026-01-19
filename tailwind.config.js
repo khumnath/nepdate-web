@@ -10,6 +10,14 @@ export default {
 				'alabaster': 'rgb(242, 232, 224)', // #f2e8e0
 				'azure': 'rgb(224, 238, 242)' // #e0eef2
 			},
+			keyframes: {
+				shimmer: {
+					'100%': { transform: 'translateX(100%)' },
+				},
+			},
+			animation: {
+				'bounce-subtle': 'bounce 2s infinite',
+			}
 		},
 	},
 	plugins: [],

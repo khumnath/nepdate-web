@@ -1,21 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MENU_ITEMS, MenuItem } from '../../constants/menu';
-import { MoreHorizontal, Download, RefreshCcw } from 'lucide-react';
+import { MoreHorizontal, Download, RefreshCcw, Moon, Sun } from 'lucide-react';
 import { NEPALI_LABELS } from '../../constants/constants';
 import { handleReloadApp } from '../../lib/utils/appUtils';
+import { HeaderLogo } from './HeaderLogo';
 
 interface DesktopTopNavProps {
 	activeView: string;
+	activeSystem: 'bs' | 'ad';
 	onNavigate: (key: string) => void;
 	showInstall?: boolean;
 	onInstallClick?: () => void;
+	theme: 'light' | 'dark';
+	onThemeToggle: () => void;
 }
 
 export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
 	activeView,
+	activeSystem,
 	onNavigate,
 	showInstall = false,
 	onInstallClick,
+	theme,
+	onThemeToggle,
 }) => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const popoverRef = useRef<HTMLDivElement>(null);
@@ -46,7 +53,8 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
 			const INNER_GAP = 8;
 
 			// This reserves extra empty space at the end to prevent ANY clipping.
-			const SAFETY_BUFFER = 50;
+			// Increased buffer to account for Theme Toggle (approx 40px)
+			const SAFETY_BUFFER = 100;
 
 			const containerWidth = containerRef.current.offsetWidth;
 			const brandWidth = 140;
@@ -141,11 +149,9 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
 			ref={containerRef}
 			className="hidden md:flex w-full px-4 bg-slate-200 dark:bg-gray-800 h-16 items-center relative"
 		>
-			<div className="text-xl font-semibold whitespace-nowrap flex-shrink-0 mr-6">
-				{NEPALI_LABELS.Nepdate_calendar}
-			</div>
+			<HeaderLogo activeSystem={activeSystem} className="mr-6 flex-shrink-0" />
 
-			<div className="flex items-center gap-1">
+			<div className="flex items-center gap-1 flex-1 min-w-0">
 				{visibleMenus.map((menu) => (
 					<button
 						key={menu.key}
@@ -196,17 +202,25 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
 				)}
 			</div>
 
-			{showInstall && onInstallClick && (
-				<div className="flex-shrink-0 ml-4">
+			<div className="flex items-center gap-3 ml-4 flex-shrink-0">
+				<button
+					onClick={onThemeToggle}
+					className="p-2 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-300"
+					aria-label="Toggle Theme"
+				>
+					{theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+				</button>
+
+				{showInstall && onInstallClick && (
 					<button
 						onClick={onInstallClick}
-						className="flex-shrink-0 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
+						className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
 					>
 						<Download className="w-4 h-4" />
 						<span>{NEPALI_LABELS.installApp}</span>
 					</button>
-				</div>
-			)}
+				)}
+			</div>
 		</nav>
 	);
 };

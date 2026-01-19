@@ -1,4 +1,7 @@
-// lib/lib.ts
+import {
+    toDevanagari
+} from '../core/bikram';
+
 export {
     fromBikramSambat,
     getMonthWarning,
@@ -7,8 +10,10 @@ export {
     fromDevanagari,
     weekdays,
     getSunriseSunset,
-    toDevanagari,
+    toDevanagari, // Exporting it again is fine
     toJulianDay,
+// ...
+
     fromJulianDay,
     findPurnima,
     findNewMoon,
@@ -38,7 +43,7 @@ export {
     YugaCivilDays,
     UJJAIN_LONGITUDE,
     getNepaliPeriod,
-    formatDMS
+    formatDMS,
 } from '../core/bikram';
 export {
     calculate,
@@ -50,3 +55,25 @@ export {
     findTransit,
     absElongation,
 } from '../core/panchangaCore';
+
+ // Helper to calculate approx read time (200 words per minute)
+export const calculateReadTime = (content: string): string => {
+    if (!content) return '१ मिनेट';
+    // Strip HTML
+    const text = content.replace(/<[^>]*>?/gm, '');
+    const wordCount = text.trim().split(/\s+/).length;
+    const time = Math.ceil(wordCount / 200);
+    return `${toDevanagari(time)} मिनेट`;
+};
+
+export const createSlug = (text: string): string => {
+    return text
+        .trim()
+        .replace(/\s+/g, '-') // Replace spaces with -
+        // Keep Devanagari characters, alphanumeric, and -
+        // Remove everything else? careful with punctuation.
+        // Simple approach: just spaces to dashes for now to keep it readable.
+        // Maybe simple cleanup of special chars like : or ?
+        .replace(/[:?]/g, '')
+        .replace(/-+/g, '-'); // Collapse multiple dashes
+};

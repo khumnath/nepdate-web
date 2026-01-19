@@ -26,7 +26,7 @@ const PanchangaRow: React.FC<{ label: string; value: string }> = ({
   label,
   value,
 }) => (
-  <li className="flex justify-around items-center text-sm py-1.5 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+  <li className="flex justify-between items-center text-sm py-1.5 border-b border-gray-200 dark:border-gray-600 last:border-b-0 px-2">
     <span className="text-gray-500 dark:text-gray-400">{label}:</span>
     <span className="font-medium text-gray-800 dark:text-gray-200 text-right">
       {value}
@@ -99,13 +99,13 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
     if (!timings || timings.length === 0) return null;
 
     return timings.map(t => {
-       const start = formatTimeNepali(t.startTime);
-       const end = formatTimeNepali(t.endTime);
+      const start = formatTimeNepali(t.startTime);
+      const end = formatTimeNepali(t.endTime);
 
-       if (start && end) return `${start}-${end}`;
-       if (start) return `${start} देखि`;
-       if (end) return `${end} सम्म`;
-       return null;
+      if (start && end) return `${start}-${end}`;
+      if (start) return `${start} देखि`;
+      if (end) return `${end} सम्म`;
+      return null;
     }).filter(Boolean).join(', ');
   };
 
@@ -161,12 +161,11 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
           </div>
 
           {/* BHADRA DISPLAY LOGIC */}
-          {bhadra && bhadra.isActive &&(
-            <div className={`mt-3 p-2 rounded-md text-sm border flex items-center justify-center gap-2 ${
-              bhadra.isHarmful
-                ? 'bg-red-50 dark:bg-red-900/20 border-red-200 text-red-700 dark:text-red-300'
-                : 'bg-green-50 dark:bg-green-900/20 border-green-200 text-green-700 dark:text-green-300'
-            }`}>
+          {bhadra && bhadra.isActive && (
+            <div className={`mt-3 p-2 rounded-md text-sm border flex items-center justify-center gap-2 ${bhadra.isHarmful
+              ? 'bg-red-50 dark:bg-red-900/20 border-red-200 text-red-700 dark:text-red-300'
+              : 'bg-green-50 dark:bg-green-900/20 border-green-200 text-green-700 dark:text-green-300'
+              }`}>
               {bhadra.isHarmful ? (
                 <AlertTriangle size={16} className="shrink-0" />
               ) : (
@@ -203,7 +202,7 @@ export const TodayWidget: React.FC<TodayWidgetProps> = ({
       <hr className="my-4 border-gray-200 dark:border-gray-600" />
       <button
         onClick={onShowDetailsClick}
-        className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-opacity-50"
       >
         अन्य विवरण हेर्नुहोस्
         <ArrowRight size={18} />

@@ -6,6 +6,7 @@
  */
 import { Bsdata } from '../../data/static/monthData';
 import { NEPALI_NUMERALS, NEPALI_BS_MONTHS } from '../../constants/constants';
+import { getNepalDate } from '../utils/appUtils';
 
 export { Bsdata };
 
@@ -57,6 +58,15 @@ export function arcsinDeg(x: number): number {
 export function formatMonthDay(month: number, day: number): string {
     return (month < 10 ? '0' : '') + month + '/' + (day < 10 ? '0' : '') + day;
 }
+// Helper to calculate approx read time (200 words per minute)
+export const calculateReadTime = (content: string): string => {
+    if (!content) return '१ मिनेट';
+    // Strip HTML
+    const text = content.replace(/<[^>]*>?/gm, '');
+    const wordCount = text.trim().split(/\s+/).length;
+    const time = Math.ceil(wordCount / 200);
+    return `${toDevanagari(time)} मिनेट`;
+};
 
 
 // Julian Day Converters
@@ -355,7 +365,7 @@ export function getBikramMonthInfo(bsYear: number, monthIndex: number) {
 }
 
 const getCurrentBsYear = (): number => {
-    return toBikramSambat(new Date()).year;
+    return toBikramSambat(getNepalDate()).year;
 };
 
 export function getMonthWarning(
@@ -450,22 +460,20 @@ export const formatDegrees = (decimal: number): string => {
 
 
 export function getNepaliPeriod(hh: number): string {
-    if (hh < 0 || hh >= 24) {
+    if (hh < 0 || hh > 24) {
         return "not available";
-    } else if (hh >= 4 && hh < 6) {
-    return "ब्रह्ममुहूर्त";
-  } else if (hh >= 6 && hh < 8) {
-    return "प्रातः";
-    } else if (hh >= 8 && hh < 12) {
-    return "पूर्वाह्न";
-    } else if (hh >= 12 && hh < 16) {
-        return "अपरान्ह";
-    } else if (hh >= 16 && hh < 20) {
+    }
+    // Handle 24 as 0
+    if (hh === 24) hh = 0;
+
+    if (hh < 12) {
+        return "बिहान";
+    } else if (hh < 17) {
+        return "दिउँसो";
+    } else if (hh < 20) {
         return "साँझ";
-    } else if (hh >= 20 && hh < 24) {
-        return "रात्री(पूर्वार्द्ध)";
     } else {
-        return "रात्री(उत्तरार्ध)";
+        return "रात्री";
     }
 }
 

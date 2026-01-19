@@ -93,7 +93,7 @@ export const ComparisonDisplay: React.FC<ComparisonDisplayProps> = ({ result, on
         <p>© {new Date().getFullYear()} {NEPALI_LABELS.project}</p>
       </div>
 
-      <div className="fixed bottom-12 left-1/2 transform -translate-x-1/2 z-[999] w-full px-4 text-center screen-only-footer print:hidden">
+      <div className="mt-8 mb-8 w-full px-4 text-center screen-only-footer print:hidden">
         <div className="flex gap-4 justify-center">
           <button className="bg-blue-600 dark:bg-blue-600 text-white px-6 py-2 rounded shadow-md hover:bg-blue-700 dark:hover:bg-blue-800 transition flex items-center gap-2" onClick={onReturnToForm}>
             ← {NEPALI_LABELS.returnToForm}

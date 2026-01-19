@@ -2,30 +2,58 @@ import { toast } from "../../components/shared/toast";
 
 // Timezone Helper to get current date in Nepal
 export function getNepalDate(): Date {
-    const utcNow = new Date();
+  const utcNow = new Date();
 
-    const nepalISOString = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Asia/Kathmandu',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-    }).format(utcNow).replace(', ', 'T');
+  const nepalISOString = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kathmandu',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).format(utcNow).replace(', ', 'T');
 
-    // Treat Nepal-local time as local, not UTC
-    const [datePart, timePart] = nepalISOString.split('T');
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hour, minute, second] = timePart.split(':').map(Number);
-    return new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+  // Treat Nepal-local time as local, not UTC
+  const [datePart, timePart] = nepalISOString.split('T');
+  const [year, month, day] = datePart.split('-').map(Number);
+  const [hour, minute, second] = timePart.split(':').map(Number);
+  return new Date(Date.UTC(year, month - 1, day, hour, minute, second));
 }
 
 const INFO_DELAY = 2000;
 const ERROR_DELAY = 3000;
 const EXPECTED_MARKER = 'id="root"';
-const APP_URL = location.origin + '/';
+
+export const getAppBaseUrl = (): string => {
+  if (typeof window === 'undefined') return '';
+  const { origin, pathname } = window.location;
+
+  // We want the path up to the app root from current location.
+  // Common markers might be /bs, /ad, or index.html causing deep link simulation
+  let basePath = pathname;
+  const knownSuffixes = ['/bs', '/ad', '/bs.html', '/ad.html', '/index.html'];
+
+  // Sort by length to match specific first
+  knownSuffixes.sort((a, b) => b.length - a.length);
+
+  for (const suffix of knownSuffixes) {
+     if (basePath.endsWith(suffix)) {
+        basePath = basePath.substring(0, basePath.length - suffix.length);
+        break;
+     }
+  }
+
+  // Ensure trailing slash
+  if (!basePath.endsWith('/')) {
+      basePath += '/';
+  }
+
+  return origin + basePath;
+};
+
+const APP_URL = getAppBaseUrl();
 
 const fetchFreshHtml = async (): Promise<"fresh" | "invalid" | "unreachable"> => {
   try {
@@ -101,10 +129,10 @@ export const handleReloadApp = async () => {
 
 
 export const handlePrint = () => {
-	if (window.Android?.printPage) {
-			window.Android?.printPage();
-	} else {
-			const nativePrint = window.print;
-			nativePrint();
-	}
+  if (window.Android?.printPage) {
+    window.Android?.printPage();
+  } else {
+    const nativePrint = window.print;
+    nativePrint();
+  }
 };

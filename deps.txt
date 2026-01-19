@@ -1,11 +1,13 @@
-nepdate-bikram-sambat-calendar@2.1.0 /home/computebox/Documents/git/nepdate-web
+nepdate-bikram-sambat-calendar@2.4.0
 ├── @eslint/js@9.38.0
 ├── @types/leaflet@1.9.21
-├── @types/react-dom@19.2.2
-├── @types/react@19.2.2
+├── @types/node@24.10.0
+├── @types/react-dom@19.2.3
+├── @types/react@19.2.6
 ├── @types/tz-lookup@6.1.2
 ├── @vitejs/plugin-react@4.7.0
 ├── autoprefixer@10.4.21
+├── baseline-browser-mapping@2.9.11
 ├── eslint-plugin-react-hooks@5.2.0
 ├── eslint-plugin-react-refresh@0.4.24
 ├── eslint@9.38.0
@@ -24,4 +26,3 @@ nepdate-bikram-sambat-calendar@2.1.0 /home/computebox/Documents/git/nepdate-web
 ├── vite@7.1.12
 ├── workbox-build@7.3.0
 └── workbox-window@7.3.0
-
