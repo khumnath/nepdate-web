@@ -155,7 +155,7 @@ export const ToastContainer: React.FC = () => {
 
   return (
     <div
-      className={`fixed z-50 flex flex-col w-auto max-w-sm gap-3 bottom-4 left-1/2 -translate-x-1/2`}
+      className={`fixed z-50 flex flex-col w-auto max-w-sm gap-3 bottom-20 md:bottom-4 left-1/2 -translate-x-1/2`}
     >
       {toasts.map((toast) => (
         <ToastItem

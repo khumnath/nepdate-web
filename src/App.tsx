@@ -120,12 +120,12 @@ const App: React.FC = () => {
   // Sync postParams to activeBlog
   useEffect(() => {
     if (activeView === 'blog-detail' && postParams) {
-       const allBlogs = getAllBlogs();
-       const blog = allBlogs.find(b => createSlug(b.title) === postParams.slug);
-       if (blog) {
-         setActiveBlog(blog);
-         // Note: we rely on postParams.source for back navigation now
-       }
+      const allBlogs = getAllBlogs();
+      const blog = allBlogs.find(b => createSlug(b.title) === postParams.slug);
+      if (blog) {
+        setActiveBlog(blog);
+        // Note: we rely on postParams.source for back navigation now
+      }
     }
   }, [activeView, postParams]);
 
@@ -166,23 +166,23 @@ const App: React.FC = () => {
 
       {/* Mobile Header - Only visible on Home/Calendar View */}
       {activeView === 'calendar' && (
-      <header className="sticky top-0 px-4 pt-2 bg-transparent z-30 md:hidden">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            {menuStyle === 'slide' && (
-              <button onClick={() => setIsMenuOpen(true)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                <Menu className="w-5 h-5" />
+        <header className="sticky top-0 px-4 pt-2 bg-transparent z-30 md:hidden">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              {menuStyle === 'slide' && (
+                <button onClick={() => setIsMenuOpen(true)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                  <Menu className="w-5 h-5" />
+                </button>
+              )}
+              <HeaderLogo activeSystem={activeSystem} />
+            </div>
+            {menuStyle === 'tabs' && !isStandalone && canInstall && (
+              <button onClick={handleInstallClick} className="px-3 py-2 text-left text-xs rounded bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2">
+                <Download className="w-5 h-5" /> <span>{NEPALI_LABELS.installApp}</span>
               </button>
             )}
-            <HeaderLogo activeSystem={activeSystem} />
           </div>
-          {menuStyle === 'tabs' && !isStandalone && canInstall && (
-            <button onClick={handleInstallClick} className="px-3 py-2 text-left text-xs rounded bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2">
-              <Download className="w-5 h-5" /> <span>{NEPALI_LABELS.installApp}</span>
-            </button>
-          )}
-        </div>
-      </header>
+        </header>
       )}
 
       {/* Mobile Overlay */}
@@ -254,67 +254,67 @@ const App: React.FC = () => {
 
                   {/* Main Calendar Area */}
                   <div id="main-calendar-grid" className="md:col-span-7 xl:col-span-8 flex flex-col gap-2 h-full scroll-mt-4">
-                      <CalendarControls activeSystem={activeSystem} currentYear={currentYear} currentMonth={currentMonth} onYearChange={(y) => activeSystem === 'bs' ? setCurrentBsYear(y) : setCurrentAdYear(y)} onMonthChange={(m) => activeSystem === 'bs' ? setCurrentBsMonth(m) : setCurrentAdMonth(m)} onPrevMonth={() => changeMonth('prev')} onNextMonth={() => changeMonth('next')} onPrevYear={() => changeYear('prev')} onNextYear={() => changeYear('next')} />
-                      <CalendarGrid activeSystem={activeSystem} currentYear={currentYear} currentMonth={currentMonth} onDayClick={handleDayClick} />
-                      <MonthlyEvents activeSystem={activeSystem} currentYear={currentYear} currentMonth={currentMonth} />
-                      <MonthlyMuhurta
-                         activeSystem={activeSystem}
-                         currentYear={currentYear}
-                         currentMonth={currentMonth}
-                       />
-                       <AdsBanner className="mt-4 md:hidden" />
+                    <CalendarControls activeSystem={activeSystem} currentYear={currentYear} currentMonth={currentMonth} onYearChange={(y) => activeSystem === 'bs' ? setCurrentBsYear(y) : setCurrentAdYear(y)} onMonthChange={(m) => activeSystem === 'bs' ? setCurrentBsMonth(m) : setCurrentAdMonth(m)} onPrevMonth={() => changeMonth('prev')} onNextMonth={() => changeMonth('next')} onPrevYear={() => changeYear('prev')} onNextYear={() => changeYear('next')} />
+                    <CalendarGrid activeSystem={activeSystem} currentYear={currentYear} currentMonth={currentMonth} onDayClick={handleDayClick} />
+                    <MonthlyEvents activeSystem={activeSystem} currentYear={currentYear} currentMonth={currentMonth} />
+                    <MonthlyMuhurta
+                      activeSystem={activeSystem}
+                      currentYear={currentYear}
+                      currentMonth={currentMonth}
+                    />
+                    <AdsBanner className="mt-4 md:hidden" />
                   </div>
 
                 </div>
 
-                 {/* --- Bottom Section: Upcoming Events (Full Width) --- */}
-                 <div className="mt-8">
-                   <UpcomingEvents activeSystem={activeSystem} />
-                 </div>
+                {/* --- Bottom Section: Upcoming Events (Full Width) --- */}
+                <div className="mt-8">
+                  <UpcomingEvents activeSystem={activeSystem} />
+                </div>
 
-                 {/* Mobile Facebook Widget */}
-                 <div className="mt-8 md:hidden px-4">
-                    <SocialMedia theme={theme} showTimeline={true} height={500} width="100%" />
+                {/* Mobile Facebook Widget */}
+                <div className="mt-4 md:hidden">
+                  <SocialMedia theme={theme} width="100%" />
                 </div>
 
 
 
                 {/* --- BOTTOM SECTION: Content Widgets --- */}
                 <div className="md:grid md:grid-cols-12 md:gap-x-8 relative mt-8">
-                    {/* Left Column: Rashifal Only (Height Reference) */}
-                    <aside className="hidden md:flex md:col-span-5 xl:col-span-4 flex-col h-full">
-                      {/* TodayWidget moved to top, so only Rashifal remains here to set height */}
-                      <RashifalWidget
-                          date={`${toDevanagari(initialTodayBs.year)} ${initialTodayBs.monthName} ${toDevanagari(initialTodayBs.day)}`}
-                          dateKey={`${initialTodayBs.year}-${initialTodayBs.monthIndex + 1}-${initialTodayBs.day}`}
-                          tithi={todayDetails?.tithis?.[0]?.name}
-                          nakshatra={todayDetails?.nakshatras?.[0]?.name}
-                          className="flex-1" // Allow it to fill the flex container
-                          onViewAll={() => setActiveView('rashifal')}
-                      />
-                    </aside>
+                  {/* Left Column: Rashifal Only (Height Reference) */}
+                  <aside className="hidden md:flex md:col-span-5 xl:col-span-4 flex-col h-full">
+                    {/* TodayWidget moved to top, so only Rashifal remains here to set height */}
+                    <RashifalWidget
+                      date={`${toDevanagari(initialTodayBs.year)} ${initialTodayBs.monthName} ${toDevanagari(initialTodayBs.day)}`}
+                      dateKey={`${initialTodayBs.year}-${initialTodayBs.monthIndex + 1}-${initialTodayBs.day}`}
+                      tithi={todayDetails?.tithis?.[0]?.name}
+                      nakshatra={todayDetails?.nakshatras?.[0]?.name}
+                      className="flex-1" // Allow it to fill the flex container
+                      onViewAll={() => setActiveView('rashifal')}
+                    />
+                  </aside>
 
-                    {/* Right Column: Blog Grid */}
-                    <div className="md:col-span-7 xl:col-span-8 relative">
-                       {/* Absolute positioning trick to match Height of Sidebar */}
-                       <div className="-mt-6 md:mt-0 md:absolute md:inset-0 md:overflow-hidden">
-                          <BlogWidget
-                            activeSystem={activeSystem}
-                            currentYear={currentYear || 2081}
-                            currentMonth={currentMonth}
-                            compactMode={true}
-                            onBlogClick={(blog) => {
-                              setPostParams({ source: 'calendar', slug: createSlug(blog.title) });
-                              setActiveView('blog-detail');
-                            }}
-                            onViewAll={() => setActiveView('dharma')}
-                            onTagClick={(tag) => {
-                              setViewParams({ tag });
-                              setActiveView('dharma');
-                            }}
-                          />
-                        </div>
+                  {/* Right Column: Blog Grid */}
+                  <div className="md:col-span-7 xl:col-span-8 relative">
+                    {/* Absolute positioning trick to match Height of Sidebar */}
+                    <div className="-mt-6 md:mt-0 md:absolute md:inset-0 md:overflow-hidden">
+                      <BlogWidget
+                        activeSystem={activeSystem}
+                        currentYear={currentYear || 2081}
+                        currentMonth={currentMonth}
+                        compactMode={true}
+                        onBlogClick={(blog) => {
+                          setPostParams({ source: 'calendar', slug: createSlug(blog.title) });
+                          setActiveView('blog-detail');
+                        }}
+                        onViewAll={() => setActiveView('dharma')}
+                        onTagClick={(tag) => {
+                          setViewParams({ tag });
+                          setActiveView('dharma');
+                        }}
+                      />
                     </div>
+                  </div>
                 </div>
               </main>
             </>
@@ -328,8 +328,8 @@ const App: React.FC = () => {
               blog={activeBlog}
               onBack={handleBlogBack}
               onNavigate={(blog) => {
-                 setPostParams({ source: postParams?.source || 'calendar', slug: createSlug(blog.title) });
-                 window.scrollTo(0, 0);
+                setPostParams({ source: postParams?.source || 'calendar', slug: createSlug(blog.title) });
+                window.scrollTo(0, 0);
               }}
             />
           ) : (
@@ -368,11 +368,11 @@ const App: React.FC = () => {
                     tag: viewParams?.tag,
                     onNavigate: (view: string, params?: any) => {
                       if (view === 'blog-detail') {
-                         setPostParams({ source: 'dharma', slug: createSlug(params.title) });
-                         setActiveView('blog-detail');
+                        setPostParams({ source: 'dharma', slug: createSlug(params.title) });
+                        setActiveView('blog-detail');
                       } else if (view === 'dharma') {
-                         setViewParams(params);
-                         setActiveView('dharma');
+                        setViewParams(params);
+                        setActiveView('dharma');
                       }
                     },
                     setIsDharmaResultsVisible,

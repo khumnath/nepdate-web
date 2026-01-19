@@ -92,7 +92,7 @@ const DayDetailPage: React.FC<DayDetailPageProps> = ({ onBack }) => {
       <div className="w-full flex-none">
         <PageHeader title="दिन विशेष" onBack={onBack} className="rounded-none border-b" />
       </div>
-      <div className="flex-1 w-full overflow-y-auto p-4">
+      <div className="flex-1 w-full overflow-y-auto p-4 pb-24">
         <div className="max-w-2xl mx-auto">
           <DayDetailsContent date={date} onClose={onBack} variant="page" activeSystem={activeSystem} />
         </div>

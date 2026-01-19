@@ -25,10 +25,10 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ blog, onBack, on
   const relatedPosts = useMemo(() => {
     const allBlogs = getAllBlogs();
 
-    // 1. Filter out current blog
+    // Filter out current blog
     const candidates = allBlogs.filter(b => b.id !== blog.id);
 
-    // 2. Score candidates based on tag overlap
+    // Score candidates based on tag overlap
     const scored = candidates.map(candidate => {
       let score = 0;
       if (blog.tags && candidate.tags) {
@@ -38,14 +38,14 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ blog, onBack, on
       return { blog: candidate, score };
     });
 
-    // 3. Sort by Score (Desc) then Date (Desc)
+    // Sort by Score (Desc) then Date (Desc)
     scored.sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       // Fallback to simple date compare or random tie-break
       return 0.5 - Math.random();
     });
 
-    // 4. Take Top 3
+    // Take Top 3
     return scored.slice(0, 3).map(s => s.blog);
   }, [blog]);
 
@@ -60,7 +60,17 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ blog, onBack, on
       url: readableUrl,
     };
 
-    // 1. Try Native Share (Mobile)
+    // Try Android Interface (Wrapper App)
+    if ((window as any).Android && typeof (window as any).Android.share === 'function') {
+      (window as any).Android.share(
+        shareData.title,
+        'Check out this article',
+        shareData.url
+      );
+      return;
+    }
+
+    // Try Native Share (Mobile)
     // Note: Requires HTTPS (Secure Context)
     if (navigator.share) {
       try {
@@ -73,7 +83,7 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ blog, onBack, on
       }
     }
 
-    // 2. Fallback: Clipboard API
+    // Fallback: Clipboard API
     const textToCopy = shareData.url;
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -85,7 +95,7 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ blog, onBack, on
       console.warn('Clipboard API failed, trying legacy...', err);
     }
 
-    // 3. Fallback: Legacy execCommand
+    // Fallback: Legacy execCommand
     try {
       const textArea = document.createElement("textarea");
       textArea.value = textToCopy;

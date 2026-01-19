@@ -349,7 +349,9 @@
   }
 
   /* Today Highlight (Global) */
-  .calendar-day.today {
+  .calendar-day.today,
+  .calendar-day.today.holiday,
+  .calendar-day.today.saturday {
     border: 2px solid rgba(124, 58, 237, 0.6) !important;
     /* Visible Violet */
     z-index: 30;

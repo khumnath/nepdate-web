@@ -245,7 +245,7 @@ export const DayDetailsContent: React.FC<{ date: Date; onClose?: () => void; var
 			</div>
 
 			{/* Content */}
-			<div className="p-4 space-y-4">
+			<div className="p-4 space-y-4 pb-24">
 
 				{/* Sunrise/Sunset */}
 				<div className="grid grid-cols-2 gap-3">

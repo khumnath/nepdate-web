@@ -125,6 +125,30 @@ const RadioPage: React.FC = () => {
     };
   }, [checkGlobalConnectivity, isPlaying]);
 
+  // SYNC AUDIO STATE FROM ANDROID (ON MOUNT)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.Android && window.Android.getAudioState) {
+      try {
+        const stateStr = window.Android.getAudioState();
+        const state = JSON.parse(stateStr);
+        console.log("Syncing Audio State:", state);
+
+        if (state.url) {
+          const stationIndex = radioStations.findIndex(s => s.src === state.url);
+          if (stationIndex !== -1) {
+            console.log("Found matching station:", stationIndex);
+            setCurrentStationIndex(stationIndex);
+            // If native is playing, ensuring we show as playing.
+            // If native is paused, we show as paused.
+            setIsPlaying(state.isPlaying);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to sync audio state", e);
+      }
+    }
+  }, []); // Run only once on mount
+
 
   // HELPERS
   const setStationStatusById = useCallback((id: number, status: StreamStatus) => {
@@ -478,13 +502,17 @@ const RadioPage: React.FC = () => {
         ? currentStation.cover
         : `${getAppBaseUrl()}${currentStation.cover}`;
 
-      window.Android.onHtml5AudioEvent(
-        currentStation.src,
-        isPlaying,
-        currentStation.name || "Unknown",
-        currentStation.author || "Radio",
-        cover
-      );
+      try {
+        window.Android.onHtml5AudioEvent(
+          currentStation.src,
+          isPlaying,
+          currentStation.name || "Unknown",
+          currentStation.author || "Radio",
+          cover
+        );
+      } catch (e) {
+        console.error("Bridge Error:", e);
+      }
     }
   }, [isPlaying, currentStation]);
 
