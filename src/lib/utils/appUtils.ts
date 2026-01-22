@@ -128,11 +128,56 @@ export const handleReloadApp = async () => {
 };
 
 
+// Define Android interface shape for TypeScript types
+interface AndroidInterface {
+  printPage?: () => void;
+  triggerFullScreenAd?: () => void;
+  shareApp?: () => void;
+  rateApp?: () => void;
+}
+
+declare global {
+  interface Window {
+    Android?: AndroidInterface;
+  }
+}
+
 export const handlePrint = () => {
-  if (window.Android?.printPage) {
-    window.Android?.printPage();
+    // Basic fallback for direct legacy calls or web
+    if (window.Android?.printPage) {
+        window.Android.printPage();
+    } else {
+        window.print();
+    }
+};
+
+
+const PACKAGE_NAME = "com.khumnath.nepdate";
+const PLAY_STORE_URL = `https://play.google.com/store/apps/details?id=${PACKAGE_NAME}`;
+
+export const handleShareApp = () => {
+  if (window.Android?.shareApp) {
+    window.Android.shareApp();
+  } else if (navigator.share) {
+    navigator.share({
+      title: 'NepDate',
+      text: 'Check out NepDate - Nepali Calendar & More!',
+      url: PLAY_STORE_URL,
+    }).catch(console.error);
+  }
+};
+
+export const handleRateApp = () => {
+  if (window.Android?.rateApp) {
+    window.Android.rateApp();
   } else {
-    const nativePrint = window.print;
-    nativePrint();
+    // Fallback using anchor tag simulation
+    const link = document.createElement('a');
+    link.href = PLAY_STORE_URL;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 };

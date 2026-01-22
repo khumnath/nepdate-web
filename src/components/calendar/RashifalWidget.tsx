@@ -25,6 +25,11 @@ interface RashifalWidgetProps {
   dateKey: string;
   tithi?: string;
   nakshatra?: string;
+  moonRashi?: string;
+  nextMoonRashi?: string;
+  transitionTime?: string;
+  nextNakshatra?: string;
+  nakshatraTransitionTime?: string;
   selectedRashi?: string;
   className?: string;
   onViewAll?: () => void;
@@ -37,54 +42,94 @@ const RASHI_KEY_MAP: Record<string, number> = {
 };
 
 const RashiCard: React.FC<{ data: ReturnType<typeof generateDailyRashifal>[0], index: number, isSelected?: boolean }> = ({ data, index, isSelected }) => {
+  const [isReasonExpanded, setIsReasonExpanded] = React.useState(false);
+
   return (
     <div
       id={`rashi-card-${index}`}
-      className={`bg-white dark:bg-gray-700/50 rounded-xl p-4 shadow-sm border flex gap-4 items-start transition-all duration-500 ${isSelected ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-gray-600'}`}
+      className={`bg-white dark:bg-gray-700/50 rounded-xl p-4 shadow-sm border flex flex-col transition-all duration-500 ${isSelected ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-gray-600'}`}
     >
-      {/* Left Side: Icon & Name */}
-      <div className="flex flex-col items-center justify-center w-24 flex-shrink-0 border-r border-gray-100 dark:border-gray-600 pr-3">
-        <img
-          src={RASHI_IMAGES[data.img] || data.img}
-          alt={data.name}
-          className="w-12 h-12 object-contain mb-2 drop-shadow-sm"
-        />
+      <div className="flex gap-4 items-start">
+        {/* Left Side: Icon & Name */}
+        <div className="flex flex-col items-center justify-center w-24 flex-shrink-0 border-r border-gray-100 dark:border-gray-600 pr-3">
+          <img
+            src={RASHI_IMAGES[data.img] || data.img}
+            alt={data.name}
+            className="w-12 h-12 object-contain mb-2 drop-shadow-sm"
+          />
 
-        <h3 className="text-lg font-bold text-red-600 dark:text-red-400 leading-none mb-1">
-          {data.name}
-        </h3>
+          <h3 className="text-lg font-bold text-red-600 dark:text-red-400 leading-none mb-1">
+            {data.name}
+          </h3>
 
-        <p className="text-[9px] text-gray-500 dark:text-gray-400 text-center leading-tight mt-1">
-          {data.syllables}
-        </p>
+          <p className="text-[9px] text-gray-500 dark:text-gray-400 text-center leading-tight mt-1">
+            {data.syllables}
+          </p>
 
-        <div className="flex gap-0.5 mt-2">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              size={10}
-              className={`${i < data.rating ? "fill-red-500 text-red-500" : "fill-gray-200 text-gray-200 dark:text-gray-600"}`}
-            />
-          ))}
+          <div className="mt-3 flex flex-col items-center">
+            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter mb-0.5">समग्र फल</span>
+            <div className="flex gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  size={10}
+                  className={`${i < data.rating ? "fill-red-500 text-red-500" : "fill-gray-200 text-gray-200 dark:text-gray-600"}`}
+                />
+              ))}
+            </div>
+            <span className="text-[9px] font-bold text-red-500 mt-1">
+              {data.rating === 5 ? "उत्तम" : data.rating === 4 ? "राम्रो" : data.rating === 2 ? "सामान्य" : "प्रतिकूल"}
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* Right Side: Prediction */}
-      <div className="flex-grow pt-1">
-        <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed font-medium" style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-          {data.prediction}
-        </p>
+        <div className="flex-grow pt-1 overflow-hidden">
+          <p
+            className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed font-medium"
+            style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
+            dangerouslySetInnerHTML={{ __html: data.prediction }}
+          />
+
+          {data.technicalReason && (
+            <div className="mt-4">
+              <button
+                onClick={() => setIsReasonExpanded(!isReasonExpanded)}
+                className="flex items-center gap-1.5 text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors uppercase tracking-wider"
+              >
+                {isReasonExpanded ? "लुकाउनुहोस्" : "ज्योतिषीय कारण"}
+                <svg
+                  className={`w-3 h-3 transition-transform duration-300 ${isReasonExpanded ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {isReasonExpanded && (
+                <div className="mt-2 p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-100/50 dark:border-blue-900/20 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <p
+                    className="text-[11px] text-blue-800 dark:text-blue-300 leading-relaxed italic"
+                    style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
+                    dangerouslySetInnerHTML={{ __html: data.technicalReason }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-export const RashifalWidget: React.FC<RashifalWidgetProps> = ({ date, dateKey, tithi, nakshatra, selectedRashi, className, onViewAll }) => {
+export const RashifalWidget: React.FC<RashifalWidgetProps> = ({ date, dateKey, tithi, nakshatra, moonRashi, nextMoonRashi, transitionTime, nextNakshatra, nakshatraTransitionTime, selectedRashi, className, onViewAll }) => {
 
   // Generate data based on props
   const rashiData = useMemo(() => {
-    return generateDailyRashifal(dateKey, tithi, nakshatra);
-  }, [dateKey, tithi, nakshatra]);
+    return generateDailyRashifal(dateKey, tithi, nakshatra, moonRashi || "मेष", nextMoonRashi, transitionTime, nextNakshatra, nakshatraTransitionTime);
+  }, [dateKey, tithi, nakshatra, moonRashi, nextMoonRashi, transitionTime, nextNakshatra, nakshatraTransitionTime]);
 
   React.useEffect(() => {
     if (selectedRashi && RASHI_KEY_MAP[selectedRashi] !== undefined) {

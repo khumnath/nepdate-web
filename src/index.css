@@ -14,6 +14,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+  body {
+    background: white;
+  }
+}
+
 @layer base {
   body {
     @apply bg-slate-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
@@ -601,47 +611,101 @@
 /* End of @layer components */
 
 @media print {
-  * {
-    background-color: transparent !important;
+  @page {
+    margin: 0;
+    size: auto;
   }
 
+  /* Reset global layout containers */
   html,
-  body {
+  body,
+  #root,
+  #root > div,
+  main,
+  #app-scroll-container {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-
+    background-color: white !important;
   }
 
-  .screen-only-footer {
+  /* Add padding to body/container for content safety since we removed margins */
+  body {
+    padding: 0 !important;
+  }
+
+  /* Hide UI elements */
+  nav,
+  aside,
+  footer,
+  .screen-only-footer,
+  .return-to-main,
+  .print-hidden,
+  button {
     display: none !important;
-    position: static !important;
+    opacity: 0 !important;
+    width: 0 !important;
     height: 0 !important;
     overflow: hidden !important;
   }
 
-
-  .return-to-main {
-    display: none !important;
-    visibility: hidden !important;
-  }
-
-  .print-hidden {
-    display: none !important;
-    height: 0 !important;
-  }
-
-  .overflow-hidden {
-    overflow: visible !important;
-    max-height: max-content !important;
-  }
-
+  /* Specific fix for Kundali container */
   .kundali-display-container {
-    page-break-before: avoid;
-    page-break-after: avoid;
-    page-break-inside: avoid;
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: transparent !important;
     box-shadow: none !important;
+    page-break-inside: auto !important;
+  }
+
+  /* Allow internal page breaks */
+  .kundali-display-container > div {
+    break-inside: auto;
+  }
+
+  /* Ensure text is black for printing, but allow backgrounds */
+  * {
+    text-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Default behavior (Portrait mainly) */
+  .calendar-day {
+    min-height: auto !important;
+  }
+}
+
+@media print and (orientation: portrait) {
+  /* Portrait: Square cells, moderate padding */
+  .calendar-day {
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 6px !important; /* Ensure card look */
+    /* Margin 0 is okay if we use grid gap, but let's be safe */
+  }
+
+  .print\:px-24 {
+    padding-left: 1rem !important; /* approx 16px + 32px (p-8) = 48px side margin */
+    padding-right: 1rem !important;
+  }
+}
+
+@media print and (orientation: landscape) {
+  /* Landscape: Rectangular cells to save vertical height */
+  .calendar-day {
+     aspect-ratio: auto !important;
+     height: 18mm !important; /* Fixed height that is smaller than width to fit page */
+  }
+
+  .print\:px-24 {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
   }
 }

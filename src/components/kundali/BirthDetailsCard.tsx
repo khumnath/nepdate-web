@@ -124,7 +124,7 @@ export const BirthDetailsCard: React.FC<BirthDetailsCardProps> = ({ data, title,
   const ascendantDegrees = formatDegrees(data.ascendant.degreesInSign);
 
   return (
-    <div className="kundali-card p-4 sm:p-6 rounded-lg h-full bg-slate-200 dark:bg-gray-800">
+    <div className="kundali-card p-4 sm:p-6 rounded-lg h-full bg-slate-200 print:bg-white dark:bg-gray-800 print:shadow-none print:border-none">
       <h3 className={`text-xl font-bold mb-4 text-center ${titleClassName || 'text-blue-400 dark:text-blue-400'}`}>{title || NEPALI_LABELS.birthDetails}</h3>
 
       {/* Birth Details Section */}

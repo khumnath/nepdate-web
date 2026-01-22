@@ -294,7 +294,7 @@ export const KundaliPage: React.FC<KundaliPageProps> = ({ onBack, setIsKundaliRe
   };
 
   return (
-    <main className="h-full flex-1 flex flex-col overflow-hidden w-full bg-slate-200 text-gray-900 dark:bg-gray-800 dark:text-gray-100 transition-colors">
+    <main className="h-full flex-1 flex flex-col overflow-hidden w-full bg-slate-200 text-gray-900 dark:bg-gray-800 dark:text-gray-100 transition-colors print:bg-white">
       <PageHeader title={NEPALI_LABELS.kundali} onBack={onBack} transparent={true} />
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-6 lg:p-8 pb-32 max-w-7xl mx-auto w-full">
         <div className="flex justify-center text-xs mb-4 text-gray-400 dark:text-gray-500">

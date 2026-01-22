@@ -32,7 +32,7 @@ export const DashaTable: React.FC<{ dashaSequence: DashaInfo[], title: string }>
     };
 
     return (
-        <div className="kundali-card p-2 sm:p-6 mb-11 print:mb-2 rounded-lg bg-slate-200 dark:bg-gray-800 break-inside-avoid-page page-break-inside-avoid">
+        <div className="kundali-card p-2 sm:p-6 mb-11 print:mb-2 rounded-lg bg-slate-200 dark:bg-gray-800 break-inside-avoid-page page-break-inside-avoid print:bg-white print:shadow-none print:border-none">
             <h3 className="text-xl font-bold text-blue-400 dark:text-blue-400 mb-4 print:hidden">{title}</h3>
             {isJaimini && (
                 <p className="text-xs text-stone-500 dark:text-stone-400 -mt-3 mb-3 px-2 print:hidden">

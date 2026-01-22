@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { ComparisonResult } from '../../types/types';
 import { NEPALI_BS_MONTHS, NEPALI_LABELS, NEPALI_RASHI } from '../../constants/constants';
 import { toBikramSambat, toDevanagari } from '../../lib/utils/lib';
 import { PrintIcon } from '../../data/icons';
 import { BirthDetailsCard } from './BirthDetailsCard';
+import { handlePrint } from '../../lib/utils/appUtils';
+import { PrintAdDialog } from '../shared/PrintAdDialog';
 
 interface ComparisonDisplayProps {
   result: ComparisonResult;
@@ -29,6 +31,7 @@ const KootaRow: React.FC<{
 );
 
 export const ComparisonDisplay: React.FC<ComparisonDisplayProps> = ({ result, onReturnToForm }) => {
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
   const { groom, bride, score, conclusion, labels } = result;
   const now = new Date();
   const bsDate = toBikramSambat(now);
@@ -36,12 +39,12 @@ export const ComparisonDisplay: React.FC<ComparisonDisplayProps> = ({ result, on
   const timeFormatted = now.toLocaleTimeString('ne-NP', { hour: 'numeric', minute: '2-digit', hour12: true });
 
   return (
-    <div className="kundali-display-container flex flex-col bg-slate-200 rounded-xl shadow-lg w-full lg:max-w-4xl xl:max-w-6xl lg:p-4 md:p-1 space-y-4 text-sm md:text-base dark:bg-gray-800 dark:text-gray-200 dark:border dark:border-gray-700 pb-32 print:pb-0 print:m-0 print:rounded-none print:shadow-none print:bg-transparent">
-      <header className="kundali-card rounded-lg text-center p-4 dark:bg-gray-800">
+    <div className="kundali-display-container flex flex-col bg-slate-200 print:bg-white rounded-xl shadow-lg w-full lg:max-w-4xl xl:max-w-6xl lg:p-4 md:p-1 space-y-4 text-sm md:text-base dark:bg-gray-800 dark:text-gray-200 dark:border dark:border-gray-700 pb-32 print:pb-0 print:m-0 print:rounded-none print:shadow-none">
+      <header className="kundali-card rounded-lg text-center p-4 dark:bg-gray-800 print:bg-white print:shadow-none">
         <h2 className="text-2xl font-bold text-blue-400 dark:text-blue-400">
           {groom.birthDetails.name} र {bride.birthDetails.name} को गुण मिलान
         </h2>
-        <div className="hidden text-xs self-center print:block font-bold text-gray-400 dark:text-gray-400">
+        <div className="hidden text-xs self-center print:block font-bold text-gray-700 dark:text-gray-400">
           {NEPALI_LABELS.printedDate}: {formattedDate} {timeFormatted}
         </div>
       </header>
@@ -51,7 +54,7 @@ export const ComparisonDisplay: React.FC<ComparisonDisplayProps> = ({ result, on
         <BirthDetailsCard data={bride} title={NEPALI_LABELS.brideDetails} titleClassName="text-pink-700 dark:text-pink-400" />
       </div>
 
-      <div className="kundali-card p-3 sm:p-5 rounded-lg overflow-x-auto bg-slate-200 dark:bg-gray-800">
+      <div className="kundali-card p-3 sm:p-5 rounded-lg overflow-x-auto bg-slate-200 dark:bg-gray-800 print:bg-white print:shadow-none">
         <h3 className="text-xl font-bold text-blue-400 dark:text-blue-400 mb-4">{NEPALI_LABELS.gunaMilanTableTitle}</h3>
         <table className="w-full text-left text-sm sm:text-base">
           <thead className="border-b-2 border-amber-200 dark:border-amber-700 text-stone-600 dark:text-stone-300">
@@ -84,13 +87,21 @@ export const ComparisonDisplay: React.FC<ComparisonDisplayProps> = ({ result, on
         </table>
       </div>
 
-      <div className="kundali-card rounded-lg bg-slate-200 dark:bg-gray-800">
+      <div className="kundali-card rounded-lg bg-slate-200 dark:bg-gray-800 print:bg-white print:shadow-none">
         <h3 className="text-lg font-bold text-blue-400 dark:text-blue-400">{NEPALI_LABELS.conclusion}</h3>
         <p className="text-stone-800 dark:text-stone-100">{conclusion}</p>
       </div>
 
-      <div className="hidden print:block text-center text-xs text-gray-500 mt-4 border-t border-gray-300">
-        <p>© {new Date().getFullYear()} {NEPALI_LABELS.project}</p>
+      <div className="hidden print:block text-center text-xs text-gray-500 pt-4 mt-8 border-t border-gray-300">
+        <p>Printed from nepdate web/android application.</p>
+        <p className="mt-1">
+          <a href="https://play.google.com/store/apps/details?id=com.khumnath.nepdate" className="text-blue-600 underline">
+            https://play.google.com/store/apps/details?id=com.khumnath.nepdate
+          </a>
+          <br />
+          © {new Date().getFullYear()} {NEPALI_LABELS.project}
+        </p>
+
       </div>
 
       <div className="mt-8 mb-8 w-full px-4 text-center screen-only-footer print:hidden">
@@ -98,7 +109,12 @@ export const ComparisonDisplay: React.FC<ComparisonDisplayProps> = ({ result, on
           <button className="bg-blue-600 dark:bg-blue-600 text-white px-6 py-2 rounded shadow-md hover:bg-blue-700 dark:hover:bg-blue-800 transition flex items-center gap-2" onClick={onReturnToForm}>
             ← {NEPALI_LABELS.returnToForm}
           </button>
-          <button className="bg-gray-600 dark:bg-gray-500 text-white px-6 py-2 rounded shadow-md hover:bg-gray-700 dark:hover:bg-gray-600 transition flex items-center gap-2" onClick={() => window.print()}>
+          <button className="bg-gray-600 dark:bg-gray-500 text-white px-6 py-2 rounded shadow-md hover:bg-gray-700 dark:hover:bg-gray-600 transition flex items-center gap-2"
+            onClick={() => {
+                if (window.Android) setShowPrintDialog(true);
+                else handlePrint();
+            }}
+          >
             <PrintIcon className="w-4 h-4" />
           </button>
         </div>
@@ -106,6 +122,12 @@ export const ComparisonDisplay: React.FC<ComparisonDisplayProps> = ({ result, on
           {NEPALI_LABELS.mobilePrintHint}
         </p>
       </div>
+
+      <PrintAdDialog
+            isOpen={showPrintDialog}
+            onClose={() => setShowPrintDialog(false)}
+            onPrint={handlePrint}
+      />
     </div>
   );
 };

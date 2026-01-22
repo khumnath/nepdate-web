@@ -114,10 +114,10 @@ const MonthlyEvents: React.FC<MonthlyEventsProps> = ({
     });
 
     return (
-      <div className={cardStyle}>
-        <div className="px-5 py-4">
+      <div className={`${cardStyle} print:shadow-none print:border-none print:bg-transparent`}>
+        <div className="px-5 py-4 print:px-0 print:py-0">
           <div
-            className="text-[13px] leading-relaxed flex flex-wrap gap-x-3 gap-y-1.5"
+            className="text-[13px] print:text-xs leading-relaxed flex flex-wrap justify-center gap-x-3 gap-y-1.5"
             style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}
           >
             {eventItems.map((item, index) => (

@@ -9,7 +9,7 @@ interface PlanetaryTableProps {
 
 export const PlanetaryTable: React.FC<PlanetaryTableProps> = ({ planets }) => {
   return (
-    <div className="kundali-card p-4 sm:p-6 rounded-lg overflow-x-auto dark:bg-gray-800 dark:text-stone-100 transition-colors duration-300">
+    <div className="kundali-card p-4 sm:p-6 rounded-lg overflow-x-auto dark:bg-gray-800 dark:text-stone-100 transition-colors duration-300 print:bg-white print:shadow-none print:border-none">
       <h3 className="text-xl font-bold text-blue-400 dark:text-blue-400 mb-4">
         {NEPALI_LABELS.planetaryPositions}
       </h3>

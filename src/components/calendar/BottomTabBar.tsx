@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreHorizontal, Moon, Sun, RefreshCcw } from 'lucide-react';
+import { MoreHorizontal, Moon, Sun, RefreshCcw, Share2, Star } from 'lucide-react';
 import { MENU_ITEMS, MenuItem } from '../../constants/menu';
-import { handleReloadApp } from '../../lib/utils/appUtils';
+import { handleReloadApp, handleShareApp, handleRateApp } from '../../lib/utils/appUtils';
 
 interface BottomTabBarProps {
   activeView: string;
@@ -58,8 +58,26 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fixedMenus = menus.filter((m) => m.fixed);
-  const moreMenus = menus.filter((m) => !m.fixed);
+  // Inject Android Items
+  const androidMenus: MenuItem[] = [];
+  if (typeof window !== 'undefined' && window.Android) {
+      androidMenus.push({
+          key: 'share',
+          label: 'Share App',
+          icon: <Share2 className="w-5 h-5" />,
+          fixed: false
+      });
+      androidMenus.push({
+          key: 'rate',
+          label: 'Rate App',
+          icon: <Star className="w-5 h-5" />,
+          fixed: false
+      });
+  }
+
+  const allMenus = [...menus, ...androidMenus];
+  const fixedMenus = allMenus.filter((m) => m.fixed);
+  const moreMenus = allMenus.filter((m) => !m.fixed);
 
   return (
     <nav
@@ -146,7 +164,9 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        onNavigate(item.key);
+                        if (item.key === 'share') handleShareApp();
+                        else if (item.key === 'rate') handleRateApp();
+                        else onNavigate(item.key);
                         setTimeout(() => setShowMore(false), 100);
                       }}
                       className="

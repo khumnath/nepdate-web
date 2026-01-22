@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MENU_ITEMS, MenuItem } from '../../constants/menu';
-import { MoreHorizontal, Download, RefreshCcw, Moon, Sun } from 'lucide-react';
+import { MoreHorizontal, Download, RefreshCcw, Moon, Sun, Share2, Star } from 'lucide-react';
 import { NEPALI_LABELS } from '../../constants/constants';
-import { handleReloadApp } from '../../lib/utils/appUtils';
+import { handleReloadApp, handleShareApp, handleRateApp } from '../../lib/utils/appUtils';
 import { HeaderLogo } from './HeaderLogo';
 
 interface DesktopTopNavProps {
@@ -82,7 +82,25 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
 				icon: <RefreshCcw className="w-5 h-5" />,
 				fixed: false
 			};
-			const allItems = [...MENU_ITEMS, REFRESH_ITEM];
+
+            // Android Items
+            const ANDROID_ITEMS: MenuItem[] = [];
+            if (typeof window !== 'undefined' && window.Android) {
+                ANDROID_ITEMS.push({
+                    key: 'share',
+                    label: 'Share App',
+                    icon: <Share2 className="w-5 h-5" />,
+                    fixed: false
+                });
+                ANDROID_ITEMS.push({
+                    key: 'rate',
+                    label: 'Rate App',
+                    icon: <Star className="w-5 h-5" />,
+                    fixed: false
+                });
+            }
+
+			const allItems = [...MENU_ITEMS, ...ANDROID_ITEMS, REFRESH_ITEM];
 
 			// Measure All Menu Items
 			const itemWidths = allItems.map(menu => {
@@ -155,7 +173,12 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
 				{visibleMenus.map((menu) => (
 					<button
 						key={menu.key}
-						onClick={() => menu.key === 'refresh' ? handleReloadApp() : onNavigate(menu.key)}
+						onClick={() => {
+                            if (menu.key === 'refresh') handleReloadApp();
+                            else if (menu.key === 'share') handleShareApp();
+                            else if (menu.key === 'rate') handleRateApp();
+                            else onNavigate(menu.key);
+                        }}
 						className={`flex-shrink-0 px-3 py-2 rounded-md flex items-center gap-2 whitespace-nowrap text-sm font-medium transition-colors ${activeView === menu.key
 							? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
 							: 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
@@ -186,6 +209,10 @@ export const DesktopTopNav: React.FC<DesktopTopNavProps> = ({
 											e.stopPropagation();
 											if (menu.key === 'refresh') {
 												handleReloadApp();
+                                            } else if (menu.key === 'share') {
+                                                handleShareApp();
+                                            } else if (menu.key === 'rate') {
+                                                handleRateApp();
 											} else {
 												onNavigate(menu.key);
 											}

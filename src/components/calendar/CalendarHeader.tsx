@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sun, Moon, X, AlertTriangle, CheckCircle, Clock, Sunrise, Sunset } from 'lucide-react';
+import { Sun, Moon, X, AlertTriangle, CheckCircle, Clock, Sunrise, Sunset, Printer } from 'lucide-react';
 import { toDevanagari, getNepaliPeriod, toBikramSambat, weekdays } from '../../lib/utils/lib';
 import { getNepalDate } from '../../lib/utils/appUtils';
 import {
@@ -327,8 +327,17 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             </button>
           </div>
 
-          {/* RIGHT SIDE: THEME TOGGLE ONLY (Date Text Removed) */}
-          <div className="flex items-center gap-4">
+          {/* RIGHT SIDE: THEME TOGGLE & PRINT */}
+          <div className="flex items-center gap-2 sm:gap-4">
+             {/* PRINT BUTTON */}
+             <button
+              onClick={() => window.dispatchEvent(new CustomEvent('navigate-to-print-calendar'))}
+              className="p-2.5 rounded-lg bg-slate-200 dark:bg-gray-700 text-[rgb(25_33_148)] dark:text-gray-300 hover:text-[rgb(25_33_148)] dark:hover:text-blue-400 transition-colors duration-200"
+              title={NEPALI_LABELS.print || "Print"}
+            >
+              <Printer size={18} />
+            </button>
+
             {/* THEME TOGGLE */}
             <button
               onClick={onThemeToggle}

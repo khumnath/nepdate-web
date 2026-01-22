@@ -9,7 +9,7 @@ import MonthlyEvents from './components/calendar/MonthlyEvents';
 import Footer from './components/calendar/Footer';
 import DesktopFooter from './components/layout/DesktopFooter';
 import AboutPopup from './pages/AboutPopup';
-import { Menu, X, Download, RefreshCcw, Moon, Sun } from 'lucide-react';
+import { Menu, X, Download, RefreshCcw, Moon, Sun, Share2, Star } from 'lucide-react';
 import { MENU_ITEMS } from './constants/menu';
 import { NEPALI_LABELS } from './constants/constants';
 import { toast, ToastContainer } from './components/shared/toast';
@@ -22,7 +22,7 @@ import { usePWA } from './hooks/usePWA';
 import { useCalendarLogic } from './hooks/useCalendarLogic';
 import { useAppNavigation } from './hooks/useAppNavigation';
 import { usePlatform } from './hooks/usePlatform';
-import { handleReloadApp, getAppBaseUrl } from './lib/utils/appUtils';
+import { handleReloadApp, getAppBaseUrl, handleShareApp, handleRateApp } from './lib/utils/appUtils';
 import { createSlug, toDevanagari } from './lib/utils/lib';
 import { RashifalWidget } from './components/calendar/RashifalWidget';
 import { SocialMedia } from './components/calendar/SocialMedia';
@@ -38,6 +38,8 @@ import { BlogWidget } from './components/blog/BlogWidget';
 import { BlogDetailPage } from './pages/BlogDetailPage';
 import { Blog } from './data/blogs';
 import { getAllBlogs } from './lib/blogContent';
+
+const CalendarPrintPage = React.lazy(() => import('./pages/CalendarPrintPage'));
 
 const App: React.FC = () => {
   const { theme, toggleTheme, resetTheme } = useTheme();
@@ -110,6 +112,33 @@ const App: React.FC = () => {
   }, [setActiveView]);
 
   useEffect(() => {
+    const handlePrintNav = () => setActiveView('print-calendar' as any);
+    window.addEventListener('navigate-to-print-calendar', handlePrintNav);
+    return () => window.removeEventListener('navigate-to-print-calendar', handlePrintNav);
+  }, []);
+
+  useEffect(() => {
+    // Force light mode during print
+    const handleBeforePrint = () => {
+      document.documentElement.classList.remove('dark');
+    };
+    const handleAfterPrint = () => {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    };
+
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+  }, [theme]);
+
+
+  useEffect(() => {
     if (showExitToast) {
       toast.info('Press back again to exit', 2000);
     }
@@ -141,7 +170,7 @@ const App: React.FC = () => {
 
   return (
     <div
-      className={`fixed inset-0 h-[100dvh] w-full flex flex-col bg-slate-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors overflow-hidden ${desktopLayoutStyle === 'sidebar' ? 'md:flex-row' : ''} ${theme === 'dark' ? 'dark' : ''}`}
+      className={`fixed inset-0 h-[100dvh] w-full flex flex-col bg-slate-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors overflow-hidden ${desktopLayoutStyle === 'sidebar' ? 'md:flex-row' : ''} ${theme === 'dark' && activeView !== 'print-calendar' ? 'dark' : ''}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -216,6 +245,23 @@ const App: React.FC = () => {
                 {item.icon} {item.label}
               </button>
             ))}
+            {/* Android Specific Menu Items */}
+            {typeof window !== 'undefined' && window.Android && (
+              <>
+                <button
+                  onClick={() => { handleShareApp(); setIsMenuOpen(false); }}
+                  className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"
+                >
+                  <Share2 className="w-5 h-5" /> Share App
+                </button>
+                 <button
+                  onClick={() => { handleRateApp(); setIsMenuOpen(false); }}
+                  className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700"
+                >
+                  <Star className="w-5 h-5" /> Rate App
+                </button>
+              </>
+            )}
             {!isStandalone && canInstall && <button onClick={() => { handleInstallClick(); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded bg-blue-600 text-white hover:bg-blue-700"><Download className="w-4 h-4" /> {NEPALI_LABELS.installApp}</button>}
             <button onClick={() => { toggleTheme(); setIsMenuOpen(false); }} className="px-3 py-2 flex items-center gap-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700">{theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />} {theme === 'light' ? NEPALI_LABELS.darkMode : NEPALI_LABELS.lightMode}</button>
             <hr className="border-gray-300 dark:border-gray-600 my-2" />
@@ -230,7 +276,7 @@ const App: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
-        <div id="app-scroll-container" className={`h-full mx-auto w-full max-w-7xl xl:max-w-6xl ${activeView === 'calendar' ? 'overflow-auto px-4 md:px-6 pb-20 md:pb-6' : 'overflow-hidden p-0'}`}>
+        <div id="app-scroll-container" className={`h-full mx-auto w-full max-w-7xl xl:max-w-6xl ${activeView === 'calendar' || activeView === 'print-calendar' || activeView === 'blog-detail' || activeView === 'day-detail' || activeView === 'dharma' || activeView === 'kundali' ? 'overflow-auto' : 'overflow-hidden'} ${activeView === 'calendar' ? 'px-4 md:px-6 pb-20 md:pb-6' : 'p-0'}`}>
           {activeView === 'calendar' ? (
             <>
               <CalendarHeader activeSystem={activeSystem} onSystemChange={switchSystem} onTodayClick={goToToday} theme={theme} onThemeToggle={toggleTheme} todayDetails={todayDetails} />
@@ -289,6 +335,9 @@ const App: React.FC = () => {
                       dateKey={`${initialTodayBs.year}-${initialTodayBs.monthIndex + 1}-${initialTodayBs.day}`}
                       tithi={todayDetails?.tithis?.[0]?.name}
                       nakshatra={todayDetails?.nakshatras?.[0]?.name}
+                      moonRashi={todayDetails?.moonRashi}
+                      nextMoonRashi={todayDetails?.moonRashiTransition?.nextRashi}
+                      transitionTime={todayDetails?.moonRashiTransition?.time || undefined}
                       className="flex-1" // Allow it to fill the flex container
                       onViewAll={() => setActiveView('rashifal')}
                     />
@@ -379,12 +428,30 @@ const App: React.FC = () => {
                     setDharmaBackAction
                   };
                 } else if (activeView === 'rashifal') {
+                  // Calculate Nakshatra Transition
+                  let nextNakshatraName: string | undefined;
+                  let nakshatraTransition: string | undefined;
+
+                  if (todayDetails?.nakshatras && todayDetails.nakshatras.length > 1) {
+                      const nextNk = todayDetails.nakshatras[1];
+                      if (nextNk && nextNk.startTime) {
+                          nextNakshatraName = nextNk.name;
+                          const dateObj = new Date(nextNk.startTime);
+                          nakshatraTransition = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                      }
+                  }
+
                   pageProps = {
                     ...commonProps,
                     date: `${toDevanagari(initialTodayBs.year)} ${initialTodayBs.monthName} ${toDevanagari(initialTodayBs.day)}`,
                     dateKey: `${initialTodayBs.year}-${initialTodayBs.monthIndex + 1}-${initialTodayBs.day}`,
                     tithi: todayDetails?.tithis?.[0]?.name,
-                    nakshatra: todayDetails?.nakshatras?.[0]?.name
+                    nakshatra: todayDetails?.nakshatras?.[0]?.name,
+                    moonRashi: todayDetails?.moonRashi,
+                    nextMoonRashi: todayDetails?.moonRashiTransition?.nextRashi,
+                    transitionTime: todayDetails?.moonRashiTransition?.time || undefined,
+                    nextNakshatra: nextNakshatraName,
+                    nakshatraTransitionTime: nakshatraTransition
                   };
                 }
 
@@ -396,6 +463,14 @@ const App: React.FC = () => {
               }
               return null;
             })()
+          )}
+          {activeView === 'print-calendar' && (
+            <React.Suspense fallback={<div className="p-10 text-center">Loading...</div>}>
+              <CalendarPrintPage
+                 onBack={() => setActiveView('calendar')}
+                 activeSystem={activeSystem}
+              />
+            </React.Suspense>
           )}
           {/* Desktop Footer inside scrollable area to prevent layout breakage - Only on Home Page */}
           {activeView === 'calendar' && (

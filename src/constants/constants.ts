@@ -195,6 +195,8 @@ export const NEPALI_LABELS = {
   view: "हेर्नुहोस्",
   radio: "रेडियो",
   privacyPolicy: "गोपनीयता नीति",
+  back: "पछाडि",
+  allMonths: "सम्पूर्ण वर्ष (१२ महिना)",
   calendar: "पात्रो"
 };
 

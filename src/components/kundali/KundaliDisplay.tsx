@@ -8,6 +8,7 @@ import { NEPALI_BS_MONTHS, NEPALI_LABELS } from '../../constants/constants';
 import { PrintIcon, ChevronDownIcon } from '../../data/icons';
 import { toBikramSambat, toDevanagari } from '../../lib/core/bikram';
 import { handlePrint } from '../../lib/utils/appUtils';
+import { PrintAdDialog } from '../shared/PrintAdDialog';
 
 interface KundaliDisplayProps {
   data: KundaliResponse;
@@ -51,6 +52,7 @@ const ChartItem: React.FC<{ chart: any }> = ({ chart }) => {
 
 export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnToForm }) => {
   const [showMoreCharts, setShowMoreCharts] = useState(false);
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
 
   const navamsaChartData = data.divisionalCharts.find((c) => c.name.includes('D9'));
   const dashamsaChartData = data.divisionalCharts.find((c) => c.name.includes('D10'));
@@ -83,13 +85,13 @@ export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnTo
   });
 
   return (
-    <div className="kundali-display-container flex flex-col bg-slate-200 rounded-xl shadow-lg w-full lg:max-w-4xl xl:max-w-6xl lg:p-4 md:p-1 space-y-4 text-sm md:text-base dark:bg-gray-800 dark:text-gray-200 dark:border dark:border-gray-700 pb-32 print:pb-2 print:space-y-2">
+    <div className="kundali-display-container flex flex-col bg-slate-200 print:bg-white rounded-xl shadow-lg print:shadow-none w-full lg:max-w-4xl xl:max-w-6xl lg:p-4 md:p-1 space-y-4 text-sm md:text-base dark:bg-gray-800 dark:text-gray-200 dark:border dark:border-gray-700 pb-32 print:pb-2 print:space-y-2">
       {/* Header */}
-      <header className="kundali-card rounded-lg text-center dark:bg-gray-800 dark:text-blue-400 transition-colors duration-300">
+      <header className="kundali-card rounded-lg text-center dark:bg-gray-800 dark:text-blue-400 transition-colors duration-300 print:bg-white print:shadow-none">
         <h2 className="text-3xl self-center font-bold text-blue-400 dark:text-blue-400">
           {NEPALI_LABELS.kundaliOf(data.birthDetails.name)}
         </h2>
-        <div className="hidden text-xs self-center print:block font-bold text-gray-400 dark:text-gray-400">
+        <div className="hidden text-xs self-center print:block font-bold text-gray-700 dark:text-gray-400">
           {NEPALI_LABELS.printedDate}: {formattedDate} {timeFormatted}
         </div>
         <div className="mt-2 text-xs text-orange-600 dark:text-orange-400 text-center px-2"
@@ -101,10 +103,10 @@ export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnTo
       {/* Birth details + planets */}
       <div className="grid grid-cols-1 gap-4 print:gap-2">
         <div className="flex flex-col gap-4 print:gap-2">
-          <div className="kundali-card p-4 print:p-2 rounded-lg bg-slate-200 dark:bg-gray-800 shadow">
+          <div className="kundali-card p-4 print:p-2 rounded-lg bg-slate-200 print:bg-white dark:bg-gray-800 shadow print:shadow-none print:border print:border-gray-300">
             <BirthDetailsCard data={data} />
           </div>
-          <div className="kundali-card p-4 print:p-2 rounded-lg bg-slate-200 dark:bg-gray-800 shadow">
+          <div className="kundali-card p-4 print:p-2 rounded-lg bg-slate-200 print:bg-white dark:bg-gray-800 shadow print:shadow-none print:border print:border-gray-300">
             <PlanetaryTable planets={data.planets} />
           </div>
         </div>
@@ -169,7 +171,13 @@ export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnTo
       </div>
 
       {/* Print footer */}
-      <div className="hidden print:block text-center text-xs text-gray-500 pt-2 mt-2 border-t border-gray-300">
+      <div className="hidden print:block text-center text-xs text-gray-500 pt-4 mt-8 border-t border-gray-300">
+        <p>Printed from nepdate web/android application.</p>
+        <p className="mt-1">
+          <a href="https://play.google.com/store/apps/details?id=com.khumnath.nepdate" className="text-blue-600 underline">
+            https://play.google.com/store/apps/details?id=com.khumnath.nepdate
+          </a>
+        </p>
         <p>© {new Date().getFullYear()} {NEPALI_LABELS.project}</p>
       </div>
 
@@ -184,12 +192,21 @@ export const KundaliDisplay: React.FC<KundaliDisplayProps> = ({ data, onReturnTo
           </button>
           <button
             className="bg-gray-600 dark:bg-gray-500 text-white px-6 py-2 rounded shadow-md hover:bg-gray-700 transition flex items-center gap-2"
-            onClick={handlePrint}
+            onClick={() => {
+                if (window.Android) setShowPrintDialog(true);
+                else handlePrint();
+            }}
           >
             <PrintIcon className="w-4 h-4" /> {NEPALI_LABELS.print}
           </button>
         </div>
       </div>
+
+      <PrintAdDialog
+            isOpen={showPrintDialog}
+            onClose={() => setShowPrintDialog(false)}
+            onPrint={handlePrint}
+      />
     </div>
   );
 };

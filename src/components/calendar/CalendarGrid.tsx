@@ -240,34 +240,39 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           <span className={tithiClass} style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
             {tithi?.name}
           </span>
-
-          {panchanga.events && panchanga.events.length > 0 && <div className="event-dot" />}
         </div>
       );
     }
-
     return cells;
   };
 
   return (
     <div className="flex flex-col min-h-0">
-      {/* Weekdays Header */}
-      <div className="grid grid-cols-7 gap-1 mb-1 flex-shrink-0">
-        {weekdays.map((day, index) => (
-          <div
-            key={day}
-            className={`weekday ${index === 6 ? 'bg-red-600 dark:bg-red-800' : 'bg-blue-500 dark:bg-indigo-900'
-              }`}
-            style={activeSystem === 'bs' ? { fontFamily: "'Noto Sans Devanagari', sans-serif" } : {}}
-          >
-            {day}
-          </div>
-        ))}
-      </div>
+      <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-1 print:border-gray-400 print:rounded-lg">
+        {/* Weekdays Header - Use gap-2 to match the card-like grid below */}
+        <div
+          className="grid grid-cols-7 gap-1 md:gap-2 print:gap-2 mb-2 print:mb-2 flex-shrink-0 text-center"
+          style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}
+        >
+          {weekdays.map((day, index) => (
+            <div
+              key={day}
+              className={`weekday ${index === 6 ? 'bg-red-600 dark:bg-red-800' : 'bg-blue-500 dark:bg-indigo-900'
+                } rounded-md`}
+              style={activeSystem === 'bs' ? { fontFamily: "'Noto Sans Devanagari', sans-serif" } : {}}
+            >
+              {day}
+            </div>
+          ))}
+        </div>
 
-      {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-1 calendar-grid">
-        {activeSystem === 'bs' ? renderBikramSambatCalendar() : renderGregorianCalendar()}
+        {/* Calendar Grid - Symmetrical gaps */}
+        <div
+          className="grid grid-cols-7 gap-1 md:gap-2 print:gap-2 print:content-start calendar-grid"
+          style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}
+        >
+          {activeSystem === 'bs' ? renderBikramSambatCalendar() : renderGregorianCalendar()}
+        </div>
       </div>
 
       <div className="mb-2 flex-grow" />

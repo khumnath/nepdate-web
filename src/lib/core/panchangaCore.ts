@@ -616,6 +616,16 @@ export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
     return KARANA_NAMES[karanaIdx - 57 + 8];
   });
 
+  // Calculate Moon Rashi Transitions (Sign Change)
+  const rashiElements = findElementsForDay(sunriseAhar, dayEndAhar, absTrueLongitudeMoon, 30, RASHI_NAMES);
+  let moonRashiTransition = null;
+  if (rashiElements.length > 1 && rashiElements[1].startTime) {
+     moonRashiTransition = {
+         nextRashi: rashiElements[1].name,
+         time: formatTime(rashiElements[1].startTime)
+     };
+  }
+
   // If previous element do not touches sunrise ... we no need to show in that day
   const filterEarlyElements = (list: any[]) => {
     return list.filter(item => {
@@ -672,6 +682,7 @@ export function calculate(date: Date, lat?: number, lon?: number, tz?: number) {
     paksha: lunarInfo.paksha,
     sunRashi: lunarInfo.sunRashi,
     moonRashi: lunarInfo.moonRashi,
+    moonRashiTransition,
     adhikaMasa: lunarInfo.adhikaStatus,
     isComputed: bsInfo.isComputed || false,
 

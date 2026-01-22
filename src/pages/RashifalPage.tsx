@@ -9,10 +9,14 @@ interface RashifalPageProps {
   tithi?: string;
   nakshatra?: string;
   moonRashi?: string;
+  nextMoonRashi?: string;
+  transitionTime?: string;
+  nextNakshatra?: string;
+  nakshatraTransitionTime?: string;
   param?: string; // e.g. 'mesh', 'brish'
 }
 
-const RashifalPage: React.FC<RashifalPageProps> = ({ onBack, date, dateKey, tithi, nakshatra, param }) => {
+const RashifalPage: React.FC<RashifalPageProps> = ({ onBack, date, dateKey, tithi, nakshatra, moonRashi, nextMoonRashi, transitionTime, nextNakshatra, nakshatraTransitionTime, param }) => {
   return (
     <div className="h-full bg-slate-100 dark:bg-gray-900 flex flex-col overflow-hidden">
       <PageHeader title="राशिफल" onBack={onBack} />
@@ -32,6 +36,11 @@ const RashifalPage: React.FC<RashifalPageProps> = ({ onBack, date, dateKey, tith
             dateKey={dateKey}
             tithi={tithi}
             nakshatra={nakshatra}
+            moonRashi={moonRashi}
+            nextMoonRashi={nextMoonRashi}
+            transitionTime={transitionTime}
+            nextNakshatra={nextNakshatra}
+            nakshatraTransitionTime={nakshatraTransitionTime}
             selectedRashi={param}
           />
         </div>
