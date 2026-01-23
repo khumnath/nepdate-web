@@ -27,4 +27,18 @@ const RashiImages = {
   meen
 };
 
+export const RASHI_IMAGES: Record<string, string> = {
+  'mesh.png': RashiImages.mesh,
+  'vrish.png': RashiImages.vrish,
+  'mithun.png': RashiImages.mithun,
+  'karkat.png': RashiImages.karkat,
+  'simha.png': RashiImages.simha,
+  'kanya.png': RashiImages.kanya,
+  'tula.png': RashiImages.tula,
+  'vrishchik.png': RashiImages.vrishchik,
+  'dhanu.png': RashiImages.dhanu,
+  'makar.png': RashiImages.makar,
+  'kumbha.png': RashiImages.kumbha,
+  'meen.png': RashiImages.meen
+};
 export default RashiImages;

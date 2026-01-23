@@ -66,6 +66,15 @@ export const calculateReadTime = (content: string): string => {
     return `${toDevanagari(time)} मिनेट`;
 };
 
+// Helper to localize time strings (converts digits to Devanagari and AM/PM to Nepali markers)
+export const localizeTimeStr = (timeStr: string | undefined): string | undefined => {
+    if (!timeStr) return timeStr;
+    return timeStr
+        .replace(/(\d+)/g, (match) => toDevanagari(match))
+        .replace(/\bAM\b/gi, 'पूर्वाह्न')
+        .replace(/\bPM\b/gi, 'अपराह्न');
+};
+
 export const createSlug = (text: string): string => {
     return text
         .trim()

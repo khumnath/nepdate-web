@@ -23,7 +23,7 @@ import { useCalendarLogic } from './hooks/useCalendarLogic';
 import { useAppNavigation } from './hooks/useAppNavigation';
 import { usePlatform } from './hooks/usePlatform';
 import { handleReloadApp, getAppBaseUrl, handleShareApp, handleRateApp } from './lib/utils/appUtils';
-import { createSlug, toDevanagari } from './lib/utils/lib';
+import { createSlug, toDevanagari, localizeTimeStr } from './lib/utils/lib';
 import { RashifalWidget } from './components/calendar/RashifalWidget';
 import { SocialMedia } from './components/calendar/SocialMedia';
 import { AdsBanner } from './components/calendar/AdsBanner';
@@ -330,17 +330,18 @@ const App: React.FC = () => {
                   {/* Left Column: Rashifal Only (Height Reference) */}
                   <aside className="hidden md:flex md:col-span-5 xl:col-span-4 flex-col h-full">
                     {/* TodayWidget moved to top, so only Rashifal remains here to set height */}
-                    <RashifalWidget
-                      date={`${toDevanagari(initialTodayBs.year)} ${initialTodayBs.monthName} ${toDevanagari(initialTodayBs.day)}`}
-                      dateKey={`${initialTodayBs.year}-${initialTodayBs.monthIndex + 1}-${initialTodayBs.day}`}
-                      tithi={todayDetails?.tithis?.[0]?.name}
-                      nakshatra={todayDetails?.nakshatras?.[0]?.name}
-                      moonRashi={todayDetails?.moonRashi}
-                      nextMoonRashi={todayDetails?.moonRashiTransition?.nextRashi}
-                      transitionTime={todayDetails?.moonRashiTransition?.time || undefined}
-                      className="flex-1" // Allow it to fill the flex container
-                      onViewAll={() => setActiveView('rashifal')}
-                    />
+                      <RashifalWidget
+                        date={`${toDevanagari(initialTodayBs.year)} ${initialTodayBs.monthName} ${toDevanagari(initialTodayBs.day)}`}
+                        dateKey={`${initialTodayBs.year}-${initialTodayBs.monthIndex + 1}-${initialTodayBs.day}`}
+                        tithi={todayDetails?.tithis?.[0]?.name}
+                        nakshatra={todayDetails?.nakshatras?.[0]?.name}
+                        moonRashi={todayDetails?.moonRashi}
+                        nextMoonRashi={todayDetails?.moonRashiTransition?.nextRashi}
+                        transitionTime={localizeTimeStr(todayDetails?.moonRashiTransition?.time || undefined)}
+                        sunriseTime={localizeTimeStr(todayDetails?.sunrise)}
+                        className="flex-1" // Allow it to fill the flex container
+                        onViewAll={() => setActiveView('rashifal')}
+                      />
                   </aside>
 
                   {/* Right Column: Blog Grid */}
@@ -428,31 +429,7 @@ const App: React.FC = () => {
                     setDharmaBackAction
                   };
                 } else if (activeView === 'rashifal') {
-                  // Calculate Nakshatra Transition
-                  let nextNakshatraName: string | undefined;
-                  let nakshatraTransition: string | undefined;
-
-                  if (todayDetails?.nakshatras && todayDetails.nakshatras.length > 1) {
-                      const nextNk = todayDetails.nakshatras[1];
-                      if (nextNk && nextNk.startTime) {
-                          nextNakshatraName = nextNk.name;
-                          const dateObj = new Date(nextNk.startTime);
-                          nakshatraTransition = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-                      }
-                  }
-
-                  pageProps = {
-                    ...commonProps,
-                    date: `${toDevanagari(initialTodayBs.year)} ${initialTodayBs.monthName} ${toDevanagari(initialTodayBs.day)}`,
-                    dateKey: `${initialTodayBs.year}-${initialTodayBs.monthIndex + 1}-${initialTodayBs.day}`,
-                    tithi: todayDetails?.tithis?.[0]?.name,
-                    nakshatra: todayDetails?.nakshatras?.[0]?.name,
-                    moonRashi: todayDetails?.moonRashi,
-                    nextMoonRashi: todayDetails?.moonRashiTransition?.nextRashi,
-                    transitionTime: todayDetails?.moonRashiTransition?.time || undefined,
-                    nextNakshatra: nextNakshatraName,
-                    nakshatraTransitionTime: nakshatraTransition
-                  };
+                  // RashifalPage manages its own state and data calculation
                 }
 
                 return (

@@ -1,3 +1,5 @@
+import { getSunriseSunset, fromBikramSambat, toDevanagari, fromDevanagari } from '../core/bikram';
+import { NAKSHATRA_NAMES } from './lib';
 
 // rashifalLogic.ts
 // Implements Authentic Chandra Gochar (Moon Transit) System
@@ -5,10 +7,6 @@
 // - House Calculation (1-12)
 // - Template Assembly Engine for high variety (10+ formats)
 // - Deterministic Hashing for consistent daily results per user
-
-// ------------------------------------------------------------------
-// DATA STRUCTURES & CONFIG
-// ------------------------------------------------------------------
 
 type Quality = 'GOOD' | 'BAD' | 'MIXED' | 'NEUTRAL';
 type Domain = 'WEALTH' | 'HEALTH' | 'RELATIONSHIP' | 'CAREER' | 'GENERAL';
@@ -19,7 +17,7 @@ interface HouseInfo {
   primaryDomain: Domain;
   description: string; // Astrological label e.g., "Dhana Bhava"
   rating: number; // 1-5
-  domainQualities?: Partial<Record<Domain, Quality>>; // Domain-specific overrides
+  domainQualities?: Partial<Record<Domain, Quality>>;
 }
 
 // Map House Index (0-11) to House Properties
@@ -29,7 +27,7 @@ const HOUSE_RULES: Record<number, HouseInfo> = {
   1: { house: 2, quality: 'BAD', primaryDomain: 'WEALTH', description: "धन स्थान (Wealth Loss)", rating: 2 },
   2: { house: 3, quality: 'GOOD', primaryDomain: 'CAREER', description: "पराक्रम स्थान (Success)", rating: 5, domainQualities: { RELATIONSHIP: 'MIXED' } }, // Siblings dispute
   3: { house: 4, quality: 'BAD', primaryDomain: 'HEALTH', description: "मातृ/सुख स्थान (Unrest)", rating: 2 },
-  4: { house: 5, quality: 'BAD', primaryDomain: 'RELATIONSHIP', description: "विद्या/पुत्र स्थान (Anxiety)", rating: 2, domainQualities: { CAREER: 'MIXED' } },
+  4: { house: 5, quality: 'BAD', primaryDomain: 'RELATIONSHIP', description: "विद्या/पुत्र स्थान (Mental Worry)", rating: 2, domainQualities: { CAREER: 'MIXED' } },
   5: { house: 6, quality: 'GOOD', primaryDomain: 'HEALTH', description: "शत्रु/रोग स्थान (Victory)", rating: 5 },
   6: { house: 7, quality: 'GOOD', primaryDomain: 'RELATIONSHIP', description: "कलत्र स्थान (Happiness)", rating: 5 },
   7: { house: 8, quality: 'BAD', primaryDomain: 'HEALTH', description: "आयु/मृत्यु स्थान (Chandrashtama)", rating: 1 },
@@ -412,11 +410,10 @@ export interface RashifalData {
   img: string; // filename
   houseDescription?: string; // e.g. "8th House"
   technicalReason?: string; // e.g. "Moon in 8th house (Chandrashtama)"
+  nakshatraBishesh?: string; // e.g. Nakshatra-specific caveats and star details
 }
 
-// ------------------------------------------------------------------
 // TARA BALAM LOGIC (Star Compatibility)
-// ------------------------------------------------------------------
 
 // Mapping of Rashi Index (0-11) to Constituent Nakshatras (Indices 0-26)
 // Approx: Each Rashi = 2.25 Nakshatras
@@ -436,15 +433,15 @@ const RASHI_NAKSHATRAS: Record<number, number[]> = {
 };
 
 const TARA_BALAM_RESULTS = [
-  { name: "जन्म", quality: "मध्यम", desc: "शरीर कष्ट" },       // 1 (Janma) - Medium/Bad
-  { name: "सम्पत", quality: "शुभ", desc: "धन लाभ" },        // 2 (Sampat) - Good
-  { name: "विपत", quality: "अशुभ", desc: "कार्य बाधा" },    // 3 (Vipat) - Bad
-  { name: "क्षेम", quality: "शुभ", desc: "सुख शान्ति" },      // 4 (Kshema) - Good
-  { name: "प्रत्यरि", quality: "अशुभ", desc: "चिन्ता/भय" },   // 5 (Pratyari) - Bad
-  { name: "साधक", quality: "शुभ", desc: "कार्य सिद्धि" },     // 6 (Sadhak) - Good
-  { name: "बध", quality: "अशुभ", desc: "कष्ट/मृत्यु तुल्य" },  // 7 (Vadha) - Very Bad
-  { name: "मित्र", quality: "शुभ", desc: "सहयोग" },         // 8 (Mitra) - Good
-  { name: "अति मित्र", quality: "शुभ", desc: "अत्यन्त सुख" }    // 9 (Ati Mitra) - Excellent
+  { name: "जन्म", quality: "मध्यम", desc: "शरीर कष्ट" },       // Medium/Bad
+  { name: "सम्पत", quality: "शुभ", desc: "धन लाभ" },        // Good
+  { name: "विपत", quality: "अशुभ", desc: "कार्य बाधा" },    // Bad
+  { name: "क्षेम", quality: "शुभ", desc: "सुख शान्ति" },      // Good
+  { name: "प्रत्यरि", quality: "अशुभ", desc: "चिन्ता/भय" },   // Bad
+  { name: "साधक", quality: "शुभ", desc: "कार्य सिद्धि" },     // Good
+  { name: "बध", quality: "अशुभ", desc: "कष्ट/मृत्यु तुल्य" },  // Very Bad
+  { name: "मित्र", quality: "शुभ", desc: "सहयोग" },         // Good
+  { name: "अति मित्र", quality: "शुभ", desc: "अत्यन्त सुख" }    // Excellent
 ];
 
 const NAKSHATRA_SYLLABLES: Record<number, string> = {
@@ -459,27 +456,12 @@ const NAKSHATRA_SYLLABLES: Record<number, string> = {
     24: "से, सो, दा, दी", 25: "दू, थ, झ, ञ", 26: "दे, दो, चा, ची"
 };
 
-import { NAKSHATRA_NAMES } from './lib';
-
-function calculateTaraBalam(userNakshatraIdx: number, dailyNakshatraIdx: number): { quality: string, desc: string, result: string } {
-    // Count from User Star to Daily Star
-    let count = (dailyNakshatraIdx - userNakshatraIdx + 27) % 27 + 1;
-    // Divide by 9, take remainder. If 0 (i.e. 9, 18, 27) -> 9.
-    let remainder = (count - 1) % 9;
-
-    return {
-        quality: TARA_BALAM_RESULTS[remainder].quality,
-        desc: TARA_BALAM_RESULTS[remainder].desc,
-        result: TARA_BALAM_RESULTS[remainder].name
-    };
-}
 
 function getSyllables(nakshatraIdx: number, rashiIdx: number): string {
     const raw = NAKSHATRA_SYLLABLES[nakshatraIdx];
     if (!raw) return "";
-    // Split by comma (ASCII or Nepali/Hindi if applicable) and whitespace
     const parts = raw.split(/[,،]\s*/).map(s => s.trim()).filter(s => s);
-    if (parts.length < 4) return raw; // Should be 4 padas
+    if (parts.length < 4) return raw;
 
     // ASHWINI (0) -> All in Mesh (0)
     // KRITTIKA (2) -> Mesh (0): 1st | Vrish (1): 2,3,4
@@ -519,8 +501,22 @@ function getSyllables(nakshatraIdx: number, rashiIdx: number): string {
         return rashiIdx === 10 ? parts.slice(0, 3).join(", ") : parts[3];
     }
 
-    return raw;
+    return raw; // For nakshatras wholly in one rashi
 }
+
+function calculateTaraBalam(userNakshatraIdx: number, dailyNakshatraIdx: number): { quality: string, desc: string, result: string } {
+    // Count from User Star to Daily Star
+    let count = (dailyNakshatraIdx - userNakshatraIdx + 27) % 27 + 1;
+    // Divide by 9, take remainder. If 0 (i.e. 9, 18, 27) -> 9.
+    let remainder = (count - 1) % 9;
+
+    return {
+        quality: TARA_BALAM_RESULTS[remainder].quality,
+        desc: TARA_BALAM_RESULTS[remainder].desc,
+        result: TARA_BALAM_RESULTS[remainder].name
+    };
+}
+
 
 // LOGIC & ASSEMBLY
 
@@ -537,6 +533,29 @@ function deterministicHash(str: string, mod: number): number {
 function getRandomItem(seed: string, items: string[]): string {
   const idx = deterministicHash(seed, items.length);
   return items[idx];
+}
+
+function generateShortPrediction(
+  houseRule: HouseInfo,
+  seedBase: string,
+  transitRashiName: string
+): string {
+  // REASONING (specific to house) - 1 Sentence
+  const reasonList = TEXT_LIBRARY.REASONING[houseRule.house as keyof typeof TEXT_LIBRARY.REASONING] || [];
+  let reason = reasonList.length > 0 ? getRandomItem(seedBase + "REASON_SHORT", reasonList) : "";
+  reason = reason.replace(/{moonRashi}/g, transitRashiName);
+
+  // BODY (Primary Domain) - 1 Sentence
+  const baseQuality = houseRule.quality;
+  const primaryDomain = houseRule.primaryDomain;
+  const primaryOverride = houseRule.domainQualities?.[primaryDomain];
+  const effectivePrimaryQuality = primaryOverride || baseQuality;
+  const primaryQualityKey = (effectivePrimaryQuality === 'GOOD' || effectivePrimaryQuality === 'BAD') ? effectivePrimaryQuality : 'MIXED';
+
+  const bodyPoolPrimary = TEXT_LIBRARY.BODY[primaryDomain as keyof typeof TEXT_LIBRARY.BODY]?.[primaryQualityKey as 'GOOD' | 'BAD'] || [];
+  const body1 = bodyPoolPrimary.length > 0 ? getRandomItem(seedBase + "BODY1_SHORT", bodyPoolPrimary) : "";
+
+  return `${reason} ${body1}`;
 }
 
 function assemblePrediction(
@@ -613,108 +632,187 @@ export function generateDailyRashifal(
   nextMoonRashi?: string | null,
   transitionTime?: string | null,
   nextNakshatra?: string | null,
-  nakshatraTransitionTime?: string | null
+  nakshatraTransitionTime?: string | null,
+  sunriseTime?: string // Format "06:45 AM"
 ): RashifalData[] {
 
-  let moonRashiIndex = RASHI_NAME_TO_INDEX[currentMoonRashi];
-  if (moonRashiIndex === undefined) moonRashiIndex = 0;
+  // ANALYZE TRANSITION TIME & DETERMINE EFFECTIVE RASHI
+  let isEarlyTransition = false;
+  let transitionMinutes = 0;
+  let sunriseMinutes = 0;
+  let cutoffMinutes = 20 * 60; // 8 PM
 
-  let nextMoonRashiIndex = nextMoonRashi ? RASHI_NAME_TO_INDEX[nextMoonRashi] : undefined;
+  if (nextMoonRashi && transitionTime) {
+      try {
+          // Parse Transition Time
+      const mins = parseTimeMins(transitionTime);
+      if (mins !== -1) {
+          transitionMinutes = mins;
+          const h = Math.floor(mins / 60);
+          const m = mins % 60;
+
+          const roundedM = m < 15 ? 0 : m < 45 ? 30 : 60;
+          let dispH = h;
+          if (roundedM === 60) {
+              dispH += 1;
+          }
+      }
+
+          // Parse Sunrise Time
+          let sunriseH = 6;
+          let sunriseM = 0;
+          if (sunriseTime) {
+             try {
+                const mins = parseTimeMins(sunriseTime);
+                if (mins !== -1) {
+                    sunriseMinutes = mins;
+                    sunriseH = Math.floor(mins / 60);
+                    sunriseM = mins % 60;
+                }
+             } catch(e) {}
+          } else {
+             // Fallback calculation (kept from previous logic)
+             try {
+                 const parts = dateKey.split('-').map(Number);
+                 if (parts.length === 3) {
+                    const adDate = fromBikramSambat(parts[0], parts[1] - 1, parts[2]);
+                    const sunData = getSunriseSunset(adDate);
+                    const [sH, sM] = sunData.sunrise.split(':').map(Number);
+                    if (!isNaN(sH)) {
+                        sunriseH = sH;
+                        sunriseM = sM;
+                    }
+                 }
+             } catch (err) {}
+          }
+          sunriseMinutes = sunriseH * 60 + sunriseM;
+
+          // Check Conditions
+          // Must be after sunrise
+          const isRelevant = transitionMinutes >= sunriseMinutes && transitionMinutes < cutoffMinutes;
+
+          if (isRelevant) {
+             // Check if Early (Before 12 PM = 720 minutes)
+             if (transitionMinutes < 720) {
+                 isEarlyTransition = true;
+             }
+          }
+      } catch (err) {
+          // On error, fallback to standard (isEarlyTransition = false)
+      }
+  }
+
+  // Determine Primary Rashi (Majority of the Day)
+  const primaryRashiName = isEarlyTransition && nextMoonRashi ? nextMoonRashi : currentMoonRashi;
+  const secondaryRashiName = isEarlyTransition ? currentMoonRashi : (nextMoonRashi || "");
+
+  let primaryRashiIndex = RASHI_NAME_TO_INDEX[primaryRashiName];
+  if (primaryRashiIndex === undefined) primaryRashiIndex = 0;
+
+  let secondaryRashiIndex = secondaryRashiName ? RASHI_NAME_TO_INDEX[secondaryRashiName] : undefined;
+
 
   return RASHI_NAMES_NEP.map((rashiName, userRashiIndex) => {
-    // Calculate House (Pulse 1)
-    const houseIndex = (moonRashiIndex - userRashiIndex + 12) % 12; // 0-11
+    // Calculate House based on PRIMARY Rashi
+    const houseIndex = (primaryRashiIndex - userRashiIndex + 12) % 12; // 0-11
     const houseRule = HOUSE_RULES[houseIndex];
     let extraTechnicalReason = "";
+    // Default Technical Reason (Standard)
+    let technicalText = `चन्द्रमा आज तपाईंको राशिबाट **${houseIndex + 1} औं** भावमा (${houseRule.description}) गोचर।`;
 
-    // Generate Prediction
+    // Generate Prediction (Using Primary Rashi)
     const seed = `${dateKey}-${userRashiIndex}-${tithiName}-${nakshatraName}`;
-    let prediction = assemblePrediction(houseRule, seed, currentMoonRashi);
+    // Pass primaryRashiName to template
+    // Generate Prediction with Chronological Flow
+    let prediction = "";
 
-    // DYNAMIC TRANSITION LOGIC
-    if (nextMoonRashi && transitionTime && nextMoonRashiIndex !== undefined) {
-        // Calculate House (Pulse 2)
-        const nextHouseIndex = (nextMoonRashiIndex - userRashiIndex + 12) % 12;
-        const nextHouseRule = HOUSE_RULES[nextHouseIndex];
+    // Check if transition is relevant for display text
+    const isTransitionDisplayable = nextMoonRashi && transitionTime && secondaryRashiIndex !== undefined && nextMoonRashi !== currentMoonRashi &&
+                                    transitionMinutes >= sunriseMinutes && transitionMinutes < cutoffMinutes;
 
-        // Determine Shift Quality
-        const q1 = houseRule.quality;
-        const q2 = nextHouseRule.quality;
+    if (isTransitionDisplayable) {
+         const roundedTime = roundToNearest30(transitionTime);
+         const qualityMap: Record<string, string> = { 'GOOD': 'शुभ', 'BAD': 'प्रतिकूल', 'MIXED': 'सामान्य' };
 
-        let transitionCategory: keyof typeof TEXT_LIBRARY.TRANSITION = 'NEUTRAL';
+         if (isEarlyTransition) {
+             // CHRONOLOGY: Morning (Secondary) -> Day (Primary)
+             const secHouseIndex = (secondaryRashiIndex! - userRashiIndex + 12) % 12;
+             const secHouseRule = HOUSE_RULES[secHouseIndex];
+             const secQualityText = qualityMap[secHouseRule.quality];
+             const morningDuration = transitionMinutes - sunriseMinutes;
 
-        if (q1 === q2) {
-             transitionCategory = 'SAME';
-        } else if (q1 === 'BAD' && q2 === 'GOOD') {
-             transitionCategory = 'BAD_TO_GOOD';
-        } else if (q1 === 'GOOD' && q2 === 'BAD') {
-             transitionCategory = 'GOOD_TO_BAD';
-        } else {
-             transitionCategory = 'NEUTRAL';
-        }
+             let morningText = "";
+             if (morningDuration > 240) { // > 4 Hours: DETAILED RESULT
+                 const shortPred = generateShortPrediction(secHouseRule, seed + "MORN", secondaryRashiName);
+                 // Variations:
+                 const templates = [
+                    `बिहान ${roundedTime} सम्म चन्द्रमा ${secondaryRashiName} राशिमा रहनेछ। ${shortPred}`,
+                    `बिहान ${roundedTime} बजेसम्म समय ${secQualityText} रहनेछ। ${shortPred}`,
+                    `बिहान ${roundedTime} सम्म ${secQualityText} समय रहनेछ। ${shortPred}`,
+                    `बिहानको पहिलो प्रहर अर्थात् ${roundedTime} सम्म ${secQualityText} प्रभाव रहने देखिन्छ। ${shortPred}`
+                 ];
+                 morningText = getRandomItem(seed + "MORN_TMPL", templates);
+             } else { // < 4 Hours: SHORT SUMMARY
+                  const templates = [
+                    `बिहान ${roundedTime} सम्म समय ${secQualityText} रहनेछ।`,
+                    `बिहान ${roundedTime} सम्मको समय ${secQualityText} देखिन्छ।`,
+                    `दिनको सुरुवात (${roundedTime} सम्म) ${secQualityText} रहनेछ।`,
+                    `सुरुवाती समय अर्थात् ${roundedTime} सम्म ${secQualityText} रहनेछ।`
+                 ];
+                 morningText = getRandomItem(seed + "MORN_TMPL_S", templates);
+             }
 
-        const transitionTemplates = TEXT_LIBRARY.TRANSITION[transitionCategory];
-        const transitionSeed = `${dateKey}-${userRashiIndex}-TRANSITION`;
-        let transitionText = getRandomItem(transitionSeed, transitionTemplates);
+             const dayText = assemblePrediction(houseRule, seed, primaryRashiName);
+             prediction = `${morningText} त्यसपछि ${dayText}`;
 
-        // Map Quality to Nepali
-        const qualityMap: Record<string, string> = {
-            'GOOD': 'शुभ',
-            'BAD': 'प्रतिकूल',
-            'MIXED': 'सामान्य/मध्यम'
-        };
-        const nextQualityText = nextHouseRule ? qualityMap[nextHouseRule.quality] : 'सामान्य';
+              extraTechnicalReason += `<br/><div class='mt-2 pt-2 border-t border-blue-200 dark:border-blue-800'><span class='text-purple-600 dark:text-purple-400 font-bold'>राशि परिवर्तन (बिहान):</span> ${secondaryRashiName} ➝ ${primaryRashiName} (${transitionTime})<br/><span class='text-[10px] text-gray-600 dark:text-gray-300'>बिहान ${transitionTime} सम्म चन्द्रमा ${secHouseIndex + 1} औं भावमा (${secHouseRule.description}) रहनेछ।</span></div>`;
 
-        // Round Time
-        const roundedTime = roundToNearest30(transitionTime);
+             // Dynamic Technical Reason (Early)
+             technicalText = `बिहान ${transitionTime} सम्म चन्द्रमा **${secHouseIndex + 1} औं** भावमा (${secHouseRule.description}) र त्यसपछि **${houseIndex + 1} औं** भावमा (${houseRule.description}) गोचर।`;
 
-        // --- NEW: Generate Detailed Effects for Next Phase ---
-        const nextSeedPhrase = `${dateKey}-${userRashiIndex}-NEXT`;
+         } else {
+             // CHRONOLOGY: Day (Primary) -> Evening (Secondary)
+             const secHouseIndex = (secondaryRashiIndex! - userRashiIndex + 12) % 12;
+             const secHouseRule = HOUSE_RULES[secHouseIndex];
+             const secQualityText = qualityMap[secHouseRule.quality];
+             const eveningDuration = cutoffMinutes - transitionMinutes;
 
-        // 1. Body Text (Based on Next House Domain)
-        const nextDomain = nextHouseRule.primaryDomain;
-        const nextQ = (nextHouseRule.quality === 'GOOD' || nextHouseRule.quality === 'BAD') ? nextHouseRule.quality : 'MIXED';
+             const dayText = assemblePrediction(houseRule, seed, primaryRashiName);
 
-        let nextBodyOptions: string[] = [];
+             let eveningText = "";
+             if (eveningDuration > 240) { // > 4 Hours: DETAILED RESULT
+                 const shortPred = generateShortPrediction(secHouseRule, seed + "EVE", secondaryRashiName);
+                 const templates = [
+                     `साँझ ${roundedTime} पछि चन्द्रमा ${secHouseIndex + 1} औं भावमा (${secHouseRule.description}) प्रवेश गर्नेछ र समय ${secQualityText} हुनेछ। ${shortPred}`,
+                     `${roundedTime} पछि स्थिति परिवर्तन भई ${secondaryRashiName} राशिको प्रभाव पर्नेछ। ${shortPred}`,
+                     `साँझ ${roundedTime} पछि चन्द्रमाको स्थिति बदलिई समय ${secQualityText} हुनेछ। ${shortPred}`,
+                     `दिन ढल्दै जाँदा (${roundedTime} पछि) समय ${secQualityText} बन्ने देखिन्छ। ${shortPred}`
+                 ];
+                 eveningText = getRandomItem(seed + "EVE_TMPL", templates);
+             } else {
+                 const templates = [
+                     `${roundedTime} पछि चन्द्रमा ${secHouseIndex + 1} औं भावमा प्रवेश गर्नेछ र समय ${secQualityText} हुनेछ।`,
+                     `${roundedTime} पछि समय ${secQualityText} रहनेछ।`,
+                     `दिनको उत्तरार्द्ध (${roundedTime} पछि) समय ${secQualityText} रहनेछ।`,
+                     `साँझ ${roundedTime} पछि समय ${secQualityText} देखिन्छ।`
+                 ];
+                 eveningText = getRandomItem(seed + "EVE_TMPL_S", templates);
+             }
 
-        // Try to get domain specific text
-        // @ts-ignore - TS might complain about indexing optimization
-        const domainObj = TEXT_LIBRARY.BODY[nextDomain as keyof typeof TEXT_LIBRARY.BODY];
-        if (domainObj && nextQ !== 'MIXED') {
-             nextBodyOptions = domainObj[nextQ as 'GOOD'|'BAD'] || [];
-        }
+             prediction = `${dayText} ${eveningText}`;
 
-        // Fallback to General if empty or Mixed
-        if (nextBodyOptions.length === 0) {
-             nextBodyOptions = TEXT_LIBRARY.BODY.GENERAL[nextQ as 'GOOD'|'BAD'|'MIXED'] || TEXT_LIBRARY.BODY.GENERAL.MIXED;
-        }
+             extraTechnicalReason += `<br/><div class='mt-2 pt-2 border-t border-blue-200 dark:border-blue-800'><span class='text-purple-600 dark:text-purple-400 font-bold'>राशि परिवर्तन:</span> ${primaryRashiName} ➝ ${secondaryRashiName} (${transitionTime})<br/><span class='text-[10px] text-gray-600 dark:text-gray-300'>${transitionTime} पछि चन्द्रमा ${secHouseIndex + 1} औं भावमा (${secHouseRule.description}) सर्नेछ। (${secQualityText})</span></div>`;
 
-        const nextBodyText = getRandomItem(nextSeedPhrase + "BODY", nextBodyOptions);
+             // Dynamic Technical Reason (Late)
+             technicalText = `चन्द्रमा **${houseIndex + 1} औं** भावमा (${houseRule.description}) र ${transitionTime} पछि **${secHouseIndex + 1} औं** भावमा (${secHouseRule.description}) गोचर।`;
+         }
 
-        // 2. Advice Text
-        const nextAdviceOptions = TEXT_LIBRARY.ADVICE[nextQ as 'GOOD'|'BAD'|'MIXED'] || TEXT_LIBRARY.ADVICE.MIXED;
-        const nextAdviceText = getRandomItem(nextSeedPhrase + "ADVICE", nextAdviceOptions);
-
-        // Append predictions to the transition intro
-        // transitionText is currently just the intro line. We append result descriptions.
-        transitionText += ` ${nextBodyText} ${nextAdviceText}`;
-        // ----------------------------------------------------
-
-        // Replace Placeholders
-        transitionText = transitionText
-            .replace(/{time}/g, roundedTime)
-            .replace(/{nextRashi}/g, nextMoonRashi)
-            .replace(/{nextQuality}/g, nextQualityText);
-
-        // Append to main prediction with a line break for visibility
-        // prediction += "<br/><br/>" + transitionText;
-        // Or just space if we want it inline, but user asked for highlighting.
-        // The templates themselves now have <span> and <b> tags.
-        prediction += " " + transitionText;
-
-        // Add to Technical Reason
-         extraTechnicalReason += `<br/><div class='mt-2 pt-2 border-t border-blue-200 dark:border-blue-800'><span class='text-purple-600 dark:text-purple-400 font-bold'>राशि परिवर्तन:</span> ${currentMoonRashi} ➝ ${nextMoonRashi} (${roundedTime})<br/><span class='text-[10px] text-gray-600 dark:text-gray-300'>चन्द्रमा ${houseIndex + 1} औं भावबाट ${nextHouseIndex + 1} औं भावमा (${nextHouseRule.description}) सर्नेछ। (${nextQualityText})</span></div>`;
+    } else {
+         // STANDARD: No relevant transition, just full day prediction
+         prediction = assemblePrediction(houseRule, seed, primaryRashiName);
     }
+
+
 
     // DYNAMIC NAKSHATRA TRANSITION LOGIC
     if (nextNakshatra && nakshatraTransitionTime && nakshatraName) {
@@ -764,97 +862,198 @@ export function generateDailyRashifal(
          extraTechnicalReason += `<br/><div class='mt-2 pt-2 border-t border-blue-200 dark:border-blue-800'><span class='text-purple-600 dark:text-purple-400 font-bold'>नक्षत्र परिवर्तन:</span> ${nakshatraName} ➝ ${nextNakshatra} (${nakshatraTransitionTime})<br/><span class='text-[10px] text-gray-600 dark:text-gray-300'>${nkText}</span></div>`;
     }
 
-    // TARA BALAM APPENDIX
-    // We only calculate if we have a valid Daily Nakshatra
+     // Finalize Reasoning & Stars
+
+     // Weighted Rating Calculation
+     let finalRating = houseRule.rating;
+
+     if (isTransitionDisplayable) {
+         // Calculate Weighted Average
+         // houseRule is Primary. secHouseRule is Secondary.
+         // If Early Transition: Secondary (Morning) -> Primary (Day).
+         // If Late Transition: Primary (Day) -> Secondary (Evening).
+
+         const totalDayMinutes = cutoffMinutes - sunriseMinutes;
+
+         if (isEarlyTransition) { // Sec -> Pri
+             const morningDuration = transitionMinutes - sunriseMinutes;
+             const dayDuration = totalDayMinutes - morningDuration;
+
+             // Sec (Morning) Rating, Pri (Day) Rating
+             const secHouseIndex = (secondaryRashiIndex! - userRashiIndex + 12) % 12;
+             const secHouseRule = HOUSE_RULES[secHouseIndex];
+
+             const wRating = ((morningDuration * secHouseRule.rating) + (dayDuration * houseRule.rating)) / totalDayMinutes;
+             finalRating = Math.round(wRating * 10) / 10; // 1 Decimal Place
+
+         } else { // Pri -> Sec
+             const dayDuration = transitionMinutes - sunriseMinutes;
+             const eveningDuration = totalDayMinutes - dayDuration;
+
+             // Pri (Day) Rating, Sec (Evening) Rating
+              const secHouseIndex = (secondaryRashiIndex! - userRashiIndex + 12) % 12;
+             const secHouseRule = HOUSE_RULES[secHouseIndex];
+
+             const wRating = ((dayDuration * houseRule.rating) + (eveningDuration * secHouseRule.rating)) / totalDayMinutes;
+             finalRating = Math.round(wRating * 10) / 10;
+         }
+     }
+
+    let nakshatraBishesh = "";
+
+    // TARA BALAM APPENDIX (Merged Logic)
     if (nakshatraName) {
         const dailyNakshatraIdx = NAKSHATRA_NAMES.indexOf(nakshatraName);
         if (dailyNakshatraIdx !== -1) {
-            const constituentStars = RASHI_NAKSHATRAS[userRashiIndex];
-            if (constituentStars) {
-                let taraText = "<div class='mt-3 pt-2 border-t border-gray-100 dark:border-gray-700'><span class='font-bold text-xs text-blue-600 dark:text-blue-400'>नक्षत्र विशेष:</span><br/>";
+             const constituentStars = RASHI_NAKSHATRAS[userRashiIndex];
+             if (constituentStars) {
+                let bisheshContent = "";
+                let nkTransitionMins = parseTimeMins(nakshatraTransitionTime);
 
-                // Caveat Logic
-                const badStars: string[] = [];
-                const goodStars: string[] = [];
+                // Identify Pre and Post Stars
+                const getGroupedStars = (nkIdx: number) => {
+                    if (nkIdx === -1) return [] as { names: string[], effect: string, color: string }[];
+                    const groups: Record<string, { names: string[], color: string }> = {};
 
-                const starDetails = constituentStars.map(starIdx => {
-                    const starName = NAKSHATRA_NAMES[starIdx];
-                    const syllables = getSyllables(starIdx, userRashiIndex);
-                    const tara = calculateTaraBalam(starIdx, dailyNakshatraIdx);
+                    constituentStars.forEach(sIdx => {
+                        const t = calculateTaraBalam(sIdx, nkIdx);
+                        const effect = t.desc || t.result;
 
-                    // Collect stats for Summary Line
-                    if (tara.quality === 'अशुभ' || tara.quality === 'कष्ट/मृत्यु तुल्य' || tara.quality === 'चिन्ता/भय') badStars.push(starName);
-                    if (tara.quality === 'शुभ' || tara.quality === 'अत्यन्त सुख') goodStars.push(starName);
+                        let color = "text-blue-600 dark:text-blue-400"; // Medium/Neutral (Janma/Normal)
+                        if (t.quality === 'अशुभ' || t.result === 'विपत' || t.result === 'प्रत्यरि' || t.result === 'बध') {
+                            color = "text-red-600 dark:text-red-400";
+                        } else if (t.quality === 'शुभ' || t.result === 'सम्पत' || t.result === 'क्षेम' || t.result === 'साधक' || t.result === 'मित्र' || t.result === 'अति मित्र') {
+                            color = "text-green-600 dark:text-green-400";
+                        }
 
-                    // Color code
-                    const colorClass = (tara.quality === 'शुभ' || tara.quality === 'अत्यन्त सुख') ? "text-green-600 dark:text-green-400" : (tara.quality === 'मध्यम' ? "text-yellow-600 dark:text-yellow-500" : "text-red-600 dark:text-red-400");
+                        if (!groups[effect]) groups[effect] = { names: [], color };
+                        const nakshatraName = NAKSHATRA_NAMES[sIdx];
+                        const syllables = getSyllables(sIdx, userRashiIndex);
+                        const displayName = syllables ? `${nakshatraName} (${syllables})` : nakshatraName;
+                        groups[effect].names.push(displayName);
+                    });
+                    return Object.entries(groups).map(([effect, data]) => ({ effect, ...data }));
+                };
 
-                    // Format: "Visakha (ti, tu, te, to): Sadhak (Good)"
-                    return `<span class='text-xs'>${starName} <span class='text-gray-400 text-[10px]'>(${syllables})</span>: <span class='${colorClass}'>${tara.result} (${tara.quality})</span></span>`;
-                });
+                const preStars = getGroupedStars(dailyNakshatraIdx);
+                const nextNkIdx = nextNakshatra ? NAKSHATRA_NAMES.indexOf(nextNakshatra) : -1;
+                const postStars = nextNkIdx !== -1 ? getGroupedStars(nextNkIdx) : [];
 
-                // INJECT CAVEAT SENTENCE
-                // 1. JANMA RASHI (Moon in House 1)
-                if (houseIndex === 0) {
-                     const templates = TEXT_LIBRARY.CAVEAT.JANMA_RASHI;
-                     const template = getRandomItem(seed + "JANMA_RASHI", templates);
-                     prediction += `<br/><span class='text-blue-600 dark:text-blue-400 text-xs font-bold'>${template}</span>`;
+                // Check valid transition within day
+                const isNkTransitionRelevant = nkTransitionMins >= sunriseMinutes && nkTransitionMins < cutoffMinutes && nextNkIdx !== -1;
+
+                // CAVEAT LOGIC (Split based on Consumed Time / Transition)
+                const generateSectionHtml = (groups: { names: string[], effect: string, color: string }[]) => {
+                    let html = "";
+                    groups.forEach(g => {
+                        html += `<div class='${g.color}'>- ${g.names.join(', ')} → ${g.effect}</div>`;
+                    });
+                    return html;
+                };
+
+                let listHtml = "";
+                if (isNkTransitionRelevant) {
+                    // Transition View
+                    listHtml += `<div class='mb-3'>`;
+                    listHtml += `<div class='font-bold text-gray-800 dark:text-gray-200 mb-1'>🕑 ${nakshatraTransitionTime} बजेअघि</div>`;
+                    listHtml += generateSectionHtml(preStars);
+                    listHtml += `</div>`;
+
+                    listHtml += `<div class='mb-2'>`;
+                    listHtml += `<div class='font-bold text-gray-800 dark:text-gray-200 mb-1'>🕑 ${nakshatraTransitionTime} बजेपछि</div>`;
+                    listHtml += generateSectionHtml(postStars);
+                    listHtml += `</div>`;
+                } else {
+                    // Standard View
+                    listHtml += generateSectionHtml(preStars);
                 }
 
-                // 2. JANMA NAKSHATRA (Star 1)
+                if (listHtml) {
+                    bisheshContent += `<div class='mb-3 text-[11px] leading-relaxed'>${listHtml}</div>`;
+                }
+
+                // INJECT SPECIFIC CAVEATS (Janma Rashi / Janma Nakshatra)
+                // JANMA RASHI (Moon in House 1)
+                if (houseIndex === 0) {
+                    const templates = TEXT_LIBRARY.CAVEAT.JANMA_RASHI;
+                    const template = getRandomItem(seed + "JANMA_RASHI", templates);
+                    bisheshContent += `<div class='mb-2'><span class='text-blue-600 dark:text-blue-400 text-xs font-bold'>${template}</span></div>`;
+                }
+
+                // JANMA NAKSHATRA (Star 1)
                 const janmaStars = constituentStars
                     .filter(starIdx => calculateTaraBalam(starIdx, dailyNakshatraIdx).result === "जन्म")
                     .map(starIdx => NAKSHATRA_NAMES[starIdx]);
 
                 if (janmaStars.length > 0) {
-                     const templates = TEXT_LIBRARY.CAVEAT.JANMA_NAKSHATRA;
-                     const template = getRandomItem(seed + "JANMA_STAR", templates);
-                     const caveatText = template.replace(/{stars}/g, janmaStars.join(', '));
-                     prediction += `<br/><span class='text-purple-600 dark:text-purple-400 text-xs font-bold'>${caveatText}</span>`;
+                    const templates = TEXT_LIBRARY.CAVEAT.JANMA_NAKSHATRA;
+                    const template = getRandomItem(seed + "JANMA_STAR", templates);
+                    const jText = template.replace(/{stars}/g, janmaStars.join(', '));
+                    bisheshContent += `<div class='mb-2'><span class='text-purple-600 dark:text-purple-400 text-xs font-bold'>${jText}</span></div>`;
                 }
 
-                // 3. If Base House is GOOD but some Stars are BAD
-                if ((houseRule.quality === 'GOOD') && badStars.length > 0) {
-                     const templates = TEXT_LIBRARY.CAVEAT.GOOD_RASHI_BAD_STAR;
-                     const template = getRandomItem(seed + "CAVEAT_BAD", templates);
-                     const caveatText = template.replace(/{stars}/g, badStars.join(', '));
-                     prediction += ` <span class='text-red-600 dark:text-red-400 text-xs'>${caveatText}</span>`;
-                }
-                // 4. If Base House is BAD but some Stars are GOOD
-                else if ((houseRule.quality === 'BAD') && goodStars.length > 0) {
-                     const templates = TEXT_LIBRARY.CAVEAT.BAD_RASHI_GOOD_STAR;
-                     const template = getRandomItem(seed + "CAVEAT_GOOD", templates);
-                     const caveatText = template.replace(/{stars}/g, goodStars.join(', '));
-                     prediction += ` <span class='text-green-600 dark:text-green-400 text-xs'>${caveatText}</span>`;
-                }
 
-                taraText += starDetails.join(" | ") + "</div>";
-                prediction += taraText;
+                nakshatraBishesh = bisheshContent;
             }
         }
     }
 
-    // Rating Jitter
-    const rating = houseRule.rating;
+    // Rating Jitter (Now using Weighted Final Rating)
+    const rating = finalRating;
+
+    // Use full syllables list for the rashi
+    const rashiSyllables = SYLLABLES[userRashiIndex];
 
     return {
       id: userRashiIndex + 1,
       name: rashiName,
-      syllables: SYLLABLES[userRashiIndex],
+      syllables: rashiSyllables,
       prediction,
       rating,
       img: `${RASHI_IDS[userRashiIndex]}.png`,
       houseDescription: houseRule.description,
-      technicalReason: `चन्द्रमा अहिले तपाईंको राशिबाट **${houseIndex + 1} औं** भावमा गोचर गरिरहेको छ। ज्योतिष शास्त्रमा यसलाई **'${houseRule.description}'** भनिन्छ, जसले गर्दा आजको फल ${houseRule.quality === 'GOOD' ? 'शुभ' : houseRule.quality === 'BAD' ? 'प्रतिकूल' : 'मिश्रित'} देखिएको हो।` + extraTechnicalReason
+      technicalReason: technicalText + extraTechnicalReason,
+      nakshatraBishesh
     };
   });
 }
 
-// Helper: Round time to nearest 30 mins and format in Nepali
-function roundToNearest30(timeStr: string): string {
-    // Expected format: "HH:MM AM/PM" e.g., "02:15 PM"
+// Helper: Parse time string (English or Devanagari) into minutes from midnight
+function parseTimeMins(timeStr: string | null | undefined): number {
+    if (!timeStr) return -1;
     try {
-        const parts = timeStr.split(' ');
+        const normalized = fromDevanagari(timeStr.trim());
+        const parts = normalized.split(/\s+/);
+        if (parts.length < 1) return -1;
+
+        const tPart = parts[0];
+        const mPart = parts.length > 1 ? parts[1].toUpperCase() : "";
+
+        const [hStr, mStr] = tPart.split(':');
+        let h = parseInt(hStr);
+        let m = parseInt(mStr) || 0;
+
+        if (isNaN(h)) return -1;
+
+        // Handle Meridiem
+        const isPM = mPart === 'PM' || mPart === 'अपराह्न';
+        const isAM = mPart === 'AM' || mPart === 'पूर्वाह्न';
+
+        if (isPM && h !== 12) h += 12;
+        if (isAM && h === 12) h = 0;
+
+        return h * 60 + m;
+    } catch (e) {
+        return -1;
+    }
+}
+
+// Helper: Round time to nearest 30 mins and format in Nepali
+function roundToNearest30(timeStr: string, includeApprox: boolean = true): string {
+    // Expected format: "HH:MM AM/PM" or "HH:MM पूर्वाह्न/अपराह्न"
+    try {
+        const normalized = fromDevanagari(timeStr.trim());
+        const parts = normalized.split(/\s+/);
         if (parts.length < 2) return timeStr;
 
         const [time, meridiem] = parts;
@@ -862,6 +1061,8 @@ function roundToNearest30(timeStr: string): string {
 
         let h = parseInt(hStr);
         let m = parseInt(mStr);
+
+        if (isNaN(h) || isNaN(m)) return timeStr;
 
         // Convert to minutes from start of 12h period
         let totalMins = h * 60 + m;
@@ -878,24 +1079,18 @@ function roundToNearest30(timeStr: string): string {
         let newH = Math.floor(totalMins / 60);
         let newM = totalMins % 60;
 
-        // Handle hour rollover (12:45 -> 13:00 -> 1:00)
-        // Specific case: 12:45 PM -> 1:00 PM (technically next period, simpler to keep meridiem unless 11->12)
-        // 12 is tricky. 12:15 -> 12:30. 12:45 -> 1:00.
+        if (newH === 0) newH = 12;
+        if (newH > 12) newH -= 12;
 
-        // Simplification:
-        // We just want visual rounding.
-        if (newH === 0) newH = 12; // 00:30 -> 12:30
-        if (newH > 12) newH -= 12; // 13:00 -> 1:00
+        const hDisplay = toDevanagari(newH);
+        const mDisplay = newM === 0 ? "" : `:${toDevanagari(newM.toString().padStart(2, '0'))}`;
 
-        // Construct string
-        const mDisplay = newM === 0 ? "" : `:${newM}`;
+        // Use normalized meridiem for comparison
+        const mUpper = meridiem.toUpperCase();
+        const isAM = mUpper === 'AM' || mUpper === 'पूर्वाह्न';
+        const meridiemDisplay = isAM ? 'पूर्वाह्न' : 'अपराह्न';
 
-        // Nepali Numeral Map (Simple)
-        // Or just keep English numerals as user prompt used "2 pm", "2:30 pm" in English script for numbers in their example.
-        // User said: "karib 2 pm dekhi".
-        // Let's stick to simple integers.
-
-        return `करिब ${newH}${mDisplay} ${meridiem}`;
+        return includeApprox ? `करिब ${hDisplay}${mDisplay} ${meridiemDisplay}` : `${hDisplay}${mDisplay} ${meridiemDisplay}`;
 
     } catch (e) {
         return timeStr;

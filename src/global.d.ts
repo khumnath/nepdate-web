@@ -46,6 +46,7 @@ declare global {
       triggerNativeAd?: () => void;
       triggerFullScreenAd?: () => void;
       share?: (title: string, message: string, url: string) => void;
+      shareImage?: (title: string, fileName: string, base64Data: string) => void;
     };
 
     controlPlayer?: (command: 'play' | 'pause' | 'stop') => void;
