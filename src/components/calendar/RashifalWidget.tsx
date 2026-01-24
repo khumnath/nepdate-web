@@ -1,11 +1,13 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { HeaderLogo } from './HeaderLogo';
 import { Star, Share2, Loader2 } from 'lucide-react';
 import { generateDailyRashifal } from '../../lib/utils/rashifalLogic';
 import html2canvas from 'html2canvas';
 import { RashifalShareCard } from './RashifalShareCard';
 import { RASHI_IMAGES } from '../../assets/rashiImages';
-
+// Import for preloading - ensures these are in browser cache for offline sharing
+import wheelImage from '../../assets/rashi/wheel.webp';
+import AppLogo from '../../assets/icons/nepdate.webp';
 
 interface RashifalWidgetProps {
   date: string;
@@ -196,28 +198,75 @@ export const RashifalWidget: React.FC<RashifalWidgetProps> = ({ date, dateKey, t
   // State for sharing
   const [shareData, setShareData] = React.useState<any | null>(null);
   const [isSharing, setIsSharing] = React.useState(false);
+  const [imagesLoaded, setImagesLoaded] = React.useState(false);
 
-  const handleShare = async (data: any) => {
+  // Preload ALL images needed for share cards for offline sharing
+  useEffect(() => {
+    const preloadImages = [
+      wheelImage,
+      AppLogo,
+      ...Object.values(RASHI_IMAGES) // All 12 rashi icons
+    ];
+    preloadImages.forEach(src => {
+      fetch(src).catch(() => {
+        const img = new Image();
+        img.src = src;
+      });
+    });
+  }, []);
+
+  const handleShare = (data: any) => {
     setShareData(data);
     setIsSharing(true);
+    setImagesLoaded(false); // Reset load state
+  };
 
-    setTimeout(async () => {
+  // Effect to trigger capture once images are fully loaded
+  React.useEffect(() => {
+    if (shareData && isSharing && imagesLoaded) {
+       performCapture();
+    }
+  }, [shareData, isSharing, imagesLoaded]);
+
+  const performCapture = async () => {
         try {
+            // Small delay to ensure rendering is complete (font layout etc) even after images load
+            await new Promise(resolve => setTimeout(resolve, 300));
+
             const element = document.getElementById('share-card-container');
             if (!element) return;
 
             const canvas = await html2canvas(element, {
                 backgroundColor: null,
-                scale: 2
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                logging: false,
+                ignoreElements: (node) => {
+                    const tagName = node.tagName.toLowerCase();
+                    // Aggressively ignore all scripts and links to prevent any network requests
+                    if (tagName === 'script' || tagName === 'link' || tagName === 'iframe') return true;
+                    return false;
+                },
+                onclone: (doc) => {
+                    doc.querySelectorAll('script, link, iframe').forEach(el => el.remove());
+
+                    // Ensure the cloned element is visible
+                    const el = doc.getElementById('share-card-container');
+                    if (el) {
+                        el.style.display = 'block';
+                        el.style.visibility = 'visible';
+                    }
+                }
             });
 
-            const fileName = `Rashifal-${data.name}-${dateKey}.png`;
+            const fileName = `Rashifal-${shareData.name}-${dateKey}.png`;
             const base64Data = canvas.toDataURL("image/png");
 
             // Android Native Bridge
             if (window.Android?.shareImage && typeof window.Android.isAndroidApp === 'function' && window.Android.isAndroidApp()) {
                 try {
-                    window.Android.shareImage(`${data.name} राशिफल`, fileName, base64Data);
+                    window.Android.shareImage(`${shareData.name} राशिफल`, fileName, base64Data);
                     return; // Success via bridge
                 } catch (bridgeErr) {
                     console.error("Android image bridge failed", bridgeErr);
@@ -234,8 +283,8 @@ export const RashifalWidget: React.FC<RashifalWidgetProps> = ({ date, dateKey, t
                         if (navigator.canShare({ files: [file] })) {
                             await navigator.share({
                                 files: [file],
-                                title: `${data.name} राशिफल - ${date}`,
-                                text: `${data.name} को दैनिक राशिफल | NepDate`
+                                title: `${shareData.name} राशिफल - ${date}`,
+                                text: `${shareData.name} को दैनिक राशिफल | NepDate`
                             });
                             return; // Success
                         }
@@ -257,8 +306,8 @@ export const RashifalWidget: React.FC<RashifalWidgetProps> = ({ date, dateKey, t
         } finally {
             setIsSharing(false);
             setShareData(null);
+            setImagesLoaded(false);
         }
-    }, 100);
   };
 
   React.useEffect(() => {
@@ -337,6 +386,7 @@ export const RashifalWidget: React.FC<RashifalWidgetProps> = ({ date, dateKey, t
         <RashifalShareCard
             data={shareData}
             date={date}
+            onLoad={() => setImagesLoaded(true)}
         />
       )}
 

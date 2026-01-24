@@ -77,6 +77,13 @@ const fetchFreshHtml = async (): Promise<"fresh" | "invalid" | "unreachable"> =>
 };
 
 export const handleReloadApp = async () => {
+  // Check for Android force refresh first
+  if (window.Android?.forceRefresh) {
+    toast("Reloading App...", "info", INFO_DELAY);
+    window.Android.forceRefresh();
+    return;
+  }
+
   if (!navigator.onLine) {
     toast("Offline! Full refresh aborted.", "error", ERROR_DELAY);
     return;

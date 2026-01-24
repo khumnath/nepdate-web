@@ -12,20 +12,6 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: [
-        'favicon.svg',
-        'robots.txt',
-        'icons/icon-72x72.png',
-        'icons/icon-96x96.png',
-        'icons/icon-128x128.png',
-        'icons/icon-144x144.png',
-        'icons/icon-152x152.png',
-        'icons/icon-384x384.png',
-        'icons/android-chrome-192x192.png',
-        'icons/android-chrome-512x512.png',
-        'icons/maskable-icon.png'
-      ],
       manifest: {
         name: 'Nepdate Bikram calendar',
         short_name: 'Nepdate',
@@ -55,7 +41,10 @@ export default defineConfig({
         ],
       },
       workbox: {
-        navigateFallback: './index.html'
+        navigateFallback: './index.html',
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+        clientsClaim: true,
+        skipWaiting: true
       }
     })
   ],
