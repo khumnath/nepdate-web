@@ -208,17 +208,17 @@ export const RashifalShareCard: React.FC<RashifalShareCardProps> = ({ data, date
 					</div>
 
 					{/* Hero Section - Icon, Name, Syllables, Stars (centered) */}
-					<div className="flex flex-col items-center justify-center flex-grow" style={{ marginTop: '-20px' }}>
+					<div className="flex flex-col items-center justify-center" style={{ marginTop: '-35px' }}>
 						{/* Zodiac Icon */}
 						<img
 							src={rashiIcon.src || rashiImgUrl}
 							alt={data.name}
-							className="w-[140px] h-[140px] object-contain mb-[10px]"
+							className="w-[140px] h-[140px] object-contain mb-[4px]"
 						/>
 
 						{/* Rashi Name */}
 						<div
-							className="text-[56px] font-extrabold leading-none mb-[5px]"
+							className="text-[56px] font-extrabold leading-none mb-[10px]"
 							style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", color: '#D32F2F' }}
 						>
 							{data.name}
@@ -226,7 +226,7 @@ export const RashifalShareCard: React.FC<RashifalShareCardProps> = ({ data, date
 
 						{/* Syllables */}
 						<div
-							className="text-[22px] font-medium mb-[10px]"
+							className="text-[22px] font-medium mt-2 mb-[10px]"
 							style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", color: '#2b4c85' }}
 						>
 							{data.syllables}
