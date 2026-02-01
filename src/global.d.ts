@@ -52,6 +52,7 @@ declare global {
 
     controlPlayer?: (command: 'play' | 'pause' | 'stop') => void;
     handleBackPress?: () => boolean;
+    triggerAppUpdate?: (force?: boolean) => Promise<void>;
   }
 }
 

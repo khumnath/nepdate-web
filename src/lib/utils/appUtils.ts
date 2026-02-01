@@ -80,6 +80,11 @@ export const handleReloadApp = async () => {
   // Check for Android force refresh first
   if (window.Android?.forceRefresh) {
     toast("Reloading App...", "info", INFO_DELAY);
+    // Add a flag to the URL so we can show a toast after reload
+    const url = new URL(window.location.href);
+    url.searchParams.set('app_updated', 'true');
+    window.history.replaceState({}, '', url.toString());
+
     window.Android.forceRefresh();
     return;
   }
@@ -95,7 +100,12 @@ export const handleReloadApp = async () => {
   if (result === "unreachable") {
     toast("Origin URL is not available. Using cached app...", "error", ERROR_DELAY);
     if (typeof caches !== "undefined" && typeof caches.keys === "function") {
-      setTimeout(() => window.location.reload(), ERROR_DELAY);
+      setTimeout(() => {
+         const url = new URL(window.location.href);
+         url.searchParams.set('app_updated', 'true');
+         window.history.replaceState({}, '', url.toString());
+         window.location.reload();
+      }, ERROR_DELAY);
     } else {
       console.log("ℹ️ Cache API not available — skipping reload for safety.");
     }
@@ -105,7 +115,12 @@ export const handleReloadApp = async () => {
   if (result === "invalid") {
     toast("Warning: Cache data not replaced. Using cached app...", "warning", INFO_DELAY);
     if (typeof caches !== "undefined" && typeof caches.keys === "function") {
-      setTimeout(() => window.location.reload(), INFO_DELAY);
+      setTimeout(() => {
+         const url = new URL(window.location.href);
+         url.searchParams.set('app_updated', 'true');
+         window.history.replaceState({}, '', url.toString());
+         window.location.reload();
+      }, INFO_DELAY);
     } else {
       console.log("ℹ️ Cache API not available — skipping reload for safety.");
     }
@@ -115,7 +130,9 @@ export const handleReloadApp = async () => {
   // Fresh version confirmed — hard refresh first
   toast("Fresh version confirmed. Reloading now...", "info", INFO_DELAY);
   setTimeout(() => {
-    window.location.href = APP_URL;
+    const url = new URL(APP_URL);
+    url.searchParams.set('app_updated', 'true');
+    window.location.href = url.toString();
   }, INFO_DELAY);
 
   //  Clear cache after reload (only if API available)

@@ -197,7 +197,12 @@ export const NEPALI_LABELS = {
   privacyPolicy: "गोपनीयता नीति",
   back: "पछाडि",
   allMonths: "सम्पूर्ण वर्ष (१२ महिना)",
-  calendar: "पात्रो"
+  calendar: "पात्रो",
+  updateAvailable: "नयाँ कन्टेन्ट अपडेट उपलब्ध",
+  updateMessage: "नयाँ फिचर र सुधारहरू थपिएका छन्।",
+  updateWarning: "यसले एपलाई ताजा (Reload) गर्नेछ।",
+  updateNow: "अहिले अपडेट गर्नुहोस्",
+  notNow: "अहिले होइन"
 };
 
 export const NEPALI_PLANETS: { [key: string]: string } = {

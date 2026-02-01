@@ -13,6 +13,8 @@ import { Menu, X, Download, RefreshCcw, Moon, Sun, Share2, Star } from 'lucide-r
 import { MENU_ITEMS } from './constants/menu';
 import { NEPALI_LABELS } from './constants/constants';
 import { toast, ToastContainer } from './components/shared/toast';
+import { UpdateModal } from './components/shared/UpdateModal';
+
 import { TodayWidget } from './components/calendar/TodayWidget';
 import { HeaderLogo } from './components/calendar/HeaderLogo';
 
@@ -39,9 +41,27 @@ import { BlogDetailPage } from './pages/BlogDetailPage';
 import { Blog } from './data/blogs';
 import { getAllBlogs } from './lib/blogContent';
 
+
 const CalendarPrintPage = React.lazy(() => import('./pages/CalendarPrintPage'));
 
 const App: React.FC = () => {
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = React.useState(false);
+
+  useEffect(() => {
+     const handlePWAUpdate = () => setIsUpdateModalOpen(true);
+     window.addEventListener('pwa-update-available', handlePWAUpdate);
+     return () => window.removeEventListener('pwa-update-available', handlePWAUpdate);
+  }, []);
+
+  const handleUpdateConfirm = () => {
+      if (window.triggerAppUpdate) {
+         window.triggerAppUpdate(true);
+      } else {
+         window.location.reload();
+      }
+      setIsUpdateModalOpen(false);
+  };
+
   const { theme, toggleTheme, resetTheme } = useTheme();
   const { menuStyle, desktopLayoutStyle, handleSetMenuStyle, handleSetDesktopLayoutStyle, resetLayoutSettings } = useLayout();
   const { isStandalone, canInstall, handleInstallClick } = usePWA();
@@ -94,6 +114,19 @@ const App: React.FC = () => {
     resetLayoutSettings();
     toast.info('Settings reset to default', 2000);
   };
+
+  useEffect(() => {
+    // Check if we just reloaded from an update
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('app_updated') === 'true') {
+      toast.success('Latest version loaded successfully', 4000);
+
+      // Clean up the URL
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('app_updated');
+      window.history.replaceState({}, '', newUrl.toString());
+    }
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -481,6 +514,11 @@ const App: React.FC = () => {
 
       <DayDetailsModal date={selectedDate} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} activeSystem={activeSystem} />
       {isAboutOpen && <AboutPopup setIsAboutOpen={setIsAboutOpen} />}
+      <UpdateModal
+        isOpen={isUpdateModalOpen}
+        onConfirm={handleUpdateConfirm}
+        onCancel={() => setIsUpdateModalOpen(false)}
+      />
       <ToastContainer />
     </div>
   );

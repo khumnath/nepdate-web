@@ -32,6 +32,8 @@ class ToastStore {
 
   subscribe(listener: ToastListener) {
     this.listeners.push(listener);
+    // Emit current state immediately to the new listener to avoid missing toasts
+    listener([...this.toasts]);
     return () => {
       this.listeners = this.listeners.filter((l) => l !== listener);
     };
