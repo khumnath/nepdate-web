@@ -82,6 +82,11 @@ const TEXT_LIBRARY = {
   // We now use {moonRashi} to make it specific.
   REASONING: {
     1: [
+      "{userRashi} राशिको आफ्नै राशि ({moonRashi}) मा आज चन्द्रमाको उपस्थिति छ।",
+      "आज {userRashi} राशिको लागि प्रथम भाव ({moonRashi}) मा चन्द्रमा रहेकाले 'भोजन सुख' मिल्नेछ।",
+      "{userRashi} राशिको आफ्नै आरम्भिक स्थान ({moonRashi}) मा चन्द्रमाको गोचर हुनाले व्यक्तित्वमा निखार आउनेछ।",
+      "आज {moonRashi} राशिको चन्द्रमा {userRashi}को लागि पहिलो घरमा पर्दछ, जसले स्फूर्ति दिनेछ।",
+      "{moonRashi} राशिको चन्द्रमाले आज {userRashi} राशि भएका व्यक्तिहरूलाई विशेष प्रभाव पार्नेछ।",
       "{moonRashi} राशिमा चन्द्रमाको उपस्थितिले आज तपाईंलाई 'भोजन सुख' र 'आरोग्यता' प्रदान गर्नेछ।",
       "तपाईंको आफ्नै राशिमा आज चन्द्रमा रहेकोले आत्मविश्वास बढ्ने समय छ।",
       "आजको दिन {moonRashi} को चन्द्रमाले तपाईंको व्यक्तित्वमा निखार ल्याउनेछ।",
@@ -89,6 +94,11 @@ const TEXT_LIBRARY = {
       "{moonRashi} राशिको चन्द्रमाले तपाईंलाई आज विशेष आकर्षण शक्ति दिनेछ।"
     ],
     2: [
+      "{userRashi} राशिको लागि आज धन स्थान ({moonRashi}) मा चन्द्रमाको गोचर रहेको छ।",
+      "आज {userRashi}को दोस्रो भाव ({moonRashi}) मा चन्द्रमा रहेकाले खर्चको मात्रा बढ्न सक्छ।",
+      "{userRashi}को आर्थिक भाव ({moonRashi}) मा चन्द्रमाको उपस्थितिले बोलीमा प्रभाव ल्याउनेछ।",
+      "आज {moonRashi} राशिको चन्द्रमा {userRashi}को लागि दोस्रो स्थानमा पर्दछ, सचेत रहनुहोला।",
+      "{userRashi} राशिको धन स्थानमा चन्द्रमाको प्रभावले आर्थिक कारोबारमा ध्यान दिनु पर्नेछ।",
       "धन स्थान ({moonRashi}) मा गोचर गर्ने चन्द्रमाले आज खर्चको मात्रा बढाउन सक्छ।",
       "आज सञ्चित धन चलाउनुपर्ने अवस्था आउन सक्छ, {moonRashi} मा चन्द्रमा प्रतिकूल छ।",
       "{moonRashi} को चन्द्रमाले मुखमा अलि कडाइ ल्याउन सक्छ, बोलीमा विचार पुर्याउनुहोला।",
@@ -96,13 +106,23 @@ const TEXT_LIBRARY = {
       "खानपानमा रुचि जाग्नेछ तर {moonRashi} को प्रभावले सामान्य विवाद पनि हुन सक्छ।"
     ],
     3: [
+      "{userRashi} राशिको लागि आज पराक्रम स्थान ({moonRashi}) मा चन्द्रमाको गोचर छ।",
+      "आज {userRashi}को तेस्रो भाव ({moonRashi}) मा चन्द्रमा रहेकाले आँट र उत्साह बढ्नेछ।",
+      "{userRashi}को पुरुषार्थ भाव ({moonRashi}) मा चन्द्रमाको उपस्थितिले नयाँ अवसर दिलाउनेछ।",
+      "आज {moonRashi} को चन्द्रमा {userRashi}को लागि तेस्रो स्थानमा पर्दछ, ईष्टमित्रको सहयोग मिल्नेछ।",
+      "{userRashi}को तेस्रो भावमा चन्द्रमा बलियो हुनाले यात्राको योग बन्न सक्छ।",
       "आज पराक्रम स्थान ({moonRashi}) मा चन्द्रमा छ, जसले तपाईंको आँट र उत्साह बढाउनेछ।",
       "{moonRashi} को चन्द्रमाको प्रभावले दाजुभाइ वा इष्टमित्रको सहयोग मिल्नेछ।",
       "नयाँ काम थालनी गर्ने सोचमा हुनुहुन्छ भने समय अनुकूल छ, तेस्रो चन्द्रमा बलियो छ।",
       "छोटो र रमाइलो यात्राको योजना बन्न सक्छ, {moonRashi} को गोचर शुभ छ।",
-      "तपाईंको सक्रियता र दौडधुपले आज राम्रो प्रतिफल दिनेछ।"
+      "तपाईंको सक्रियता र दौधुपले आज राम्रो प्रतिफल दिनेछ।"
     ],
     4: [
+      "{userRashi} राशिको लागि आज चौथो भाव ({moonRashi}) मा चन्द्रमाको गोचर रहेको छ।",
+      "आज {userRashi}को सुख स्थान ({moonRashi}) मा चन्द्रमा रहेकाले मनमा केही अशान्ति हुन सक्छ।",
+      "{userRashi}को मातृ भाव ({moonRashi}) मा चन्द्रमाको उपस्थितिले घरायसी विषयमा ध्यान तान्नेछ।",
+      "आज {moonRashi} को चन्द्रमा {userRashi}को लागि चौथो घरमा पर्दछ, जसलाई 'कण्टक' पनि भनिन्छ।",
+      "{userRashi}को चौथो भावमा चन्द्रमा कमजोर हुनाले स्वास्थ्यमा ध्यान दिनुहोला।",
       "चौथो भाव ({moonRashi}) मा रहेको चन्द्रमाले मनमा अलि अशान्ति ल्याउन सक्छ।",
       "आज {moonRashi} को चन्द्रमाले 'कण्टक' योग सिर्जना गर्ने हुँदा पेटको ख्याल राख्नुहोला।",
       "पारिवारिक विषयमा स–साना मतभेद हुन सक्छन्, धैर्य रहनुहोला।",
@@ -110,13 +130,23 @@ const TEXT_LIBRARY = {
       "आमाको स्वास्थ्यमा वा घरायसी सुखमा केही कमी महसुस हुन सक्छ।"
     ],
     5: [
+      "{userRashi} राशिको लागि आज पाँचौं भाव ({moonRashi}) मा चन्द्रमाको गोचर रहेको छ।",
+      "आज {userRashi}को विद्या स्थान ({moonRashi}) मा चन्द्रमा रहेकाले मन चञ्चल हुन सक्छ।",
+      "{userRashi}को सन्तान भाव ({moonRashi}) मा चन्द्रमाको उपस्थितिले सिर्जनात्मकता बढाउनेछ।",
+      "आज {moonRashi} को चन्द्रमा {userRashi}को लागि पाँचौं स्थानमा पर्दछ, निर्णयमा हतार नगर्नुहोला।",
+      "{userRashi}को पाँचौं भावमा चन्द्रमा कमजोर हुनाले शेयर बजारमा सावधानी अपनाउनुहोला।",
       "पाँचौं भाव ({moonRashi}) को चन्द्रमाले मनलाई एकाग्र हुन दिँदैन, चञ्चलता बढ्नेछ।",
       "आज {moonRashi} मा गोचर गर्ने चन्द्रमाले निर्णय क्षमतामा ह्रास ल्याउन सक्छ।",
       "विद्यार्थीहरूले पढाइमा बढी ध्यान दिनुपर्ने समय छ, मन भड्किन सक्छ।",
-      "संतान वा प्रेम पात्रसँगको संवादमा संयम अपनाउनुहोला, पाँचौं चन्द्रमा अलि कमजोर हुन्छ।",
+      "सन्तान वा प्रेम पात्रसँगको संवादमा संयम अपनाउनुहोला, पाँचौं चन्द्रमा अलि कमजोर हुन्छ।",
       "शेयर बजार वा जुवाजन्य क्रियाकलापबाट आज टाढै रहनु उचित हुनेछ।"
     ],
     6: [
+      "{userRashi} राशिको लागि आज छैटौं भाव ({moonRashi}) मा चन्द्रमाको गोचर छ।",
+      "आज {userRashi}को शत्रु स्थान ({moonRashi}) मा चन्द्रमा रहेकाले रोकिएका काम बन्नेछन्।",
+      "{userRashi}को रोग भाव ({moonRashi}) मा चन्द्रमाको उपस्थितिले स्वास्थ्यमा सुधार ल्याउनेछ।",
+      "आज {moonRashi} को चन्द्रमा {userRashi}को लागि छैटौं घरमा पर्दछ, जसले प्रतिस्पर्धामा जित दिलाउनेछ।",
+      "{userRashi}को छैटौं भावमा चन्द्रमा बलियो हुनाले मुद्दा मामिलामा अनुकूलता मिल्नेछ।",
       "छैटौं भाव ({moonRashi}) मा गोचर गर्ने चन्द्रमाले शत्रु र रोगलाई परास्त गर्नेछ।",
       "आज {moonRashi} राशिमा रहेको चन्द्रमाले अड्किएका कामहरू फुकाउनेछ।",
       "तपाईंको प्रतिस्पर्धात्मक क्षमता बढ्नेछ, मुद्दा मामिलामा जित हुने योग छ।",
@@ -124,6 +154,11 @@ const TEXT_LIBRARY = {
       "स्वास्थ्य बलियो रहनेछ र मनमा नयाँ जोश पलाउनेछ।"
     ],
     7: [
+      "{userRashi} राशिको लागि आज सातौं भाव ({moonRashi}) मा चन्द्रमाको गोचर छ।",
+      "आज {userRashi}को कलत्र स्थान ({moonRashi}) मा चन्द्रमा रहेकाले व्यापारमा लाभ मिल्नेछ।",
+      "{userRashi}को जीवनसाथी भाव ({moonRashi}) मा चन्द्रमाको उपस्थितिले सम्बन्धमा मधुरता ल्याउनेछ।",
+      "आज {moonRashi} को चन्द्रमा {userRashi}को लागि सातौं घरमा पर्दछ, रमाइलो यात्रा हुन सक्छ।",
+      "{userRashi}को सातौं भावमा चन्द्रमा शुभ हुनाले साझेदारीमा सफलता प्राप्त होला।",
       "सप्तम भाव ({moonRashi}) मा रहेको चन्द्रमाले व्यापार र साझेदारीमा लाभ दिलाउनेछ।",
       "आज जीवनसाथी वा प्रेम पात्रसँगको सम्बन्ध प्रगाढ हुनेछ, {moonRashi} को गोचर शुभ छ।",
       "रमाइलो यात्रा वा स्वादिष्ट भोजनको अवसर मिल्नेछ, सातौं चन्द्रमाको प्रभाव हो।",
@@ -131,6 +166,11 @@ const TEXT_LIBRARY = {
       "दिन मनोरञ्जनपूर्ण र उल्लासमय रहने देखिन्छ।"
     ],
     8: [
+      "{userRashi} राशिको लागि आज अष्टम भाव ({moonRashi}) मा चन्द्रमाको गोचर छ।",
+      "आज {userRashi}को आठौं भाव ({moonRashi}) मा चन्द्रमा रहेकाले यसलाई 'चन्द्रअष्टम' भनिन्छ।",
+      "{userRashi}को आयु भाव ({moonRashi}) मा चन्द्रमाको उपस्थितिले स्वास्थ्यमा जोखिम देखाउन सक्छ।",
+      "आज {moonRashi} को चन्द्रमा {userRashi}को लागि आठौं स्थानमा पर्दछ, जोखिमपूर्ण काम नगर्नुहोला।",
+      "{userRashi}को आठौं भावमा चन्द्रमा प्रतिकूल हुनाले यात्रामा सावधानी अपनाउनुहोला।",
       "आज अष्टम भाव ({moonRashi}) मा चन्द्रमा गोचर गर्दैछ, जसलाई 'चन्द्रअष्टम' भनिन्छ।",
       "{moonRashi} को चन्द्रमा आठौं घरमा हुनाले स्वास्थ्य र चोटपटकमा विशेष सावधानी अपनाउनुहोला।",
       "मनमा अज्ञात भय र चिन्ताले सताउन सक्छ, आठौं चन्द्रमा प्रतिकूल मानिन्छ।",
@@ -138,6 +178,11 @@ const TEXT_LIBRARY = {
       "आफ्नो सामानको जतन गर्नुहोला, {moonRashi} को चन्द्रमाले क्षति गराउन सक्छ।"
     ],
     9: [
+      "{userRashi} राशिको लागि आज नवौं भाव ({moonRashi}) मा चन्द्रमाको गोचर छ।",
+      "आज {userRashi}को भाग्य स्थान ({moonRashi}) मा चन्द्रमा रहेकाले कार्यमा ढिलासुस्ती हुन सक्छ।",
+      "{userRashi}को धर्म भाव ({moonRashi}) मा चन्द्रमाको उपस्थितिले धार्मिक रुचि बढाउनेछ।",
+      "आज {moonRashi} को चन्द्रमा {userRashi}को लागि नवौं स्थानमा पर्दछ, पिताको सल्लाह लिनुहोला।",
+      "{userRashi}को नवौं भावमा चन्द्रमा मध्यम हुनाले भाग्यभन्दा कर्ममा विश्वास गर्नुहोला।",
       "भाग्य स्थान ({moonRashi}) मा भए पनि नवौं चन्द्रमाले कार्यमा केही विलम्ब गराउन सक्छ।",
       "आज {moonRashi} को चन्द्रमाले पिता वा गुरुसँगको मतभेद निम्त्याउन सक्छ।",
       "धर्म कर्ममा रुचि जाग्नेछ तर मन भने केही अशान्त रहन सक्छ।",
@@ -145,6 +190,11 @@ const TEXT_LIBRARY = {
       "भाग्यमा भन्दा कर्ममा विश्वास गरेर अघि बढ्नुपर्ने दिन छ।"
     ],
     10: [
+      "{userRashi} राशिको लागि आज दशौं भाव ({moonRashi}) मा चन्द्रमाको गोचर छ।",
+      "आज {userRashi}को कर्म स्थान ({moonRashi}) मा चन्द्रमा रहेकाले कार्यक्षेत्रमा सफलता मिल्नेछ।",
+      "{userRashi}को राज्य भाव ({moonRashi}) मा चन्द्रमाको उपस्थितिले मान–सम्मान बढाउनेछ।",
+      "आज {moonRashi} को चन्द्रमा {userRashi}को लागि दशौं घरमा पर्दछ, नयाँ अवसर प्राप्त होला।",
+      "{userRashi}को दशौं भावमा चन्द्रमा बलियो हुनाले नेतृत्वदायी भूमिका निर्वाह गर्न सकिनेछ।",
       "दशौं भाव ({moonRashi}) मा रहेको चन्द्रमाले कार्यक्षेत्रमा सफलता र प्रशंसा दिलाउनेछ।",
       "आज {moonRashi} को चन्द्रमाले तपाईंको सामाजिक प्रतिष्ठा र मान–सम्मान बढाउनेछ।",
       "बुवा वा अभिभावकको सहयोगले महत्त्वपूर्ण काम बन्ने योग छ।",
@@ -152,6 +202,11 @@ const TEXT_LIBRARY = {
       "तपाईंको नेतृत्व क्षमताको आज कदर हुनेछ।"
     ],
     11: [
+      "{userRashi} राशिको लागि आज एघारौं भाव ({moonRashi}) मा चन्द्रमाको गोचर छ।",
+      "आज {userRashi}को लाभ स्थान ({moonRashi}) मा चन्द्रमा रहेकाले आर्थिक लाभको योग छ।",
+      "{userRashi}को आय भाव ({moonRashi}) मा चन्द्रमाको उपस्थितिले मनग्गे आम्दानी दिलाउनेछ।",
+      "आज {moonRashi} को चन्द्रमा {userRashi}को लागि एघारौं घरमा पर्दछ, इच्छा पूरा हुनेछ।",
+      "{userRashi}को एघारौं भावमा चन्द्रमा सर्वश्रेष्ठ हुनाले सबैतिरबाट साथ सहयोग मिल्नेछ।",
       "एघारौं भाव ({moonRashi}) को चन्द्रमाले आज मनग्य आम्दानीको योग बनाएको छ।",
       "जताबाट पनि खुसीको खबर सुन्न पाइनेछ, {moonRashi} को चन्द्रमा सर्वश्रेष्ठ मानिन्छ।",
       "व्यापार व्यवसायमा राम्रो मुनाफा हुनेछ, साथीभाइको साथ रमाइलो हुनेछ।",
@@ -159,6 +214,11 @@ const TEXT_LIBRARY = {
       "प्रेम सम्बन्ध र पारिवारिक सुखमा वृद्धि हुनेछ।"
     ],
     12: [
+      "{userRashi} राशिको लागि आज बाह्रौं भाव ({moonRashi}) मा चन्द्रमाको गोचर छ।",
+      "आज {userRashi}को व्यय स्थान ({moonRashi}) मा चन्द्रमा रहेकाले अनावश्यक खर्च बढ्न सक्छ।",
+      "{userRashi}को मोक्ष भाव ({moonRashi}) मा चन्द्रमाको उपस्थितिले वैराग्य वा विदेशको योग बनाउँछ।",
+      "आज {moonRashi} को चन्द्रमा {userRashi}को लागि बाह्रौं घरमा पर्दछ, आँखाको ख्याल गर्नुहोला।",
+      "{userRashi}को बाह्रौं भावमा चन्द्रमा कमजोर हुनाले फजुल खर्च नियन्त्रण गर्नुहोला।",
       "बाह्रौं भाव ({moonRashi}) मा गोचर गर्ने चन्द्रमाले खर्चको मात्रा ह्वात्तै बढाउन सक्छ।",
       "आज आँखा वा खुट्टामा समस्या आउन सक्छ, {moonRashi} को चन्द्रमा कमजोर छ।",
       "टाढाको यात्रा वा विदेशसम्बन्धी काममा भने केही सफलता मिल्न सक्छ।",
@@ -538,30 +598,31 @@ function getRandomItem(seed: string, items: string[]): string {
 function generateShortPrediction(
   houseRule: HouseInfo,
   seedBase: string,
-  transitRashiName: string
+  transitRashiName: string,
+  userRashiName: string
 ): string {
-  // REASONING (specific to house) - 1 Sentence
+  // Reasoning (Specific to House)
   const reasonList = TEXT_LIBRARY.REASONING[houseRule.house as keyof typeof TEXT_LIBRARY.REASONING] || [];
-  let reason = reasonList.length > 0 ? getRandomItem(seedBase + "REASON_SHORT", reasonList) : "";
-  reason = reason.replace(/{moonRashi}/g, transitRashiName);
+  let reason = reasonList.length > 0 ? getRandomItem(seedBase + "REASON", reasonList) : "";
 
-  // BODY (Primary Domain) - 1 Sentence
-  const baseQuality = houseRule.quality;
-  const primaryDomain = houseRule.primaryDomain;
-  const primaryOverride = houseRule.domainQualities?.[primaryDomain];
-  const effectivePrimaryQuality = primaryOverride || baseQuality;
-  const primaryQualityKey = (effectivePrimaryQuality === 'GOOD' || effectivePrimaryQuality === 'BAD') ? effectivePrimaryQuality : 'MIXED';
+  // REPLACE PLACEHOLDERS
+  reason = reason
+    .replace(/{moonRashi}/g, transitRashiName)
+    .replace(/{userRashi}/g, userRashiName)
+    .replace(/{house}/g, toDevanagari(houseRule.house.toString()));
 
-  const bodyPoolPrimary = TEXT_LIBRARY.BODY[primaryDomain as keyof typeof TEXT_LIBRARY.BODY]?.[primaryQualityKey as 'GOOD' | 'BAD'] || [];
-  const body1 = bodyPoolPrimary.length > 0 ? getRandomItem(seedBase + "BODY1_SHORT", bodyPoolPrimary) : "";
-
-  return `${reason} ${body1}`;
+  return reason;
 }
+// BODY (Primary Domain) - 1 Sentence
+// The original `generateShortPrediction` also included a body part.
+// The instruction implies it should only return the reason.
+// The `assemblePrediction` function below still generates the full prediction.
 
 function assemblePrediction(
   houseRule: HouseInfo,
   seedBase: string,
-  transitRashiName: string
+  transitRashiName: string,
+  userRashiName: string
 ): string {
   // SELECT BASE QUALITY
   const baseQuality = houseRule.quality;
@@ -578,7 +639,10 @@ function assemblePrediction(
   let reason = reasonList.length > 0 ? getRandomItem(seedBase + "REASON", reasonList) : "";
 
   // REPLACE PLACEHOLDERS
-  reason = reason.replace(/{moonRashi}/g, transitRashiName);
+  reason = reason
+    .replace(/{moonRashi}/g, transitRashiName)
+    .replace(/{userRashi}/g, userRashiName)
+    .replace(/{house}/g, toDevanagari(houseRule.house.toString()));
 
   // Body (Split Domain Logic)
   // We try to pick one from Primary Domain + one from a Secondary Domain
@@ -743,65 +807,51 @@ export function generateDailyRashifal(
 
              let morningText = "";
              if (morningDuration > 240) { // > 4 Hours: DETAILED RESULT
-                 const shortPred = generateShortPrediction(secHouseRule, seed + "MORN", secondaryRashiName);
+                 const shortPred = generateShortPrediction(secHouseRule, seed + "MORN", secondaryRashiName, rashiName);
                  // Variations:
                  const templates = [
                     `बिहान ${roundedTime} सम्म चन्द्रमा ${secondaryRashiName} राशिमा रहनेछ। ${shortPred}`,
                     `बिहान ${roundedTime} बजेसम्म समय ${secQualityText} रहनेछ। ${shortPred}`,
-                    `बिहान ${roundedTime} सम्म ${secQualityText} समय रहनेछ। ${shortPred}`,
-                    `बिहानको पहिलो प्रहर अर्थात् ${roundedTime} सम्म ${secQualityText} प्रभाव रहने देखिन्छ। ${shortPred}`
+                    `बिहानको समयमा चन्द्रमाको प्रभाव ${secondaryRashiName} मा रहनेछ। ${shortPred}`
                  ];
-                 morningText = getRandomItem(seed + "MORN_TMPL", templates);
-             } else { // < 4 Hours: SHORT SUMMARY
-                  const templates = [
-                    `बिहान ${roundedTime} सम्म समय ${secQualityText} रहनेछ।`,
-                    `बिहान ${roundedTime} सम्मको समय ${secQualityText} देखिन्छ।`,
-                    `दिनको सुरुवात (${roundedTime} सम्म) ${secQualityText} रहनेछ।`,
-                    `सुरुवाती समय अर्थात् ${roundedTime} सम्म ${secQualityText} रहनेछ।`
-                 ];
-                 morningText = getRandomItem(seed + "MORN_TMPL_S", templates);
+                 morningText = getRandomItem(seed + "MORN_T", templates);
+             } else {
+                 morningText = `बिहान ${roundedTime} सम्म चन्द्रमा ${secondaryRashiName} राशिमा रहनेछ।`;
              }
 
-             const dayText = assemblePrediction(houseRule, seed, primaryRashiName);
-             prediction = `${morningText} त्यसपछि ${dayText}`;
+             const dayText = assemblePrediction(houseRule, seed + "DAY", primaryRashiName, rashiName);
+             prediction = `${morningText} ${dayText}`;
 
-              extraTechnicalReason += `<br/><div class='mt-2 pt-2 border-t border-blue-200 dark:border-blue-800'><span class='text-purple-600 dark:text-purple-400 font-bold'>राशि परिवर्तन (बिहान):</span> ${secondaryRashiName} ➝ ${primaryRashiName} (${transitionTime})<br/><span class='text-[10px] text-gray-600 dark:text-gray-300'>बिहान ${transitionTime} सम्म चन्द्रमा ${secHouseIndex + 1} औं भावमा (${secHouseRule.description}) रहनेछ।</span></div>`;
+             extraTechnicalReason += `<br/><div class='mt-2 pt-2 border-t border-blue-200 dark:border-blue-800'><span class='text-purple-600 dark:text-purple-400 font-bold'>राशि परिवर्तन:</span> ${secondaryRashiName} ➝ ${primaryRashiName} (${transitionTime})<br/><span class='text-[10px] text-gray-600 dark:text-gray-300'>${transitionTime} पछि चन्द्रमा ${houseIndex + 1} औं भावमा (${houseRule.description}) प्रवेश गर्नेछ।</span></div>`;
 
              // Dynamic Technical Reason (Early)
-             technicalText = `बिहान ${transitionTime} सम्म चन्द्रमा **${secHouseIndex + 1} औं** भावमा (${secHouseRule.description}) र त्यसपछि **${houseIndex + 1} औं** भावमा (${houseRule.description}) गोचर।`;
+             technicalText = `चन्द्रमा बिहान ${transitionTime} सम्म **${secHouseIndex + 1} औं** भावमा र त्यसपछि **${houseIndex + 1} औं** भावमा (${houseRule.description}) गोचर।`;
 
          } else {
              // CHRONOLOGY: Day (Primary) -> Evening (Secondary)
              const secHouseIndex = (secondaryRashiIndex! - userRashiIndex + 12) % 12;
              const secHouseRule = HOUSE_RULES[secHouseIndex];
              const secQualityText = qualityMap[secHouseRule.quality];
-             const eveningDuration = cutoffMinutes - transitionMinutes;
 
-             const dayText = assemblePrediction(houseRule, seed, primaryRashiName);
-
+             const dayText = assemblePrediction(houseRule, seed + "DAY", primaryRashiName, rashiName);
              let eveningText = "";
-             if (eveningDuration > 240) { // > 4 Hours: DETAILED RESULT
-                 const shortPred = generateShortPrediction(secHouseRule, seed + "EVE", secondaryRashiName);
-                 const templates = [
-                     `साँझ ${roundedTime} पछि चन्द्रमा ${secHouseIndex + 1} औं भावमा (${secHouseRule.description}) प्रवेश गर्नेछ र समय ${secQualityText} हुनेछ। ${shortPred}`,
-                     `${roundedTime} पछि स्थिति परिवर्तन भई ${secondaryRashiName} राशिको प्रभाव पर्नेछ। ${shortPred}`,
-                     `साँझ ${roundedTime} पछि चन्द्रमाको स्थिति बदलिई समय ${secQualityText} हुनेछ। ${shortPred}`,
-                     `दिन ढल्दै जाँदा (${roundedTime} पछि) समय ${secQualityText} बन्ने देखिन्छ। ${shortPred}`
-                 ];
-                 eveningText = getRandomItem(seed + "EVE_TMPL", templates);
+
+             const eveningDuration = cutoffMinutes - transitionMinutes;
+             if (eveningDuration > 180) { // > 3 Hours
+                  const shortPred = generateShortPrediction(secHouseRule, seed + "EVE", secondaryRashiName, rashiName);
+                  const templates = [
+                    `${roundedTime} पछि चन्द्रमा ${secondaryRashiName} मा सर्नेछ, जसले गर्दा ${shortPred}`,
+                    `${roundedTime} बजेपछि भने समय ${secQualityText} रहनेछ। ${shortPred}`,
+                    `साँझ ${roundedTime} पछि चन्द्रमाको राशि परिवर्तन हुनेछ। ${shortPred}`
+                  ];
+                  eveningText = getRandomItem(seed + "EVE_T", templates);
              } else {
-                 const templates = [
-                     `${roundedTime} पछि चन्द्रमा ${secHouseIndex + 1} औं भावमा प्रवेश गर्नेछ र समय ${secQualityText} हुनेछ।`,
-                     `${roundedTime} पछि समय ${secQualityText} रहनेछ।`,
-                     `दिनको उत्तरार्द्ध (${roundedTime} पछि) समय ${secQualityText} रहनेछ।`,
-                     `साँझ ${roundedTime} पछि समय ${secQualityText} देखिन्छ।`
-                 ];
-                 eveningText = getRandomItem(seed + "EVE_TMPL_S", templates);
+                  eveningText = `${roundedTime} पछि चन्द्रमा ${secondaryRashiName} राशिमा प्रवेश गर्नेछ।`;
              }
 
              prediction = `${dayText} ${eveningText}`;
 
-             extraTechnicalReason += `<br/><div class='mt-2 pt-2 border-t border-blue-200 dark:border-blue-800'><span class='text-purple-600 dark:text-purple-400 font-bold'>राशि परिवर्तन:</span> ${primaryRashiName} ➝ ${secondaryRashiName} (${transitionTime})<br/><span class='text-[10px] text-gray-600 dark:text-gray-300'>${transitionTime} पछि चन्द्रमा ${secHouseIndex + 1} औं भावमा (${secHouseRule.description}) सर्नेछ। (${secQualityText})</span></div>`;
+             extraTechnicalReason += `<br/><div class='mt-2 pt-2 border-t border-blue-200 dark:text-blue-800'><span class='text-purple-600 dark:text-purple-400 font-bold'>राशि परिवर्तन:</span> ${primaryRashiName} ➝ ${secondaryRashiName} (${transitionTime})<br/><span class='text-[10px] text-gray-600 dark:text-gray-300'>${transitionTime} पछि चन्द्रमा ${secHouseIndex + 1} औं भावमा (${secHouseRule.description}) सर्नेछ। (${secQualityText})</span></div>`;
 
              // Dynamic Technical Reason (Late)
              technicalText = `चन्द्रमा **${houseIndex + 1} औं** भावमा (${houseRule.description}) र ${transitionTime} पछि **${secHouseIndex + 1} औं** भावमा (${secHouseRule.description}) गोचर।`;
@@ -809,7 +859,7 @@ export function generateDailyRashifal(
 
     } else {
          // STANDARD: No relevant transition, just full day prediction
-         prediction = assemblePrediction(houseRule, seed, primaryRashiName);
+         prediction = assemblePrediction(houseRule, seed, primaryRashiName, rashiName);
     }
 
 

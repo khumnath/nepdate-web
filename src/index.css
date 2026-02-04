@@ -359,19 +359,22 @@
     /* Dark Red Tint */
   }
 
-  /* Today Highlight (Global) */
-  .calendar-day.today,
-  .calendar-day.today.holiday,
-  .calendar-day.today.saturday {
-    border: 2px solid rgba(124, 58, 237, 0.6) !important;
-    /* Visible Violet */
+  /* Today Highlight (Global) - High specificity to avoid being overwritten by holiday/event borders */
+  .calendar-grid .calendar-day.today,
+  .calendar-grid .calendar-day.today.holiday,
+  .calendar-grid .calendar-day.today.saturday,
+  .calendar-grid .calendar-day.today.has-event {
+    border: 2px solid #4f46e5 !important; /* Indigo-600 */
     z-index: 30;
-    box-shadow: 0 0 10px rgba(124, 58, 237, 0.25);
+    box-shadow: 0 0 10px rgba(79, 70, 229, 0.3);
   }
 
-  .dark .calendar-day.today {
-    border-color: rgba(139, 92, 246, 0.7) !important;
-    box-shadow: 0 0 8px rgba(139, 92, 246, 0.25);
+  .dark .calendar-grid .calendar-day.today,
+  .dark .calendar-grid .calendar-day.today.holiday,
+  .dark .calendar-grid .calendar-day.today.saturday,
+  .dark .calendar-grid .calendar-day.today.has-event {
+    border-color: #818cf8 !important; /* Indigo-400 */
+    box-shadow: 0 0 8px rgba(129, 140, 248, 0.3);
   }
 
   /* Typography (Global Visuals) */
