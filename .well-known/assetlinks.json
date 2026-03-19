@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.khumnath.nepdate",
+      "sha256_cert_fingerprints": [
+        "79:FC:04:29:79:79:F0:78:94:2E:E8:00:D9:C2:9F:C6:B5:EE:59:BC:A9:D1:41:75:4F:38:CB:E7:A2:7F:8C:95"
+      ]
+    }
+  }
+]
