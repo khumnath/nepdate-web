@@ -1,0 +1,1 @@
+import{w as t,R as i}from"./index-BQEkKmXM.js";import{s as e,j as o}from"./vendor-react-DJKF_qT3.js";import n from"./PrivacyPage-8Ehxygcf.js";import"./vendor-other-DMZNwHDp.js";import"./vendor-leaflet-Bjm2FGmM.js";const r=document.getElementById("privacy-root");r&&e.createRoot(r).render(o.jsx(t,{children:o.jsx(i,{children:o.jsx(n,{onBack:()=>{window.location.href="/"}})})}));
