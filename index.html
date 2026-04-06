@@ -9,20 +9,66 @@
   <meta name="description"
     content="Beautiful Bikram Sambat Calendar with Panchanga calculations, Nepali festivals, and astronomical data" />
   <meta name="theme-color" content="#2563eb" />
-  <script type="module" crossorigin src="/assets/vendor-other-DMZNwHDp.js"></script>
+  <style>
+    :root { --bg: #f8fafc; --text-grad: linear-gradient(90deg, #1d4ed8, #ea580c); --bar-bg: #e2e8f0; --accent: #2563eb; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #111827; --text-grad: linear-gradient(90deg, #60a5fa, #fb923c); --bar-bg: #1f2937; } }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); overflow: hidden; display: flex; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    #root:empty { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; position: fixed; inset: 0; z-index: 10000; transition: opacity 0.5s ease-out; }
+    .loader-glow { position: absolute; width: 300px; height: 300px; background: rgba(249, 115, 22, 0.15); filter: blur(60px); border-radius: 50%; animation: pulse 2s infinite ease-in-out; }
+    .loader-content { position: relative; display: flex; flex-direction: column; align-items: center; z-index: 10; }
+    .logo-box { position: relative; width: 110px; height: 110px; background: white; border-radius: 2rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 2rem; animation: bounce 3s infinite ease-in-out; }
+    @media (prefers-color-scheme: dark) { .logo-box { background: white; border-color: rgba(255,255,255,0.05); } }
+    .logo-placeholder { width: 80px; height: 80px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 1rem; }
+    .logo-img { width: 100%; height: 100%; -o-object-fit: contain; object-fit: contain; }
+    .rings { position: absolute; inset: -20px; border: 2px solid rgba(249, 115, 22, 0.1); border-radius: 50%; animation: spin 10s linear infinite; }
+    .rings-outer { position: absolute; inset: -40px; border: 2px solid rgba(37, 99, 235, 0.05); border-radius: 50%; animation: spin 15s linear infinite reverse; }
+    .loader-title { font-size: 1.5rem; font-weight: 800; background: var(--text-grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.75rem; letter-spacing: -0.025em; }
+    .progress-track { width: 120px; height: 4px; background: var(--bar-bg); border-radius: 9999px; overflow: hidden; position: relative; }
+    .progress-bar { position: absolute; inset: 0; background: linear-gradient(90deg, #2563eb, #f97316); animation: loading 1.5s ease-in-out infinite; transform-origin: left; }
+    @keyframes pulse { 0%, 100% { transform: scale(1.2); opacity: 0.5; } 50% { transform: scale(1.5); opacity: 0.8; } }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+  </style>
+  <script type="module" crossorigin src="/assets/vendor-other-NTrPU4Bz.js"></script>
   <script type="module" crossorigin src="/assets/vendor-leaflet-Bjm2FGmM.js"></script>
-  <script type="module" crossorigin src="/assets/vendor-react-DJKF_qT3.js"></script>
-  <script type="module" crossorigin src="/assets/index-BQEkKmXM.js"></script>
-  <script type="module" crossorigin src="/assets/core-data-yYSq83uD.js"></script>
-  <script type="module" crossorigin src="/assets/vendor-utils-B8IA5EI_.js"></script>
-  <script type="module" crossorigin src="/assets/main-erN3pfK4.js"></script>
+  <script type="module" crossorigin src="/assets/vendor-react-D9qWblLh.js"></script>
+  <script type="module" crossorigin src="/assets/index-C5lqNVlZ.js"></script>
+  <script type="module" crossorigin src="/assets/HeaderLogo-CLlRuFgN.js"></script>
+  <script type="module" crossorigin src="/assets/icons-B5-xA9J-.js"></script>
+  <script type="module" crossorigin src="/assets/CalculationDetailsModal-Cm7f426s.js"></script>
+  <script type="module" crossorigin src="/assets/lib-C-EAkCZK.js"></script>
+  <script type="module" crossorigin src="/assets/panchanga_modern-CwWVZUOu.js"></script>
+  <script type="module" crossorigin src="/assets/core-data-G7OblqAH.js"></script>
+  <script type="module" crossorigin src="/assets/panchanga_ss-Lfo4ngCY.js"></script>
+  <script type="module" crossorigin src="/assets/kundali-ChoQ5v0e.js"></script>
+  <script type="module" crossorigin src="/assets/vendor-utils-Cmqc7H-R.js"></script>
+  <script type="module" crossorigin src="/assets/LocationModal-D0JomZRN.js"></script>
+  <script type="module" crossorigin src="/assets/useTheme-OJTAZGFV.js"></script>
+  <script type="module" crossorigin src="/assets/BlogCard-CA4WnzxO.js"></script>
+  <script type="module" crossorigin src="/assets/main-C7Dsi8Fp.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/vendor-other-OKVnRTM7.css">
   <link rel="stylesheet" crossorigin href="/assets/vendor-leaflet-Dgihpmma.css">
-  <link rel="stylesheet" crossorigin href="/assets/index-DrsGDMvv.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-B9ADDtdf.css">
 <link rel="manifest" href="/manifest.webmanifest"></head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <div class="loader-glow"></div>
+    <div class="loader-content">
+      <div class="logo-box">
+        <div class="logo-placeholder">
+          <img src="/img/logo.webp" class="logo-img" alt="Logo" />
+        </div>
+        <div class="rings"></div>
+        <div class="rings-outer"></div>
+      </div>
+      <div class="loader-title">नेपडेट पात्रो</div>
+      <div class="progress-track">
+        <div class="progress-bar"></div>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
