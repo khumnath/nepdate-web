@@ -14,14 +14,14 @@
     @media (prefers-color-scheme: dark) { :root { --bg: #111827; --text-grad: linear-gradient(90deg, #60a5fa, #fb923c); --bar-bg: #1f2937; } }
     body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); overflow: hidden; display: flex; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     #root:empty { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; position: fixed; inset: 0; z-index: 10000; transition: opacity 0.5s ease-out; }
-    .loader-glow { position: absolute; width: 300px; height: 300px; background: rgba(249, 115, 22, 0.15); filter: blur(60px); border-radius: 50%; animation: pulse 2s infinite ease-in-out; }
+    .loader-glow { position: absolute; width: 300px; height: 300px; background: rgba(249, 115, 22, 0.15); filter: blur(60px); border-radius: 50%; animation: pulse 1.5s infinite ease-in-out; }
     .loader-content { position: relative; display: flex; flex-direction: column; align-items: center; z-index: 10; }
-    .logo-box { position: relative; width: 110px; height: 110px; background: white; border-radius: 2rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 2rem; animation: bounce 3s infinite ease-in-out; }
+    .logo-box { position: relative; width: 110px; height: 110px; background: white; border-radius: 2rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 2rem; animation: bounce 1.5s infinite ease-in-out; }
     @media (prefers-color-scheme: dark) { .logo-box { background: white; border-color: rgba(255,255,255,0.05); } }
     .logo-placeholder { width: 80px; height: 80px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 1rem; }
     .logo-img { width: 100%; height: 100%; -o-object-fit: contain; object-fit: contain; }
-    .rings { position: absolute; inset: -20px; border: 2px solid rgba(249, 115, 22, 0.1); border-radius: 50%; animation: spin 10s linear infinite; }
-    .rings-outer { position: absolute; inset: -40px; border: 2px solid rgba(37, 99, 235, 0.05); border-radius: 50%; animation: spin 15s linear infinite reverse; }
+    .rings { position: absolute; inset: -20px; border: 2px solid rgba(249, 115, 22, 0.1); border-radius: 50%; animation: spin 5s linear infinite; }
+    .rings-outer { position: absolute; inset: -40px; border: 2px solid rgba(37, 99, 235, 0.05); border-radius: 50%; animation: spin 8s linear infinite reverse; }
     .loader-title { font-size: 1.5rem; font-weight: 800; background: var(--text-grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.75rem; letter-spacing: -0.025em; }
     .progress-track { width: 120px; height: 4px; background: var(--bar-bg); border-radius: 9999px; overflow: hidden; position: relative; }
     .progress-bar { position: absolute; inset: 0; background: linear-gradient(90deg, #2563eb, #f97316); animation: loading 1.5s ease-in-out infinite; transform-origin: left; }
@@ -30,26 +30,25 @@
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
   </style>
-  <script type="module" crossorigin src="/assets/vendor-other-CsJX9OmL.js"></script>
+  <script type="module" crossorigin src="/assets/vendor-other-DY6bdS74.js"></script>
   <script type="module" crossorigin src="/assets/vendor-leaflet-Bjm2FGmM.js"></script>
-  <script type="module" crossorigin src="/assets/vendor-react-BymtWz9D.js"></script>
-  <script type="module" crossorigin src="/assets/index-Dq3HgPer.js"></script>
-  <script type="module" crossorigin src="/assets/HeaderLogo-CS8F0ZDd.js"></script>
-  <script type="module" crossorigin src="/assets/icons-Cg8TzVvH.js"></script>
-  <script type="module" crossorigin src="/assets/CalculationDetailsModal-Dz-sbRSO.js"></script>
-  <script type="module" crossorigin src="/assets/lib-Df-4VxWH.js"></script>
-  <script type="module" crossorigin src="/assets/panchanga_modern-D4tGhwD1.js"></script>
-  <script type="module" crossorigin src="/assets/core-data-G7OblqAH.js"></script>
-  <script type="module" crossorigin src="/assets/panchanga_ss-CXvSGsTS.js"></script>
-  <script type="module" crossorigin src="/assets/kundali-BfQ7TT9g.js"></script>
-  <script type="module" crossorigin src="/assets/vendor-utils-DFG077zN.js"></script>
-  <script type="module" crossorigin src="/assets/LocationModal-BfZDWH96.js"></script>
-  <script type="module" crossorigin src="/assets/useTheme-DKLSElFY.js"></script>
-  <script type="module" crossorigin src="/assets/BlogCard-7n_OZZoI.js"></script>
-  <script type="module" crossorigin src="/assets/main-BzZI42Xu.js"></script>
+  <script type="module" crossorigin src="/assets/vendor-react-BzkspamW.js"></script>
+  <script type="module" crossorigin src="/assets/core-data-BzebUjTq.js"></script>
+  <script type="module" crossorigin src="/assets/core-astro-BuTstuW3.js"></script>
+  <script type="module" crossorigin src="/assets/index-BADex0rM.js"></script>
+  <script type="module" crossorigin src="/assets/HeaderLogo-BMpxzlfm.js"></script>
+  <script type="module" crossorigin src="/assets/icons-wisvigJ_.js"></script>
+  <script type="module" crossorigin src="/assets/CalculationDetailsModal-BVY97Mfj.js"></script>
+  <script type="module" crossorigin src="/assets/lib-C7Vdk0Wj.js"></script>
+  <script type="module" crossorigin src="/assets/kundali-C5R6AV8I.js"></script>
+  <script type="module" crossorigin src="/assets/vendor-utils-BFRgkHJI.js"></script>
+  <script type="module" crossorigin src="/assets/LocationModal-DQ2apah3.js"></script>
+  <script type="module" crossorigin src="/assets/useTheme-DJycAkKx.js"></script>
+  <script type="module" crossorigin src="/assets/BlogCard-CjeZrkJK.js"></script>
+  <script type="module" crossorigin src="/assets/main-rpLuXJFh.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/vendor-other-OKVnRTM7.css">
   <link rel="stylesheet" crossorigin href="/assets/vendor-leaflet-Dgihpmma.css">
-  <link rel="stylesheet" crossorigin href="/assets/index-BonqAQvp.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-D4TT42sm.css">
 <link rel="manifest" href="/manifest.webmanifest"></head>
 
 <body>
