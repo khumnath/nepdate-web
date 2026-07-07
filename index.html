@@ -4,11 +4,46 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Nepdate" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>बिक्रम संवत् पात्रो - Bikram Sambat Calendar</title>
   <meta name="description"
     content="Beautiful Bikram Sambat Calendar with Panchanga calculations, Nepali festivals, and astronomical data" />
   <meta name="theme-color" content="#2563eb" />
+  <script>
+    (function() {
+      let isReloading = false;
+      const handleChunkError = () => {
+        if (isReloading) return;
+        // Only reload if online to avoid infinite reload loop when offline
+        if (navigator.onLine === false) return;
+        isReloading = true;
+        console.warn('Chunk/asset load failure. Reloading...');
+        window.location.reload();
+      };
+
+      window.addEventListener('error', (e) => {
+        const target = e.target;
+        if (target && (target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
+          handleChunkError();
+        }
+        const msg = e.message || '';
+        if (msg.includes('dynamically imported module') || msg.includes('Failed to fetch')) {
+          handleChunkError();
+        }
+      }, true);
+
+      window.addEventListener('unhandledrejection', (e) => {
+        const reason = e.reason?.message || String(e.reason || '');
+        if (reason.includes('dynamically imported module') || reason.includes('Failed to fetch')) {
+          handleChunkError();
+        }
+      });
+    })();
+  </script>
   <style>
     :root { --bg: #f8fafc; --text-grad: linear-gradient(90deg, #1d4ed8, #ea580c); --bar-bg: #e2e8f0; --accent: #2563eb; }
     @media (prefers-color-scheme: dark) { :root { --bg: #111827; --text-grad: linear-gradient(90deg, #60a5fa, #fb923c); --bar-bg: #1f2937; } }
@@ -30,26 +65,27 @@
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
   </style>
-  <script type="module" crossorigin src="/assets/vendor-other-8YTDfdpL.js"></script>
+  <script type="module" crossorigin src="/assets/vendor-other-CgSyLtPK.js"></script>
   <script type="module" crossorigin src="/assets/vendor-leaflet-Bjm2FGmM.js"></script>
-  <script type="module" crossorigin src="/assets/vendor-react-BEZF8UZp.js"></script>
+  <script type="module" crossorigin src="/assets/vendor-react-D8A8p61_.js"></script>
   <script type="module" crossorigin src="/assets/core-data-BzebUjTq.js"></script>
-  <script type="module" crossorigin src="/assets/core-astro-D1qwbVbT.js"></script>
-  <script type="module" crossorigin src="/assets/index-4izVqUIG.js"></script>
-  <script type="module" crossorigin src="/assets/HeaderLogo-BVL7bHDe.js"></script>
-  <script type="module" crossorigin src="/assets/icons-ySW8qvEL.js"></script>
-  <script type="module" crossorigin src="/assets/CalculationDetailsModal-9TMcZ-1-.js"></script>
-  <script type="module" crossorigin src="/assets/lib-DTKpzvnq.js"></script>
-  <script type="module" crossorigin src="/assets/kundali-EtEz5kxb.js"></script>
-  <script type="module" crossorigin src="/assets/vendor-utils-Cp8qHuWm.js"></script>
-  <script type="module" crossorigin src="/assets/LocationModal-BWK1JAnW.js"></script>
-  <script type="module" crossorigin src="/assets/useTheme-BPg5mCPD.js"></script>
-  <script type="module" crossorigin src="/assets/BlogCard-BVazKZux.js"></script>
-  <script type="module" crossorigin src="/assets/main-C03EiUJA.js"></script>
+  <script type="module" crossorigin src="/assets/core-astro-DUBHYx4I.js"></script>
+  <script type="module" crossorigin src="/assets/index-SSF8mn-c.js"></script>
+  <script type="module" crossorigin src="/assets/HeaderLogo-Cd5kTGwi.js"></script>
+  <script type="module" crossorigin src="/assets/icons-F9Mdt256.js"></script>
+  <script type="module" crossorigin src="/assets/CalculationDetailsModal-BQvqNqgn.js"></script>
+  <script type="module" crossorigin src="/assets/lib-C249TR0q.js"></script>
+  <script type="module" crossorigin src="/assets/kundali-CmIk_r9z.js"></script>
+  <script type="module" crossorigin src="/assets/google-play-badge-DgGAyOYp.js"></script>
+  <script type="module" crossorigin src="/assets/vendor-utils-BOXyE4Yx.js"></script>
+  <script type="module" crossorigin src="/assets/LocationModal-B5rwE9_K.js"></script>
+  <script type="module" crossorigin src="/assets/useTheme-CL4zowlQ.js"></script>
+  <script type="module" crossorigin src="/assets/BlogCard-CW7mWEQ4.js"></script>
+  <script type="module" crossorigin src="/assets/main-DNBxsgoP.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/vendor-other-BUUTtNGK.css">
   <link rel="stylesheet" crossorigin href="/assets/vendor-leaflet-Dgihpmma.css">
-  <link rel="stylesheet" crossorigin href="/assets/index-CbNTL62y.css">
-<link rel="manifest" href="/manifest.webmanifest"></head>
+  <link rel="stylesheet" crossorigin href="/assets/index-B6j8c8Pz.css">
+</head>
 
 <body>
   <div id="root">

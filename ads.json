@@ -1,0 +1,20 @@
+{
+  "ad-slot1": {
+    "type": "image_text_button",
+    "imageSrc": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=120&auto=format&fit=crop&q=60",
+    "link": "https://play.google.com/store/apps/details?id=com.khumnath.nepdate",
+    "text": "Check out Nepdate on the Google Play Store! Rate us 5 stars.",
+    "buttonText": "Rate App"
+  },
+  "ad-slot2": {
+    "type": "image_link",
+    "imageSrc": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=300&auto=format&fit=crop&q=60",
+    "link": "https://nepdate.khumnath.com.np"
+  },
+  "ad-slot3": {
+    "type": "text_only",
+    "text": "Looking to promote your local business, event, or religious gathering? Get featured on Nepdate and reach over 10,000+ active users daily.",
+    "link": "mailto:Aksharlabstudio1@gmail.com?subject=Advertise on Nepdate",
+    "buttonText": "Get Started"
+  }
+}
