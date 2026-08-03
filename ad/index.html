@@ -46,13 +46,13 @@
   </script>
   <style>
     :root { --bg: #f8fafc; --text-grad: linear-gradient(90deg, #1d4ed8, #ea580c); --bar-bg: #e2e8f0; --accent: #2563eb; }
-    @media (prefers-color-scheme: dark) { :root { --bg: #111827; --text-grad: linear-gradient(90deg, #60a5fa, #fb923c); --bar-bg: #1f2937; } }
+    html.dark { --bg: #111827; --text-grad: linear-gradient(90deg, #60a5fa, #fb923c); --bar-bg: #1f2937; }
     body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); overflow: hidden; display: flex; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    #root:empty { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; position: fixed; inset: 0; z-index: 10000; transition: opacity 0.5s ease-out; }
+    #initial-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; position: fixed; inset: 0; z-index: 10000; background: var(--bg); }
     .loader-glow { position: absolute; width: 300px; height: 300px; background: rgba(249, 115, 22, 0.15); filter: blur(60px); border-radius: 50%; animation: pulse 1.5s infinite ease-in-out; }
     .loader-content { position: relative; display: flex; flex-direction: column; align-items: center; z-index: 10; }
     .logo-box { position: relative; width: 110px; height: 110px; background: white; border-radius: 2rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 2rem; animation: bounce 1.5s infinite ease-in-out; }
-    @media (prefers-color-scheme: dark) { .logo-box { background: white; border-color: rgba(255,255,255,0.05); } }
+    html.dark .logo-box { background: white; border-color: rgba(255,255,255,0.05); }
     .logo-placeholder { width: 80px; height: 80px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 1rem; }
     .logo-img { width: 100%; height: 100%; -o-object-fit: contain; object-fit: contain; }
     .rings { position: absolute; inset: -20px; border: 2px solid rgba(249, 115, 22, 0.1); border-radius: 50%; animation: spin 5s linear infinite; }
@@ -65,16 +65,29 @@
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
   </style>
-  <script type="module" crossorigin src="/assets/main-0iNMT0tK.js"></script>
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('theme');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <script type="module" crossorigin src="/assets/main-FvaxPLmg.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/vendor-other-rCQIOS6m.js">
   <link rel="modulepreload" crossorigin href="/assets/vendor-leaflet-Bjm2FGmM.js">
-  <link rel="modulepreload" crossorigin href="/assets/vendor-react-OE2f6Nbm.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-react-du7IzGhP.js">
+  <link rel="modulepreload" crossorigin href="/assets/core-astronomy-BTqo13NU.js">
   <link rel="modulepreload" crossorigin href="/assets/core-data-BzebUjTq.js">
-  <link rel="modulepreload" crossorigin href="/assets/core-astro-AwPpBXFF.js">
-  <link rel="modulepreload" crossorigin href="/assets/vendor-utils-C0M50lIz.js">
+  <link rel="modulepreload" crossorigin href="/assets/core-astro-DigQNwTV.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-utils-dSaERiNC.js">
   <link rel="stylesheet" crossorigin href="/assets/vendor-other-BUUTtNGK.css">
   <link rel="stylesheet" crossorigin href="/assets/vendor-leaflet-Dgihpmma.css">
-  <link rel="stylesheet" crossorigin href="/assets/main-B01yoBWP.css">
+  <link rel="stylesheet" crossorigin href="/assets/main-uLj36T10.css">
 <link rel="manifest" href="/manifest.webmanifest">
   <meta property="og:title" content="English Date View (AD Date View) - Nepdate" />
   <meta property="og:description" content="Gregorian AD Date with corresponding Bikram Sambat date and Panchanga." />
@@ -86,18 +99,20 @@
 
 <body>
   <div id="root">
-    <div class="loader-glow"></div>
-    <div class="loader-content">
-      <div class="logo-box">
-        <div class="logo-placeholder">
-          <img src="/img/logo.webp" class="logo-img" alt="Logo" />
+    <div id="initial-loader">
+      <div class="loader-glow"></div>
+      <div class="loader-content">
+        <div class="logo-box">
+          <div class="logo-placeholder">
+            <img src="/img/logo.webp" class="logo-img" alt="Logo" />
+          </div>
+          <div class="rings"></div>
+          <div class="rings-outer"></div>
         </div>
-        <div class="rings"></div>
-        <div class="rings-outer"></div>
-      </div>
-      <div class="loader-title">नेपडेट पात्रो</div>
-      <div class="progress-track">
-        <div class="progress-bar"></div>
+        <div class="loader-title">नेपडेट पात्रो</div>
+        <div class="progress-track">
+          <div class="progress-bar"></div>
+        </div>
       </div>
     </div>
   </div>
