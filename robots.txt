@@ -1,2 +1,26 @@
+# Allow all standard search engines & bots
 User-agent: *
 Allow: /
+
+# Explicitly allow OpenAI / ChatGPT
+User-agent: GPTBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+
+# Explicitly allow Google Gemini / AI Search
+User-agent: Google-Extended
+Allow: /
+
+# Explicitly allow Anthropic Claude
+User-agent: ClaudeBot
+Allow: /
+User-agent: anthropic-ai
+Allow: /
+
+# Explicitly allow Perplexity AI
+User-agent: PerplexityBot
+Allow: /
+
+# Link to sitemap so agents can discover all pages
+Sitemap: https://nepdate.khumnath.com.np/sitemap.xml
