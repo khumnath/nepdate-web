@@ -1,208 +1,291 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Core Home & Today -->
   <url>
     <loc>https://nepdate.khumnath.com.np/</loc>
-    <lastmod>2026-08-03</lastmod>
     <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://nepdate.khumnath.com.np/today</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://nepdate.khumnath.com.np/bs</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://nepdate.khumnath.com.np/ad</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Main Features & Tools -->
-  <url>
-    <loc>https://nepdate.khumnath.com.np/converter</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://nepdate.khumnath.com.np/rashifal</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://nepdate.khumnath.com.np/dharma</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://nepdate.khumnath.com.np/kundali</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://nepdate.khumnath.com.np/saait</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://nepdate.khumnath.com.np/events</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://nepdate.khumnath.com.np/tithi-finder</loc>
-    <lastmod>2026-08-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://nepdate.khumnath.com.np/regional-time</loc>
-    <lastmod>2026-08-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://nepdate.khumnath.com.np/sankalpa</loc>
-    <lastmod>2026-08-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://nepdate.khumnath.com.np/calculator</loc>
-    <lastmod>2026-08-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://nepdate.khumnath.com.np/personal-rashifal</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/converter</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/rashifal</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/dharma</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/kundali</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/saait</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/events</loc>
+    <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://nepdate.khumnath.com.np/eclipse</loc>
-    <lastmod>2026-08-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://nepdate.khumnath.com.np/unit-converter</loc>
-    <lastmod>2026-08-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://nepdate.khumnath.com.np/namakaran</loc>
-    <lastmod>2026-08-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://nepdate.khumnath.com.np/vedic-clock</loc>
-    <lastmod>2026-08-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://nepdate.khumnath.com.np/radio</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://nepdate.khumnath.com.np/timeline</loc>
-    <lastmod>2026-08-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://nepdate.khumnath.com.np/print-calendar</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nepdate.khumnath.com.np/sitemap</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://nepdate.khumnath.com.np/support</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nepdate.khumnath.com.np/settings</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://nepdate.khumnath.com.np/about</loc>
-    <lastmod>2026-08-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://nepdate.khumnath.com.np/privacy-policy</loc>
-    <lastmod>2026-08-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://nepdate.khumnath.com.np/privacy</loc>
-    <lastmod>2026-08-03</lastmod>
+    <loc>https://nepdate.khumnath.com.np/support</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <!-- App Verification Link -->
-  <url>
-    <loc>https://nepdate.khumnath.com.np/.well-known/assetlinks.json</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>never</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <!-- Developer API Endpoints -->
-  <url>
-    <loc>https://nepdate-api.khumnath.com.np/</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://nepdate-api.khumnath.com.np/today</loc>
-    <lastmod>2026-08-03</lastmod>
+    <loc>https://nepdate.khumnath.com.np/settings</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/today</loc>
     <changefreq>daily</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://nepdate-api.khumnath.com.np/convert</loc>
-    <lastmod>2026-08-03</lastmod>
+    <loc>https://nepdate.khumnath.com.np/print-calendar</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://nepdate-api.khumnath.com.np/rashifal</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <loc>https://nepdate.khumnath.com.np/timeline</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2026&amp;monthad=1</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2026&amp;monthad=2</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2026&amp;monthad=3</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2026&amp;monthad=4</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2026&amp;monthad=5</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2026&amp;monthad=6</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2026&amp;monthad=7</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2026&amp;monthad=8</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2026&amp;monthad=9</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2026&amp;monthad=10</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2026&amp;monthad=11</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2026&amp;monthad=12</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2027&amp;monthad=1</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2027&amp;monthad=2</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2027&amp;monthad=3</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2027&amp;monthad=4</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2027&amp;monthad=5</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2027&amp;monthad=6</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2027&amp;monthad=7</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2027&amp;monthad=8</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2027&amp;monthad=9</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2027&amp;monthad=10</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2027&amp;monthad=11</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearad=2027&amp;monthad=12</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2083&amp;month=1</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2083&amp;month=2</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2083&amp;month=3</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2083&amp;month=4</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2083&amp;month=5</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2083&amp;month=6</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2083&amp;month=7</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2083&amp;month=8</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2083&amp;month=9</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2083&amp;month=10</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2083&amp;month=11</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2083&amp;month=12</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2084&amp;month=1</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2084&amp;month=2</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2084&amp;month=3</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2084&amp;month=4</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2084&amp;month=5</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2084&amp;month=6</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2084&amp;month=7</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2084&amp;month=8</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2084&amp;month=9</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2084&amp;month=10</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2084&amp;month=11</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://nepdate.khumnath.com.np/?yearbs=2084&amp;month=12</loc>
+    <changefreq>monthly</changefreq>
   </url>
 </urlset>
