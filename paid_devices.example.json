@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "updated_at": "2026-08-18T12:00:00Z",
+  "note": "Rename this file or copy entries to paid_devices.json on your server to grant remote ad-free access.",
+  "paid_devices": {
+    "A1B2C3D4E5F67890": {
+      "type": "lifetime",
+      "note": "Lifetime Ad-Free Access"
+    },
+    "9876543210ABCDEF": {
+      "type": "yearly",
+      "prefix": "Y2708",
+      "note": "Yearly plan valid until August 2027 (Format: Y + YY + MM => Y2708 = 2027 Aug)"
+    },
+    "F0E1D2C3B4A56789": {
+      "type": "yearly",
+      "prefix": "Y2801",
+      "note": "Yearly plan valid until January 2028"
+    }
+  }
+}

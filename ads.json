@@ -1,10 +1,8 @@
 {
   "ad-slot1": {
-    "type": "image_text_button",
-    "imageSrc": "https://nepdate.khumnath.com.np/images/ad1.jpg",
-    "link": "https://play.google.com/store/apps/details?id=com.khumnath.nepdate",
-    "text": "Check out Nepdate on the Google Play Store! Rate us 5 stars.",
-    "buttonText": "Rate App"
+    "type": "image_link",
+    "imageSrc": "https://nepdate.khumnath.com.np/images/ad1.png",
+    "link": "https://www.facebook.com/profile.php?id=100064772946945"
   },
   "ad-slot2": {
     "type": "image_link",
@@ -18,3 +16,6 @@
     "buttonText": "Get Started"
   }
 }
+
+
+
